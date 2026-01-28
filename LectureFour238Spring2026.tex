@@ -1,0 +1,447 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry} 
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Four} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{28 Jan 2026}
+
+\maketitle
+
+In the last lecture, we discussed the following problem. 
+
+\section{Example 3: Inference from measurements}
+
+\begin{problem}\label{lik3}
+  Suppose a scientist makes 6 numerical measurements 26.6, 38.5, 34.4,
+  34, 31, 23.6 on an unknown real-valued physical quantity
+  $\theta$. On the basis of these measurements, what can be inferred
+  about $\theta$?  
+\end{problem}
+
+\subsection{Frequentist Solution}
+
+Here is the standard frequentist solution to this problem. Use the model:
+\begin{align}
+  \label{norm_iid}
+  X_1, \dots, X_n \overset{\text{i.i.d}}{\sim} N(\theta, \sigma^2). 
+\end{align}
+It then follows that $\bar{X}_n := (X_1 + \dots + X_n)/n \sim
+N(\theta, \sigma^2/n)$ which implies:
+\begin{align}\label{std_norm}
+  \frac{\sqrt{n}(\bar{X}_n - \theta)}{\sigma} \sim N(0, 1). 
+\end{align}
+If $\sigma$ is known, this gives the confidence interval $\bar{X}_n
+\pm \frac{\sigma}{\sqrt{n}} z_{\alpha/2}$ for $\theta$ (here
+$z_{\alpha/2}$ satisfies $\P\{N(0, 1) > z_{\alpha/2}\} =
+\alpha/2$). But this confidence interval cannot be computed as
+$\sigma$ is unknown. It is natural to replace $\sigma$ by the natural
+estimator: 
+\begin{align*}
+  \hat{\sigma} := \sqrt{\frac{1}{n-1} \sum_{i=1}^n (X_i -
+  \bar{X}_n)^2}. 
+\end{align*}
+But then the normal distribution in \eqref{std_norm} needs to be
+changed to the Student $t$ distribution with $n-1$ degrees of freedom:
+\begin{align}\label{std_t}
+  \frac{\sqrt{n}(\bar{X}_n - \theta)}{\hat{\sigma}} \sim t_{n-1}. 
+\end{align}
+This leads to the confidence interval:
+\begin{align}\label{freq_ci}
+\left[  \bar{X}_n - \frac{t_{n-1,
+      \alpha/2}}{\sqrt{n}}  
+  \sqrt{\frac{1}{n-1} \sum_{i=1}^n (X_i - \bar{X}_n)^2}, 
+  \bar{X}_n + \frac{t_{n-1,
+      \alpha/2}}{\sqrt{n}}  
+  \sqrt{\frac{1}{n-1} \sum_{i=1}^n (X_i - \bar{X}_n)^2}  \right]. 
+\end{align}
+When $\alpha = 0.05$ and one plugs in the observed data $X_1 = 26.6,
+X_2 = 38.5, X_3 = 34.4, X_4 = 34, X_5 = 31, X_6 = 23.6$ with $n = 6$
+in the above interval, we obtain the interval $[25.598, 37.102]$. 
+
+\subsection{Bayesian Solution}
+The Bayesian solution also leads to the same interval but with a
+different reasoning. We went over the 
+calculations in the last lecture. Here are the main facts. We use the
+likelihood:  
+\begin{equation}\label{likeli}
+\text{Likelihood} = \prod_{i=1}^n \frac{1}{\sqrt{2 \pi} \sigma} \exp
+\left(-\frac{(x_i - 
+      \theta)^2}{2 \sigma^2} \right). 
+\end{equation}
+where $n = 6$ and $x_1 = 26.6, x_2 = 38.5, x_3 = 34.4,
+  x_4 = 34, x_5 = 31, x_6 = 23.6$ denote the observed data
+  points.
+
+The unknown parameters are $\theta$ and $\sigma$. The prior is given by:     
+\begin{align}\label{prior_norm}
+  \theta, \log \sigma \overset{\text{i.i.d}}{\sim} \text{uniform}(-C, C)
+\end{align}
+for a very large positive constant $C$. In terms of the densities,
+\eqref{prior_norm} is the same as
+\begin{align*}
+\text{prior} = f_{\theta, \sigma}(\theta, \sigma)
+\propto \frac{\mathbf{1}\{-C < \theta < C,\,-C < \log \sigma < C\}}{\sigma}.
+\end{align*}
+For this model, the posterior becomes: 
+\begin{align*}
+  \text{posterior} = f_{\theta, \sigma \mid \text{data}}(\theta,
+                     \sigma)\propto \sigma^{-n-1}
+                     \exp\left(-\frac{1}{2 
+    \sigma^2}\sum_{i=1}^n(x_i - \theta)^2 \right)\mathbf{1}\{-C < \theta < C,\,-C < \log \sigma <
+    C\}. 
+\end{align*}
+This is the joint posterior density of $\theta$ and $\sigma$. The
+posterior of $\theta$ alone is obtained by integrating out $\sigma$: 
+\begin{align*}
+  f_{\theta \mid \text{data}}(\theta) \propto \mathbf{1}\{-C <
+  \theta < C\} \int_{e^{-C}}^{e^C} \sigma^{-n-1} \exp\left(-\frac{1}{2
+    \sigma^2}\sum_{i=1}^n(x_i - \theta)^2 \right) d\sigma
+\end{align*}
+Because $C$ is large, the limits of the integral can be taken to be
+$0$ and $\infty$. The integral then can be calculated precisely to
+obtain 
+\begin{align*}
+  f_{\theta \mid \text{data}}(\theta) &\propto \mathbf{1}\{-C <
+  \theta < C\} \left(\frac{1}{S(\theta)} \right)^{n/2} 
+\end{align*}
+where $S(\theta)$ is the sum of squares term:
+\begin{align*}
+  S(\theta) = \sum_{i=1}^n (x_i - \theta)^2. 
+\end{align*}
+If $C$ is large, then the indicator can be dropped (because it will
+essentially be always 1) so the posterior becomes:
+\begin{align*}
+  f_{\theta \mid \text{data}}(\theta) &\propto
+                                        \left(\frac{1}{S(\theta)}
+                                        \right)^{n/2} \propto
+                                        \left(\frac{S(\hat{\theta})}{S(\theta)}
+                                        \right)^{n/2}. 
+\end{align*}
+where $\hat{\theta} = \bar{x} =
+(x_1 + \dots + x_n)/n$ is the least squares estimator (which minimizes
+$S(\theta)$ over all $\theta$). Thus the posterior mode is the mean.
+
+It can be shown that this distribution is closely related to the
+$t$-distribution. Specifically, 
+\begin{align}\label{bayes_prob}
+\frac{\sqrt{n}(\theta - \hat{\theta})}{\sqrt{S(\hat{\theta})/(n-1)}}
+  \mid \text{data} \sim t_{n-1}
+\end{align}
+where $t_{n-1}$ denotes the $t$-density with $n-1$ degrees of
+freedom. Note that $\hat{\theta} = \bar{x}$ and $S(\hat{\theta}) =
+\sum_{i=1}^n (x_i - \bar{x})^2$.
+
+So the Bayesian point estimate is simply $\hat{\theta} = \bar{x}$
+(this is the posterior mean, median and mode!). A $100(1 - \alpha)$\%
+uncertainty interval for $\theta$ is given by:
+\begin{align}\label{cred_int}
+\left[  \hat{\theta} - \frac{1}{\sqrt{n}} t_{n-1, \alpha/2}
+  \sqrt{\frac{S(\hat{\theta})}{n-1}},   \hat{\theta} +
+  \frac{1}{\sqrt{n}} t_{n-1, \alpha/2} 
+  \sqrt{\frac{S(\hat{\theta})}{n-1}} \right] 
+\end{align}
+where $t_{n-1, \alpha/2}$ is the $(1 - \alpha/2)$ quantile of the
+Student $t$-distribution with $n-1$ degrees of freedom. This
+uncertainty interval is referred to as the Bayesian Credible Interval.   
+
+Thus, in problem \ref{lik3}, the standard frequentist and Bayesian
+solutions coincide.
+
+\subsection{Frequentist vs Bayes}
+
+However, it is very easy to break this coincidence. For example,
+consider the following problem:
+\begin{problem}\label{lik3_prime}
+  A scientist gets repeated measurements on an unknown physical
+  quantity $\theta$ until a measurement smaller than 25 is
+  obtained. Suppose the resulting data is 26.6, 38.5, 34.4, 34, 31,
+  23.6. On the basis of these measurements, what can be inferred about
+  $\theta$?  
+\end{problem}
+Note that the observed data is exactly the same as before.
+
+The
+frequentist confidence interval \eqref{freq_ci} is no longer
+valid, because the
+frequentist probability statement \eqref{std_t} is no longer
+valid. This is because the number of datapoints $n$ cannot be taken to
+be deterministically equal to 6. So the frequentist probability that we
+need to calculate is (below we denote the number of data points by $N$
+and treat it as a random variable):
+\begin{equation*}
+  \P \left\{\bar{X}_N - \frac{t_{N-1,
+      \alpha/2}}{\sqrt{n}}  
+  \sqrt{\frac{1}{N-1} \sum_{i=1}^N (X_i - \bar{X}_N)^2} \leq \theta \leq
+  \bar{X}_N + \frac{t_{N-1,
+      \alpha/2}}{\sqrt{N}}  
+  \sqrt{\frac{1}{N-1} \sum_{i=1}^N (X_i - \bar{X}_N)^2}  
+\right\} 
+\end{equation*}
+where $X_1, X_2, \dots$ are i.i.d $N(\theta, \sigma^2)$ as before and
+\begin{equation*}
+  N := \inf \left\{n \geq 1 : X_n \leq 25 \right\}. 
+\end{equation*}
+The probability above is complicated and there is no reason for
+it to be exactly equal to $1 - \alpha$. Constructing valid frequentist 
+confidence intervals in the presence of \textit{stopping rules} (such
+as the rule of stopping as soon as we observe a data point smaller than 25) 
+is, in 
+fact, a problem of current research (see e.g., the paper
+\url{https://arxiv.org/abs/2210.01948}).
+
+In contrast to frequentist inference, the Bayesian inference procedure
+will not change. This is because the likelihood function in Problem
+\ref{lik3_prime} is the same as the likelihood function in Problem
+\ref{lik3}. To verify this, consider the following likelihood in Problem
+\ref{lik3_prime} (below $\delta$ denotes the rounding error in the
+observations, which is extremely small) 
+\begin{align*}
+&  \text{Likelihood in Problem \ref{lik3_prime}} \\ &= \P
+                                                  \left\{\text{observed
+                                                  data} \mid 
+                                                  \theta, \sigma
+                                                  \right\} \\
+  &= \P\{X_1 \in [x_1 - \delta, x_1 + \delta], \dots, X_6 \in [x_6 -
+    \delta, x_6 + \delta], X_1 \geq 25, \dots, X_5 \ge 25, X_6 < 25
+    \mid \theta, \sigma \} 
+\end{align*}
+In other words, we are writing the probability that the first five
+observations are all larger than 25 while the sixth observation is
+smaller than 25, in addition to the exact values of the observations,
+in the likelihood. But it is clear that these additional constraints
+do not change the probability (as an example, just note that $\P(Z =
+5) = \P(Z = 5, Z < 10)$. The additional restriction $Z < 10$ does not
+affect the probability because it is already covered in $Z = 5$). Thus
+\begin{align*}
+&  \text{Likelihood in Problem \ref{lik3_prime}} \\ &= \P\{X_1 \in
+                                                      [x_1 - \delta,
+                                                      x_1 + \delta],
+                                                      \dots, X_6 \in
+                                                      [x_6 - 
+    \delta, x_6 + \delta], X_1 \geq 25, \dots, X_5 \ge 25, X_6 < 25
+                                                      \mid \theta, \sigma \} \\
+  &= \P\{X_1 \in
+                                                      [x_1 - \delta,
+                                                      x_1 + \delta],
+                                                      \dots, X_6 \in
+                                                      [x_6 - 
+    \delta, x_6 + \delta]    \mid \theta, \sigma \} \\
+  &= \text{Likelihood in Problem \ref{lik3}}. 
+\end{align*}
+Since the likelihood is the same in both problems, Bayesian inference
+for both problems will be the same (note the priors will be the same
+as there is no reason to use different priors). Therefore, from the
+Bayesian perspective, stopping rules  can be ignored for inferring $\theta$, 
+because they do not affect the likelihood.
+
+This example shows clearly that frequentist inference
+violates the Likelihood Principle (the likelihood principle states
+that ``all the evidence in a sample relevant to model parameters is
+contained in the likelihood function''). See
+\url{https://en.wikipedia.org/wiki/Likelihood_principle} for more
+information on the likelihood principle.
+
+On the other hand, Bayesian inference always satisfies the likelihood
+principle (assuming that priors are the same), because data enters the
+Bayesian posterior calculation only through the likelihood. 
+
+Here is another example of violation of the likelihood principle in
+frequentist inference. 
+
+\section{Example 4: Coin Fairness Testing}
+
+\begin{problem}
+Suppose a coin is tossed 12 times leading to the outcome: TTTTHTHTTTTH
+(this has 3 heads and 9 tails). What is your assessment of the
+fairness of the coin?  
+\end{problem}
+
+\subsection{Frequentist Solution}
+
+For the usual frequentist answer to this question, we assume that the
+observed sequence of outcomes are the realization of random variables
+$X_1, \dots, X_n$ (with $n = 12$) that are independently distributed
+according to the $\text{Bin}(n, p)$ distribution for some unknown
+$p$. We need to test the (null) hypothesis that $p = 0.5$ against,
+say, the alternative $p < 0.5$. This can be 
+done by calculating the $p$-value which is the probability (under the
+assumption $p = 0.5$) of getting 3 or lower heads. The distribution of
+the number of heads under the null distribution is $\text{Bin}(n,
+0.5)$ so the $p$-value is
+\begin{equation*}
+ \left( \binom{12}{3} + \binom{12}{2} + \binom{12}{1}  + \binom{12}{0}
+ \right) \frac{1}{2^{12}} = \frac{299}{4096} = 0.073 = 7.3\%
+\end{equation*}
+which does not lead to a rejection of the null hypothesis at the usual
+5\% level.
+
+In this $p$-value calculation, we
+  implicitly assumed that the experiment 
+consisted of tossing the coin 12 times where 12 was \textit{a priori}
+chosen by the coin tosser. Consider now the alternative scenario where
+the coin tosser wanted to toss the coin \textit{until the point where
+  3 heads are 
+observed}. Now for the same outcome, the $p$-value will change. Indeed 
+now the random variable of interest will become $N = \text{number of tosses}$ and
+the $p$-value will equal the probability of needing to toss the coin
+12 or more times to get the 3 heads (assuming fairness). This is
+calculated using the negative binomial distribution as: 
+\begin{equation*}
+ 1 - \sum_{n = 3}^{11} \binom{n-1}{2} 2^{-n}  = \frac{134}{4096} =
+ 0.0327 = 3.27\%
+\end{equation*}
+and this leads to rejection of the null hypothesis at the $5\%$
+level.
+
+
+Note that the ``likelihood function'' is the same function $p^3(1 -
+p)^9$ whether the sample size was predetermined or whether the coin
+was tossed till 3 heads are observed. But the procedure obtained for
+testing $p = 0.5$ has changed from the binomial to the negative
+binomial case. This means that $p$-valued based frequentist inference
+violates the Likelihood Principle. Here is a story from the
+wikipedia article on the ``Likelihood Principle''  (see
+\url{https://en.wikipedia.org/wiki/Likelihood_principle}) which puts
+an interesting context to these numbers: 
+
+\textit{Suppose a number of scientists are assessing the probability
+of a certain outcome (which we shall call 'success') in experimental
+trials. Conventional wisdom suggests that if there is no bias towards
+success or failure then the success probability would be one
+half. Adam, a scientist, conducted 12 trials and obtains 3 successes
+and 9 failures. One of those successes was the 12th and last
+observation. Then Adam left the lab.}
+ 
+\textit{Bill, Adam's boss in the same lab, continued Adam's work and published
+Adam's results, along with a significance test. He tested the null
+hypothesis that $\theta$, the success probability, is equal to a half, versus
+$\theta < 0.5$ . The probability that out of 12 trials, 3 or fewer
+(i.e. more extreme) were successes, if $H_0$ is true, is $7.3\%$. Thus
+the null hypothesis is not rejected at the 5\% significance level.}
+
+\textit{Adam actually stopped immediately after 3 successes, because his boss Bill had
+instructed him to do so. After the publication of the statistical
+analysis by Bill, Adam realizes that he has missed a \textbf{later instruction}
+from Bill to instead conduct 12 trials, and that Bill's paper is based
+on this second instruction. Adam is very glad that he got his 3
+successes after exactly 12 trials, and explains to his friend
+Charlotte that by coincidence he executed the second
+instruction. But Charlotte then explains to Adam that the $p$-value
+should now be changed to $3.27\%$ and the result becomes significant
+at the $5\%$ level. Adam is astonished to hear this.}
+
+For more comments on the violation of the likelihood principle by
+$p$-values, read \citet[Section 37.2]{MacKay}.
+
+We shall look at the Bayesian solution to this problem in the next
+lecture. 
+
+
+\begin{thebibliography}{99}
+    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+  \textit{Information theory, inference, and learning
+    algorithms}. Cambridge University Press, 2003.   
+
+  \end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

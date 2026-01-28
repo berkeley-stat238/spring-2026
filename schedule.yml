@@ -29,9 +29,9 @@
           name: "Normal Mean Example"
           href: "./LectureThree238Spring2026.tex"
         #- type: "PDF"
-        #  id: "1"
-        #  name: "LectureOne.pdf"
-        #  href: "/exports/LectureOne238Spring2026.pdf"
+        #  id: "3"
+        #  name: "LectureThree.pdf"
+        #  href: "/exports/LectureThree238Spring2026.pdf"
     - date: "Jan 27"
       items:
         - type: "Lab"
@@ -42,3 +42,14 @@
         #  id: "1"
         #  name: "lab01.pdf"
         #  href: "/exports/lab01.pdf"
+    - date: "Jan 28"
+      items:
+        - type: "Lecture"
+          id: "4"
+          name: "Likelihood Principle"
+          href: "./LectureFour238Spring2026.tex"
+        #- type: "PDF"
+        #  id: "4"
+        #  name: "LectureFour.pdf"
+        #  href: "/exports/LectureFour238Spring2026.pdf"
+	
