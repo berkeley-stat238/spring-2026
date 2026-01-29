@@ -50,7 +50,7 @@ right=2.8cm]{geometry}
 \newcommand{\E}{{\mathbb E}}
 \newcommand{\se}{{\mathcal{E}}}
 \newcommand{\R}{{\mathbb R}}
-\renewcommand{\P}{{\mathbb P}}
+\newcommand{\P}{{\mathbb P}}
 \newcommand{\ac}{{\mathcal{A}}}
 \newcommand{\A}{{\mathcal{A}}}
 \newcommand{\B}{{\mathcal{B}}}
@@ -71,7 +71,7 @@ right=2.8cm]{geometry}
 \newcommand{\data}{{\text{data}}}
 
 \newcounter{rcnt}[section]
-\renewcommand{\thercnt}{(\roman{rcnt})}
+\newcommand{\thercnt}{(\roman{rcnt})}
 
 \def\qt#1{\qquad\text{#1}}
 
@@ -86,8 +86,8 @@ right=2.8cm]{geometry}
 \begin{document}
 
 \title{STAT 238 - Bayesian Statistics  \\
-  Lecture Four} 
-\subtitle{Spring 2026, UC Berkeley}
+  Lecture Four \\
+  Spring 2026, UC Berkeley}
 
 \author{Aditya Guntuboyina}
 
@@ -152,7 +152,7 @@ The Bayesian solution also leads to the same interval but with a
 different reasoning. We went over the 
 calculations in the last lecture. Here are the main facts. We use the
 likelihood:  
-\begin{equation}\label{likeli}
+\begin{equation}\label{likeli_4}
 \text{Likelihood} = \prod_{i=1}^n \frac{1}{\sqrt{2 \pi} \sigma} \exp
 \left(-\frac{(x_i - 
       \theta)^2}{2 \sigma^2} \right). 
@@ -162,11 +162,11 @@ where $n = 6$ and $x_1 = 26.6, x_2 = 38.5, x_3 = 34.4,
   points.
 
 The unknown parameters are $\theta$ and $\sigma$. The prior is given by:     
-\begin{align}\label{prior_norm}
+\begin{align}\label{prior_norm_4}
   \theta, \log \sigma \overset{\text{i.i.d}}{\sim} \text{uniform}(-C, C)
 \end{align}
 for a very large positive constant $C$. In terms of the densities,
-\eqref{prior_norm} is the same as
+\eqref{prior_norm_4} is the same as
 \begin{align*}
 \text{prior} = f_{\theta, \sigma}(\theta, \sigma)
 \propto \frac{\mathbf{1}\{-C < \theta < C,\,-C < \log \sigma < C\}}{\sigma}.
@@ -212,7 +212,7 @@ $S(\theta)$ over all $\theta$). Thus the posterior mode is the mean.
 
 It can be shown that this distribution is closely related to the
 $t$-distribution. Specifically, 
-\begin{align}\label{bayes_prob}
+\begin{align}\label{bayes_prob_4}
 \frac{\sqrt{n}(\theta - \hat{\theta})}{\sqrt{S(\hat{\theta})/(n-1)}}
   \mid \text{data} \sim t_{n-1}
 \end{align}
@@ -223,7 +223,7 @@ freedom. Note that $\hat{\theta} = \bar{x}$ and $S(\hat{\theta}) =
 So the Bayesian point estimate is simply $\hat{\theta} = \bar{x}$
 (this is the posterior mean, median and mode!). A $100(1 - \alpha)$\%
 uncertainty interval for $\theta$ is given by:
-\begin{align}\label{cred_int}
+\begin{align}\label{cred_int_4}
 \left[  \hat{\theta} - \frac{1}{\sqrt{n}} t_{n-1, \alpha/2}
   \sqrt{\frac{S(\hat{\theta})}{n-1}},   \hat{\theta} +
   \frac{1}{\sqrt{n}} t_{n-1, \alpha/2} 
