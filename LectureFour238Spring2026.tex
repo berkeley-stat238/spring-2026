@@ -283,16 +283,18 @@ will not change. This is because the likelihood function in Problem
 \ref{lik3_prime} is the same as the likelihood function in Problem
 \ref{lik3}. To verify this, consider the following likelihood in Problem
 \ref{lik3_prime} (below $\delta$ denotes the rounding error in the
-observations, which is extremely small) 
+observations, which is extremely small).
+
+The likelihood in Problem \ref{lik3_prime} is:
 \begin{align*}
-&  \text{Likelihood in Problem \ref{lik3_prime}} \\ &= \P
+&\P
                                                   \left\{\text{observed
                                                   data} \mid 
                                                   \theta, \sigma
                                                   \right\} \\
   &= \P\{X_1 \in [x_1 - \delta, x_1 + \delta], \dots, X_6 \in [x_6 -
     \delta, x_6 + \delta], X_1 \geq 25, \dots, X_5 \ge 25, X_6 < 25
-    \mid \theta, \sigma \} 
+    \mid \theta, \sigma \}.
 \end{align*}
 In other words, we are writing the probability that the first five
 observations are all larger than 25 while the sixth observation is
@@ -300,9 +302,9 @@ smaller than 25, in addition to the exact values of the observations,
 in the likelihood. But it is clear that these additional constraints
 do not change the probability (as an example, just note that $\P(Z =
 5) = \P(Z = 5, Z < 10)$. The additional restriction $Z < 10$ does not
-affect the probability because it is already covered in $Z = 5$). Thus
+affect the probability because it is already covered in $Z = 5$). Thus, the likelihood in Problem \ref{lik3_prime} equals:
 \begin{align*}
-&  \text{Likelihood in Problem \ref{lik3_prime}} \\ &= \P\{X_1 \in
+&\P\{X_1 \in
                                                       [x_1 - \delta,
                                                       x_1 + \delta],
                                                       \dots, X_6 \in
@@ -314,9 +316,9 @@ affect the probability because it is already covered in $Z = 5$). Thus
                                                       x_1 + \delta],
                                                       \dots, X_6 \in
                                                       [x_6 - 
-    \delta, x_6 + \delta]    \mid \theta, \sigma \} \\
-  &= \text{Likelihood in Problem \ref{lik3}}. 
+    \delta, x_6 + \delta]    \mid \theta, \sigma \},
 \end{align*}
+which is the likelihood in Problem \ref{lik3}.
 Since the likelihood is the same in both problems, Bayesian inference
 for both problems will be the same (note the priors will be the same
 as there is no reason to use different priors). Therefore, from the
