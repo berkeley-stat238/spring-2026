@@ -1,0 +1,410 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry} 
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Five} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{30 Jan 2026}
+
+\maketitle
+
+In the last lecture, we started discussed the following problem.  
+
+
+\section{Example 4: Coin Fairness Testing}
+
+\begin{problem}
+Suppose a coin is tossed 12 times leading to the outcome: TTTTHTHTTTTH
+(this has 3 heads and 9 tails). What is your assessment of the
+fairness of the coin?  
+\end{problem}
+
+We looked at frequentist solutions in the last lecture. These are
+generally based on $p$-values. Calculation of these $p$-values require
+consideration of alternative datasets that could have appeared (but
+did not actually appear). As we discussed last time, such calculations
+would violate the likelihood principle.
+
+Here is a Bayesian solution to this problem. The goal is to calculate: 
+\begin{equation*}
+  \P\{\text{fairness} \mid \text{data}\}
+\end{equation*}
+where $\text{data}$ refers to $TTTTHTHTTTTH$. By the Bayes rule, we
+can write
+\begin{equation*}
+  \P\{\text{fairness} \mid \text{data}\} = \frac{\P\{\text{data} \mid
+    \text{fairness}\} \P\{\text{fairness}\}}{\P\{\text{data} \mid
+    \text{fairness}\} \P\{\text{fairness}\} + \P\{\text{data} \mid
+    \text{not fair}\} \P\{\text{not fair}\}}
+\end{equation*}
+We clearly have
+\begin{equation*}
+  \P\{\text{data} \mid \text{fairness}\}= 2^{-n}. 
+\end{equation*}
+What assignments do we use for
+\begin{equation*}
+  \P\{\text{fairness}\}, ~~~ \P\{\text{not fair}\} ~~~ \text{ and }
+  ~~~ \P\{\text{data} \mid \text{not fair}\}?
+\end{equation*}
+For concreteness, let us assume
+\begin{equation}\label{prior_fair}
+  \P\{\text{fairness}\} = 0.5 ~~~ \text{and} ~~~ \P\{\text{not fair}\}
+  = 0.5. 
+\end{equation}
+This is actually a very strong assumption in favor of fairness
+because a coin can be not fair in many many variety of ways. So to
+assume that the probability of fairness is the same as the combined
+probability of the many variety of ways in which the coin can be
+non-fair seems quite strong. 
+
+Let us now come to $\P\{\text{data} \mid \text{not fair}\}$. If the
+coin is not fair, we can assume that it has a heads probability of $p$
+and that the coin tosses are still independent. We can then write
+\begin{equation*}
+  \P\{\text{data} \mid \text{not fair}\} = \int_0^1 \P\{\text{data} \mid
+  \text{not fair}, p\} f_{p|\text{not fair}}(p) dp = \int_0^1 p^3 (1 -
+  p)^9   f_{p|\text{not fair}}(p) dp. 
+\end{equation*}
+To proceed further, we need to assign $f_{p|\text{not fair}}(p)$. One
+concrete assumption might be that
+\begin{equation}\label{altmod}
+f_{p|\text{not fair}}(p) = 1 \qt{for every $p \in [0, 1]$}.   
+\end{equation}
+This corresponds to the assumption that, under
+the alternative (not fair), $p$ has the uniform distribution on $[0,
+1]$. Then (using an online integrator)
+\begin{equation*}
+  \P\{\text{data} \mid \text{not fair}\} = \int_0^1 p^3 (1 -
+  p)^9  dp = \frac{1}{2860}. 
+\end{equation*}
+We then get
+\begin{equation*}
+  \P\{\text{fairness} \mid \text{data}\} = \frac{2^{-12} *
+    0.5}{2^{-12}*0.5 + \frac{1}{2860} * 0.5} = 0.4111558. 
+\end{equation*}
+Note that this Bayesian probability calculation does not depend at all
+on whether the number of tosses ($n = 12$) was decided a priori or
+whether it was decided to toss until getting 3 heads. It is the same
+for both those cases.
+
+Also note that the Bayesian approach (based on \eqref{prior_fair} and
+\eqref{altmod}) is only slightly supporting the alternative hypothesis
+(roughly $60\%$ to the null $40\%$) while the frequentist $p$-values
+are fairly small indicating more evidence for the alternative. This
+discrepancy also persists when the sample size is large. Consider the
+following example.
+\begin{example}
+  In a certain city, 49581 boys and 48870 girls have been born over a
+  certain time period (note $49581/(49581 + 48870) =
+  0.5036109$). Assuming that the number of male births is 
+  binomially distributed with parameters $n = 49581 + 48870 = 98451$
+  and $p$, test the hypothesis $H_0 : p = 0.5$.
+
+  The usual frequentist $p$-value is:
+  \begin{equation*}
+    \P\left\{\text{Bin}(n, 0.5) \geq 49581 \right\} \approx 0.01163
+  \end{equation*}
+  which is fairly small.
+
+  On the other hand, the Bayesian method above with the priors
+  \eqref{prior_fair} and \eqref{altmod} gives 
+  \begin{equation*}
+    \P \left\{p = 0.5 \mid \text{data} \right\} = \frac{2^{-n} *
+      0.5}{2^{-n} * 0.5 + B(x+1, n-x+1) * 0.5} = 0.950523. 
+  \end{equation*}
+  Here $x = 49581$, $n = 98451$ and $B(\alpha, \beta) = \int_0^1
+  p^{\alpha - 1} (1 - p)^{\beta - 1}  dp$ is the Beta function.
+
+  Thus the Bayesian method gives a high probability to the null while
+  the frequentist method will reject the null hypothesis. The reason
+  why the Bayesian method is so supportive of the null hypothesis is
+  that the prior choice \eqref{prior_fair} gives strong support to $p
+  = 0.5$ over nearby values of $p$ (such as $p \in (0.49, 0.51)$).
+
+  This discrepancy between the Bayesian and Frequentist solutions in
+  this problem is referred to as the Jeffreys-Lindley paradox (see
+  \url{https://en.wikipedia.org/wiki/Lindley%27s_paradox}). 
+\end{example}
+
+\section{Example 5: MacKay sequence example}
+
+Here is another example of hypothesis testing or model selection in
+the Bayesian framework. This example comes from the book
+\citet[Chapter 28]{MacKay}. 
+
+\begin{problem} 
+  Find the next number in the sequence: $-1, 3, 7, 11$. 
+\end{problem}
+
+Most people would look at the sequence and guess the next number as
+$15$. In other words, they recognize that the data form an arithmetic
+progression. If they are willing to consider alternative models, then
+we can pose the question as that of model selection, and use Bayesian
+methods (probability) to formally answer it. 
+
+Here are two possible models: 
+\begin{enumerate}
+\item \textbf{Model 1}: Arithmetic Progression i.e., $a_1 = \alpha$
+  and $a_{n+1} = a_n + \beta$. 
+\item \textbf{Model 2}: Random (will be made precise later). 
+\end{enumerate}
+
+A Bayesian solution to this problem will attempt to calculate
+\begin{equation*}
+  \P \left\{\text{Model}~ i~ |~ \text{data}  \right\}  \qt{for $i = 1,
+    2$}. 
+\end{equation*}
+What probability assignments would we need to calculate the above? We
+can use the Bayes Rule to write
+\begin{equation}\label{br_mackay}
+  \P \left\{\text{Model}~ i | \text{data}  \right\}  = \frac{\P
+    \left\{\text{data} | \text{Model}~i \right\} \P\{\text{Model}~i\}}{\P
+    \left\{\text{data} | \text{Model}~1 \right\} \P\{\text{Model}~1\}
+    + \P
+    \left\{\text{data} | \text{Model}~2 \right\} \P\{\text{Model}~2\}} 
+\end{equation}
+To be equally fair to both models, we shall take
+\begin{equation}\label{prior_mackay}
+  \P \{\text{Model}~i\} = \frac{1}{2} \qt{for each $i = 1, 2$}
+\end{equation}
+We now need to calculate $\P \left\{\text{data} | \text{Model}~i
+\right\}$ for $i = 1, 2$. For $i = 1$, we have (below $\alpha$ and
+$\beta$ are the parameters in Model 1): 
+\begin{equation*}
+  \P \left\{\text{data} | \text{Model}~1
+\right\} = \P\{\alpha = -1, \beta = 4\} 
+\end{equation*}
+To calculate the above, we need to make a probability assignment for
+the probability with which $\alpha$  and $\beta$ take various
+values. \citet[Chapter 28]{MacKay} assumes that $\alpha$ and
+$\beta$ are integer-valued 
+that they are independently uniformly distributed over the set $\{-50, -49, \dots,
+49, 50\}$ which has cardinality 101. Then
+\begin{equation}\label{mod1_mackay}
+\P \left\{\text{data} | \text{Model}~1
+\right\} =  \P\{\alpha = -1, \beta = 4\} = \P\{\alpha = -1\} \P\{\beta = 4\} =
+  \left(\frac{1}{101} \right)^2 \approx 9.8 \times 10^{-5}. 
+\end{equation}
+For the second model, we need to specify what we mean by
+``random''. We shall take this to mean that $a_1, a_2, a_3, a_4$ are
+independently distributed according to the uniform distribution on
+$\{-50, -49, \dots, 49, 50\}$. Then 
+\begin{align*}
+  \P \left\{\text{data} | \text{Model}~2
+  \right\} &= \P\left\{a_1 = -1, a_2 = 3, a_3 = 7, a_4 = 11\right\} \\
+  &= \P\{a_1 = -1\} \P\{a_2 = 3\} \P\{a_3 = 7\} \P\{a_4 = 11\} =
+    \left(\frac{1}{101} \right)^4 \approx 9.6 \times 10^{-9}. 
+\end{align*}
+Plugging in the above value (as well as \eqref{prior_mackay} and
+\eqref{mod1_mackay}) in \eqref{br_mackay}, we get
+\begin{equation*}
+    \P \left\{\text{Model}~ 1 | \text{data}  \right\} \approx
+   \frac{101^{-2} \times 0.5}{101^{-2} \times 0.5 + 101^{-4} \times
+     0.5} = 0.999902 ~~ \text{ and }     \P \left\{\text{Model}~ 2 |
+     \text{data}  \right\} = .000098
+ \end{equation*}
+ This analysis clearly favors Model 1 compared to Model 2. The most
+ interesting feature about this analysis is that
+ \begin{equation*}
+   \P \left\{\text{Model}~ 1 | \text{data}  \right\} \gg \P \left\{\text{Model}~ 2 | \text{data}  \right\}
+ \end{equation*}
+ even though
+ \begin{equation*}
+   \P \{\text{Model}~1\} = \P \{\text{Model}~2\}. 
+ \end{equation*}
+In other words, we did not dogmatically assert that the data was
+generated by an arithmetic progression but we gave a fair chance to
+the two models to explain the observed sequence.
+
+In this example, some people argue in favor of Model 1 on the basis
+that Model 1 is ``simpler'' than Model 2. The Bayesian analysis above (based on
+probability theory) does not
+invoke any vague notion of simplicity but does some formal
+calculations which in this case preferred Model 1 to Model 2. In
+another situation, Model 2 may well be the preferred model.
+
+One can consider other alternative models in this problem. For
+example, \citet[Chapter 28]{MacKay} considered the following cubic
+model:  
+
+\textbf{Model 3 (Cubic)}: These numbers were generated by the
+     formula: $a_1 = a$ and $a_{n+1} = b a_n^3 + c a_n^2 + d$ for an
+     integer $a$ and rational numbers $b, c, d$.
+
+This cubic model explains the given data perfectly if and only if its four
+parameters $a, b, c, d$ are chosen as $a  = -1, b = -1/11, c = 9/11, d
+= 23/11$.  As a result,
+\begin{equation*}
+  \P \left\{\text{data} | \text{Model}~3 \right\} = \P\{a = -1, b =
+  -1/11, c = 9/11, d = 23/11\}. 
+\end{equation*}
+In order to explicitly calculate the above, we need to make
+probability assignments for $a, b, c, d$. \citet{MacKay} makes the
+following probability assignment: we assume that these four parameters
+are independent with $a$ being uniform on $\{-50, -49, \dots, 49,
+50\}$ and $b, c, d$ having the distribution of $x/y$ where $x \sim
+\text{Unif}\{-50, -49, \dots, 49, 50\}$ and $y \sim \text{Unif}\{1,
+\dots, 50\}$ are independent. Under this assignment: 
+\begin{align*}
+  \P\{a = -1, b =
+  -1/11, c = 9/11, d = 23/11\} &= \P\{a = -1\} \P\{b = -1/11\} \P\{c =
+                                 9/11\} \P\{d = 23/11\}\\ &=\left(\frac{1}{101} \right) \left(4
+  \cdot \frac{1}{101} 
+    \cdot \frac{1}{50} \right)  \left(4 \cdot \frac{1}{101}
+    \cdot \frac{1}{50} \right)  \left(2 \cdot \frac{1}{101}
+    \cdot \frac{1}{50} \right) \\ & \approx 2.5 \times 10^{-12}. 
+\end{align*}
+In the above, we used $\P(b = -1/11) = 4 \cdot(1/101)\cdot (1/50)$ because
+$-1/11 = -2/22 = -3/33 = -4/44$ and each of these has the probability
+$(1/101) \cdot (1/50)$. A similar reasoning is used for $\P\{c =
+9/11\}$ and $\P\{d = 23/11\}$.
+
+If Model 1, 2, 3 are the only three models considered, the Bayes rule
+\eqref{br_mackay} becomes
+\begin{equation*}
+    \P \left\{\text{Model}~ i | \text{data}  \right\}  = \frac{\P
+    \left\{\text{data} | \text{Model}~i \right\} \P\{\text{Model}~i\}}{\P
+    \left\{\text{data} \right\}} 
+\end{equation*}
+where the denominator should be calculated as:
+\begin{equation*}
+\P \left\{\text{data} \right\} = \sum_{i=1}^3\P
+    \left\{\text{data} | \text{Model}~i \right\} \P\{\text{Model}~i\}.   
+  \end{equation*}
+  Under the fair assumption
+  \begin{equation*}
+    \P\{\text{Model}~i\} = \frac{1}{3} \qt{for each $i = 1, 2, 3$}, 
+  \end{equation*}
+  we obtain
+  \begin{equation*}
+    \P\{\text{Model}~1 | \text{data}\} = \frac{101^{-2} \times
+      (1/3)}{101^{-2} \times (1/3) + 101^{-4} \times (1/3) + 2.5
+      \times 10^{-12} \times (1/3)} = 0.999902
+  \end{equation*}
+  and
+  \begin{equation*}
+    \P\{\text{Model}~2 | \text{data}\} \approx 9.8 \times 10^{-5}
+  \end{equation*}
+  and
+  \begin{equation*}
+    \P\{\text{Model}~3 | \text{data}\} \approx 9.8 \times 10^{-5}
+    \approx 2.55 \times 10^{-8}. 
+  \end{equation*}
+ Our preference for Model 1 is still as strong as before (when we only
+ considered the two models Model 1 and Model 2).
+
+ The analysis given here depends on the specific choices of priors
+ used for the three models. One can of course use alternative priors
+ but the qualitative preference for Model 1 is unlikely to change for
+ most \textbf{reasonable} prior choices.
+
+
+
+
+\begin{thebibliography}{99}
+    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+  \textit{Information theory, inference, and learning
+    algorithms}. Cambridge University Press, 2003.   
+
+  \end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
