@@ -33,6 +33,8 @@ project:
          title: "3"
        - file: LectureFour238Spring2026.tex
          title: "4"
+       - file: LectureFive238Spring2026.tex
+         title: "5"
    - title: Labs
      children:
        - file: lab01.tex
@@ -68,6 +70,11 @@ project:
       article: LectureFour238Spring2026.tex
       output: exports/LectureFour238Spring2026.pdf
       id: lecture-four-pdf
+    - format: typst
+      template: lapreprint-typst
+      article: LectureFive238Spring2026.tex
+      output: exports/LectureFive238Spring2026.pdf
+      id: lecture-five-pdf
 
 site:
   template: book-theme

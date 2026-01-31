@@ -52,4 +52,14 @@
         #  id: "4"
         #  name: "LectureFour.pdf"
         #  href: "/exports/LectureFour238Spring2026.pdf"
+    - date: "Jan 30"
+      items:
+        - type: "Lecture"
+          id: "5"
+          name: "Bayesian Testing"
+          href: "./LectureFive238Spring2026.tex"
+        #- type: "PDF"
+        #  id: "5"
+        #  name: "LectureFive.pdf"
+        #  href: "/exports/LectureFive238Spring2026.pdf"	
 	
