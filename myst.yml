@@ -39,6 +39,21 @@ project:
      children:
        - file: lab01.tex
          title: "1"
+  downloads:
+    - file: syllabus.pdf
+      title: "Syllabus"
+    - file: tops.pdf
+      title: "Topics"
+    - file: LectureOne238Spring2026.pdf
+      title: "Lecture 1"
+    - file: LectureTwo238Spring2026.pdf
+      title: "Lecture 2"
+    - file: LectureThree238Spring2026.pdf
+      title: "Lecture 3"
+    - file: LectureFour238Spring2026.pdf
+      title: "Lecture 4"
+    - file: LectureFive238Spring2026.pdf
+      title: "Lecture 5"
   exports:
     - format: typst
       template: lapreprint-typst
