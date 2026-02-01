@@ -48,7 +48,7 @@ jobs:
         run: node inject-siteimprove.js
       - name: Copy PDF exports to site
         run: |
-          cp -p exports ./_build/html/
+          cp -a exports ./_build/html/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
