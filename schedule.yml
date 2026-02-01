@@ -58,8 +58,8 @@
           id: "5"
           name: "Bayesian Testing"
           href: "./LectureFive238Spring2026.tex"
-        #- type: "PDF"
-        #  id: "5"
-        #  name: "LectureFive.pdf"
-        #  href: "/exports/LectureFive238Spring2026.pdf"	
-	
+        - type: "PDF"
+          id: "5"
+          name: "LectureFive.pdf"
+          href: "/exports/LectureFive238Spring2026.pdf"
+
