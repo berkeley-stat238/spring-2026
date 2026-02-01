@@ -42,7 +42,7 @@ project:
   downloads:
     - file: syllabus.pdf
       title: "Syllabus"
-    - file: tops.pdf
+    - file: topics.pdf
       title: "Topics"
     - file: LectureOne238Spring2026.pdf
       title: "Lecture 1"
