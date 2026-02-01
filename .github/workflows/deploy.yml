@@ -40,15 +40,15 @@ jobs:
           sudo mv typst-x86_64-unknown-linux-musl/typst /usr/local/bin/
       - name: Install the plugins
         run: npm install
-      - name: Build PDF Exports
-        run: myst build --typst --ci
+      #- name: Build PDF Exports
+      #  run: myst build --typst --ci
       - name: Build HTML Assets
         run: myst build --html --ci
       - name: Inject Siteimprove analytics
         run: node inject-siteimprove.js
-      - name: Copy PDF exports to site
-        run: |
-          cp -a exports ./_build/html/
+      #- name: Copy PDF exports to site
+      #  run: |
+      #    cp -a exports ./_build/html/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

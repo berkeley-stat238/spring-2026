@@ -54,42 +54,6 @@ project:
       title: "Lecture 4"
     - file: LectureFive238Spring2026.pdf
       title: "Lecture 5"
-  exports:
-    - format: typst
-      template: lapreprint-typst
-      article: syllabus.tex
-      output: exports/syllabus.pdf
-      id: syllabus-pdf
-    - format: typst
-      template: lapreprint-typst
-      article: topics.tex
-      output: exports/topics.pdf
-      id: topics-pdf
-    - format: typst
-      template: lapreprint-typst
-      article: LectureOne238Spring2026.tex
-      output: exports/LectureOne238Spring2026.pdf
-      id: lecture-one-pdf
-    - format: typst
-      template: lapreprint-typst
-      article: LectureTwo238Spring2026.tex
-      output: exports/LectureTwo238Spring2026.pdf
-      id: lecture-two-pdf
-    - format: typst
-      template: lapreprint-typst
-      article: LectureThree238Spring2026.tex
-      output: exports/LectureThree238Spring2026.pdf
-      id: lecture-three-pdf
-    - format: typst
-      template: lapreprint-typst
-      article: LectureFour238Spring2026.tex
-      output: exports/LectureFour238Spring2026.pdf
-      id: lecture-four-pdf
-    - format: typst
-      template: lapreprint-typst
-      article: LectureFive238Spring2026.tex
-      output: exports/LectureFive238Spring2026.pdf
-      id: lecture-five-pdf
 
 site:
   template: book-theme
