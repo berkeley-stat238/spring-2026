@@ -23,9 +23,9 @@
     - when: Monday and Friday, 2pm - 3pm
       where: Evans 443
 
-- name: Reece D Huff
+- name: Reece Huff
   role: GSI
   email: rdhuff@berkeley.edu
   office-hours:
-    - when: Tuesdays 3pm - 5pm, Wednesdays 11am - 12pm
+    - when: Mondays 10am-11am, Tuesdays 2pm - 3pm, Wednesdays 11am - 12pm
       where: Evans 444

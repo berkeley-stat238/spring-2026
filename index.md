@@ -18,14 +18,15 @@ subtitle: 'UC Berkeley, Spring 2026'
 :::
 
 :::{card}
-:header: **Reece D Huff (GSI)**
+:header: **Reece Huff (GSI)**
 
 +++
 
 [rdhuff@berkeley.edu](mailto:rdhuff@berkeley.edu)
 
 **Office Hours (Evans 444)**:
- - Tuesdays 3-5 pm
+ - Mondays 10-11 am
+ - Tuesdays 2-3 pm
  - Wednesdays 11 am - 12 pm
 
 :::
