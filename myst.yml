@@ -64,10 +64,10 @@ site:
   nav: []
   actions:
   - title: Ed
-    url: https://edstem.org
-  - title: DataHub
-    url: https://datahub.berkeley.edu
-  #- title: Gradescope
-  #  url: https://www.gradescope.com/courses/564792
+    url: https://edstem.org/us/courses/94336/discussion
+  # - title: DataHub
+  #   url: https://datahub.berkeley.edu
+  - title: Gradescope
+   url: https://www.gradescope.com/courses/1247762
   domains:
   - stat238.berkeley.edu
