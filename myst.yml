@@ -35,6 +35,8 @@ project:
          title: "4"
        - file: LectureFive238Spring2026.tex
          title: "5"
+       - file: LectureSix238Spring2026.tex
+         title: "6"
    - title: Labs
      children:
        - file: lab01.tex
