@@ -50,7 +50,7 @@ right=2.8cm]{geometry}
 \newcommand{\E}{{\mathbb E}}
 \newcommand{\se}{{\mathcal{E}}}
 \newcommand{\R}{{\mathbb R}}
-\newcommand{\P}{{\mathbb P}}
+\renewcommand{\P}{{\mathbb P}}
 \newcommand{\ac}{{\mathcal{A}}}
 \newcommand{\A}{{\mathcal{A}}}
 \newcommand{\B}{{\mathcal{B}}}
@@ -71,7 +71,7 @@ right=2.8cm]{geometry}
 \newcommand{\data}{{\text{data}}}
 
 \newcounter{rcnt}[section]
-\newcommand{\thercnt}{(\roman{rcnt})}
+\renewcommand{\thercnt}{(\roman{rcnt})}
 
 \def\qt#1{\qquad\text{#1}}
 
@@ -86,8 +86,8 @@ right=2.8cm]{geometry}
 \begin{document}
 
 \title{STAT 238 - Bayesian Statistics  \\
-  Lecture Two \\
-  Spring 2026, UC Berkeley}
+  Lecture Two} 
+\subtitle{Spring 2026, UC Berkeley}
 
 \author{Aditya Guntuboyina}
 
@@ -110,7 +110,7 @@ truly have Covid or not ($\Theta = 1$ when I have Covid and $\Theta =
 0$ when I don't). Let $X$ denote the binary outcome of the Covid test
 so that $X = 1$ represents the positive test. We need to calculate the
 probability:
-\begin{equation}\label{post_covid_lec2}
+\begin{equation}\label{post_covid}
   \P \left\{\Theta = 1 \mid \text{test data} \text{ and } \text{background
       information} \right\} 
 \end{equation}
@@ -129,11 +129,11 @@ information):
   \end{split}  
 \end{equation*}
 With these probability assignments, we use the Bayes rule to compute 
-\eqref{post_covid_lec2} as
+\eqref{post_covid} as
 \begin{align*}
   \P(\Theta = 1 \mid X = 1, B) &= \frac{\P(X  = 1 
                     \mid \Theta = 1, B) \P(\Theta = 1 \mid B)}{\P(X = 1
-                    \mid \Theta = 1, B) \P(\Theta = 1 \mid B) + \P(X = 0
+                    \mid \Theta = 1, B) \P(\Theta = 1 \mid B) + \P(X = 1
                                  \mid \Theta = 0, B) \P(\Theta = 0 \mid B)} \\
   &= \frac{0.99 *
       0.02}{0.99 * 0.02 + 0.04*0.98} = 0.3356. 
@@ -246,6 +246,8 @@ $\P\{\text{spots}|\text{chickenpox}\}$ while we really should be
 calculating $\P\{\text{smallpox} | \text{spots}\}$ and
 $\P\{\text{chickenpox} | \text{spots}\}$. \newline
 
+\hrule
+
 For the modeling part in Bayesian applications, for the most part, we
 shall use standard models based on normal distributions, more
 generally, exponential families. Here is a simple example to
@@ -268,7 +270,7 @@ inherent in the measurement process.
 
 So our parameter vector is $(\theta, \sigma)$. We work with the normal
 likelihood: 
-\begin{equation}\label{likeli_lec2}
+\begin{equation}\label{likeli}
 \text{Likelihood} = \prod_{i=1}^n \frac{1}{\sqrt{2 \pi} \sigma} \exp
 \left(-\frac{(x_i - 
       \theta)^2}{2 \sigma^2} \right). 
@@ -297,14 +299,14 @@ approximation to write
   X_n \mid \theta, \sigma}(x_1, \dots, x_n). 
 \end{align*}
 We are now assuming that:
-\begin{align}\label{baylik_lec2}
+\begin{align}\label{baylik}
   f_{X_1, \dots,
   X_n \mid \theta, \sigma}(x_1, \dots, x_n) = \prod_{i=1}^n
   \frac{1}{\sqrt{2 \pi} \sigma} \exp 
 \left(-\frac{(x_i - 
       \theta)^2}{2 \sigma^2} \right). 
 \end{align}
-This leads to the likelihood \eqref{likeli_lec2} (note that $\delta^n$ is
+This leads to the likelihood \eqref{likeli} (note that $\delta^n$ is
 being dropped as it is a constant of proportionality which does not
 affect any further calculations).
 
