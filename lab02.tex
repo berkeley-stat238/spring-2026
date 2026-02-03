@@ -1,0 +1,250 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry} 
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lab Two} 
+% \subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{30 Jan 2026}
+
+\maketitle
+
+\section{Uniform Prior on $\log \sigma$ or $\sigma$}
+
+Consider the problem of estimating a scale parameter $\sigma$ from
+observations $X_1, \dots, X_n \overset{\text{i.i.d}}{\sim} N(0,
+\sigma^2)$. We want to use an uniformative prior for $\sigma$. There
+are two options. Option A is $\sigma \sim \text{uniform}(0, +\infty)$
+(or $\text{uniform}(0, C)$ for a large $C$). Option B is $\log \sigma
+\sim \text{uniform}(-\infty, +\infty)$ (or $\text{uniform}(-C, C)$ for
+a large $C$). The second prior (option B) is universally preferred to
+the first prior (option A). Here are some reasons for why this is the
+case.
+
+\begin{enumerate}
+\item \textbf{Relative Scale vs Absolute Scale}: Consider the two
+  probabilities $\P\{1 < \sigma < 2\}$ and $\P\{101 < \sigma <
+  102\}$. Under the first prior (uniform$(0, C)$), both these
+  probabilities are the same.
+
+  Under the second prior ($\log \sigma$ is
+  uniform on $(-C, C)$), we have:
+  \begin{align*}
+    \P\{1 < \sigma < 2\} = \P\{0 < \log \sigma < \log 2\} = \frac{\log
+    2}{2C} = \frac{0.693}{2C}
+  \end{align*}
+  and
+  \begin{align*}
+    \P\{101 < \sigma < 102\} = \P\{\log 101 < \log \sigma < \log 102\}
+    = \frac{\log(102/101)}{2C} = \frac{0.00985}{2C} 
+  \end{align*}
+  The second probability is therefore much smaller than the
+  first. This reflects the fact that Prior B regards the values 101
+  and 102 as much closer to one another than the values 1 and 2. This
+  behavior aligns well with intuition on a relative scale: moving from
+  $\sigma = 1$ to $\sigma = 2$ corresponds to a doubling, whereas
+  moving from $\sigma = 101$ to $\sigma = 102$ represents only a very
+  small relative change.
+
+\item \textbf{Prior Odds}: Under the first prior, consider the prior
+  odds that $\sigma < 2$ 
+  versus $\sigma \geq 2$:
+  \begin{align*}
+    \frac{\P\{\sigma < 2\}}{\P\{\sigma \geq 2\}} = \frac{2/C}{(C-2)/C}
+    = \frac{2}{C - 2}
+  \end{align*}
+  which is very small (as $C$ is large). This is clearly an
+  informative statement about $\sigma$ (that it is much more likely to
+  be more than 2 than smaller than 2). On the other hand, the same
+  odds for the second prior becomes:
+  \begin{align*}
+    \frac{\P\{\sigma < 2\}}{\P\{\sigma \geq 2\}} = \frac{\P\{\log \sigma <
+    \log 2\}}{\P\{\log \sigma \geq \log 2\}} = \frac{C + \log 2}{C -
+    \log 2}
+  \end{align*}
+  which is approximately equal to 1, reflecting prior ignorance
+  between the events $\sigma < 2$ and $\sigma \geq 2$.
+
+\item \textbf{Posterior Propriety for $n = 1$}: The posterior for
+  $\sigma$ corresponding to the first prior is: 
+  \begin{align}\label{post1}
+    \frac{2 \left(\frac{S}{2}
+    \right)^{(n-1)/2}}{\Gamma\left(\frac{n-1}{2} \right)}
+    \sigma^{-n} \exp \left(-\frac{S}{2 \sigma^2} \right) I\{\sigma > 0\}
+  \end{align}
+  while the posterior corresponding to the second prior is:
+  \begin{align}
+    \label{post2}
+    \frac{2 \left(\frac{S}{2}
+    \right)^{n/2}}{\Gamma\left(\frac{n}{2} \right)}
+    \sigma^{-(n+1)} \exp \left(-\frac{S}{2 \sigma^2} \right) I\{\sigma >
+    0\}. 
+  \end{align}
+  In both these formulae, $S := \sum_{i=1}^n X_i^2$. 
+  
+  These two posteriors will behave similarly when $n$ is
+  large. However, when $n = 1$, the first posterior is actually
+  ill-defined because the Gamma function term is $\Gamma(0)$ which is
+  $\infty$. In other words, the posterior is improper when $n = 1$.
+  On the other hand, the second posterior is proper even when $n =
+  1$.
+
+  This is another reason for preferring the second prior in this
+  problem. We would intuitively expect to obtain some concrete
+  information on $\sigma$ when $n = 1$ so we want the posterior to be
+  proper in that case. This is only true for the second prior but not
+  for the first prior. 
+\end{enumerate}
+
+Now consider the problem of estimating both $\theta$ and $\sigma$ from
+$X_1, \dots, X_n \overset{\text{i.i.d}}{\sim} N(\theta,
+\sigma^2)$. Here there are two options for the prior. Prior A is:
+\begin{align*}
+  \theta, \sigma \text{ are independent with } \theta \sim
+  \text{unif}(-\infty, \infty) \text{ and } \sigma \sim \text{unif}(0, \infty). 
+\end{align*}
+Prior B is
+\begin{align*}
+  \theta, \log \sigma \overset{\text{i.i.d}}{\sim} \text{unif}(-\infty,
+  \infty). 
+\end{align*}
+Again the universally preferred prior is the second one. All of the
+reasons previously mentioned apply here as well. For the third point, 
+the marginal posterior of $\sigma$ corresponding to the first prior
+is:
+\begin{align}
+  \label{post11}
+      \frac{2 \left(\frac{S}{2}
+    \right)^{(n-2)/2}}{\Gamma\left(\frac{n-2}{2} \right)}
+    \sigma^{-(n-1)} \exp \left(-\frac{S}{2 \sigma^2} \right) I\{\sigma > 0\}
+\end{align}
+and the marginal posterior for $\sigma$ corresponding to the second
+prior is:
+\begin{align}
+  \label{post22}
+  \frac{2 \left(\frac{S}{2}
+    \right)^{(n-1)/2}}{\Gamma\left(\frac{n-1}{2} \right)}
+    \sigma^{-n} \exp \left(-\frac{S}{2 \sigma^2} \right) I\{\sigma >
+  0\}. 
+\end{align}
+In both the above formulae, $S = \sum_{i=1}^n (X_i - \bar{X})^2$. The
+first posterior above is ill-defined when $n = 1, 2$  while the second
+posterior is ill-defined only for $n = 1$. It is well-known that in
+this problem we would need at least two observations to estimate
+$\sigma$, so we would like the posterior to be well-defined for $n =
+2$ which is only true if we use the second prior. 
+
+For more, see \citet[pages 41-47]{zellner}. See also \citet[Section 12.4]{jaynes}
+for another justification for the $\log \sigma \sim
+\text{uniform}(-\infty, +\infty)$ prior based on invariance to certain
+parameter transformations. 
+
+
+\begin{thebibliography}{9}
+
+\bibitem[Jaynes(2003)]{jaynes} Jayes, E. T. (2003)
+\textit{Probability theory: the logic of science}. Cambridge
+University Press, 2003.
+  
+\bibitem[Zellner(1971)]{zellner} Zellner, A., (1971)
+\textit{An introduction to Bayesian inference in
+Econometrics}. Wiley Classics Library, 1971 (reprint edition in
+1996). 
+  
+  \end{thebibliography}
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

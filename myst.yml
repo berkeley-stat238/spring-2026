@@ -41,6 +41,10 @@ project:
      children:
        - file: lab01.tex
          title: "1"
+       - file: lab02.tex
+         title: "2"
+       - file: lab02.ipynb
+         title: "2 Code"
   downloads:
     - file: syllabus.pdf
       title: "Syllabus"
@@ -58,6 +62,12 @@ project:
       title: "Lecture 5"
     - file: LectureSix238Spring2026.pdf
       title: "Lecture 6"
+    - file: lab01.pdf
+      title: "Lab 1"
+    - file: lab02.pdf
+      title: "Lab 2"
+    - file: lab02.ipynb
+      title: "Lab 2 Code"
 
 site:
   template: book-theme
