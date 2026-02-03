@@ -62,4 +62,16 @@
           id: "5"
           name: "LectureFive238Spring2026.pdf"
           href: "./LectureFive238Spring2026.pdf"
+- week: 3
+  days:
+    - date: "Feb 02"
+      items:
+        - type: "Lecture"
+          id: "6"
+          name: "Interpretation and Rules of Probability"
+          href: "./LectureSix238Spring2026.tex"
+        - type: "PDF"
+          id: "6"
+          name: "LectureSix238Spring2026.pdf"
+          href: "./LectureSix238Spring2026.pdf"
 

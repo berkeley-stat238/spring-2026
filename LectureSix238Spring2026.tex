@@ -1,0 +1,523 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry}
+\usepackage{graphicx}
+
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Six} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{02 Feb 2026}
+
+\maketitle
+
+\section{Interpretation of Probability}
+Because Bayesian statistics is simply probability theory applied to
+inference, understanding the meaning and interpretation of probability
+is essential. 
+
+There are broadly two ways of understanding probability: frequentist
+and Bayesian. 
+
+\section{Frequentist/Objective Understanding of Probability}
+From the frequentist viewpoint, probability is applicable only in the
+context of ``random experiments'' (such as tossing coins and rolling
+dice). The probability $\P(A)$ of  an event $A$ is defined as the
+relative frequency that $A$ occurs in $N$ repeated trials of the
+experiment in the limit as $N \rightarrow \infty$:
+\begin{equation*}
+  \P(A) := \lim_{N \rightarrow \infty} \frac{N_A}{N}
+\end{equation*}
+where $N_A$ is the number of trials out of $N$ where $A$ occurs. This
+definition of probability is the basis of frequentist statistics.
+
+Here are some examples:
+\begin{enumerate}
+\item The statement $\P(H) = 0.5$ means that the proportion of
+  heads in a large number of tosses of the coin approaches $0.5$.
+\item The statement
+  \begin{equation*}
+    \epsilon_1, \dots, \epsilon_n \overset{\text{i.i.d}}{\sim} N(0,
+    \sigma^2)
+  \end{equation*}
+  means that if the experiment generating $\epsilon_1, \dots,
+  \epsilon_n$ is repeated a large number of times, the proportion of
+  times the values of $(\epsilon_1, \dots, \epsilon_n)$ lie in a set
+  $A$ approaches
+  \begin{equation*}
+    \int_A \prod_{i=1}^n \frac{1}{\sqrt{2 \pi} \sigma} \exp
+    \left(-\frac{x_i^2}{2 \sigma^2} \right) dx_1 \dots dx_n
+  \end{equation*}
+  and this should be true for all subsets $A$ of $\R^n$.
+\end{enumerate}
+
+The following are some obvious problems with the frequentist
+definition:
+\begin{enumerate}
+\item It is very restrictive and hardly ever applicable. In many simple
+  situations where we would like to use probability, the frequency
+  definition is simply does not apply: 
+  \begin{enumerate}
+  \item Is the suspect X guilty?
+  \item What is the chance of rain in Berkeley today?
+  \item What is the chance that Y is cancer positive given that
+    they tested positive? 
+  \end{enumerate}
+ For an interesting anecdote about how this restrictive notion does not simply
+ make sense in some important problems, see \citet[pages
+ 43-44]{DeGrootBlackwell}.  
+\item Even in situations where the frequency definition is
+  seemingly applicable, closer thought might reveal some issues. For
+  example, the frequentist probability that a coin comes up
+  heads is 0.6 means that 60\% of a large number of tosses of the coin
+  should result in $0.6$. But the mechanics of no two tosses are really identical and
+  if two tosses are done exactly identically, then we would expect the
+  same outcome by the laws of physics. So the term ``identical and
+  independent repetitions of an experiment'' is ambiguous.
+\end{enumerate}
+
+In the frequentist definition, probability is considered an intrinsic
+property of the object under investigation which is only accessible by
+an experiment generating samples of infinite size. Thus frequentist
+probability is also referred to as ``objective probability''. The 
+implication is that we cannot assign it arbitrarily because any
+probability assignment that does not agree with the frequency in
+infinite trials is wrong. Unfortunately, the actual frequentist
+probabililty is seldom known because one cannot generally observe a
+large number of repetitions of an experiment and so almost all
+probability assignments are wrong from the frequentist point of
+view. This is one way of understanding the statistics aphorism: ``All models are
+wrong'' (usually attributed to George Box; see
+\url{https://en.wikipedia.org/wiki/All_models_are_wrong}).
+
+Here are some quotes by famous statisticians/probabilists illustrating
+how widespread frequentist thinking in probability is:
+
+\textit{The numbers $p_r$ should, in fact, be regarded as physical constants of the particular
+  die that we are using, and the question as to their numerical values
+  cannot be answered by the axioms of probability, any more than the
+  size and the weight of the die are determined by the geometrical and
+  mechanical axioms. However, experience shows that in a well-made die
+  the frequency of any event $r$ in any long series of throws usually
+  approaches $1/6$, and accordingly we shall often assume that all the
+  $p_r$ are equal to $1/6$}... -- Cram{\'e}r.
+
+  Here is Jaynes's response to the above quote (from page 317 of his
+  book): \textit{To a physicist, this statement seems to show utter contempt
+  for the known laws of mechanics. The results of tossing a die many
+  times do \textbf{not} tell us any definite number characteristic
+  only of the die. They tell us also something about how the die was
+  tossed. If you toss 'loaded' dice in different ways, you can easily
+  alter the relative frequencies of the faces. With only slightly more
+  difficulty, you can still do this if your dice are perfectly
+  'honest'.}
+
+  Here is a quote by Feller (see page 322 of the Jaynes book)
+  illustrating the thinking that bridge hands possess physical
+  probabilities and that the uniform probability assignment is a
+  convention whose correctness can only be verified by observed
+  frequencies in a random experiment : \textit{The number of possible
+    distributions of cards in bridge is almost $10^{30}$. Usually we
+    agree to consider them as equally probable. For a check of this
+    convention more than $10^{30}$ experiments would be required -- a
+    billion of billion of years if every living person played one game
+    every second, day and night.} -- Feller. 
+
+In spite of these objections, one positive aspect of the frequentist
+meaning of probability is that the Rules of Probability follow easily
+from this definition. Recall that the rules of probability are: 
+\begin{enumerate}
+\item $\P(A)$ always  lies between 0 and 1. The probability of an
+  impossible event is 0 and the probability of a certain event is 1.
+\item Product rule: $\P(A \cap B) = \P(A) \P(B|A) = \P(B) \P(A|B)$.
+\item Sum rule: $\P(A \cup B) = \P(A) + \P(B)$ for disjoint events $A$
+  and $B$. 
+\end{enumerate}
+
+
+\section{Subjective or Bayesian Understanding of Probability}
+
+In Bayesian statistics, probability is considered a general method of
+reasoning under uncertainty. It is applicable to all situations involving 
+uncertainty, and is \textit{not} restricted 
+to situations involving ``random experiments''.
+
+Further, probability is assumed to have nothing to do with
+frequency. This means there is no right or wrong probability
+model. Different analysts are welcome to use different models, and
+they can be assessed in terms of performance. One can also assess
+different models in a Bayesian model selection framework.
+
+Meaning can be assigned to probability statements without relying on
+any connection to long-run frequencies. For example, suppose a doctor
+assigns a probability of 0.02 to a patient having cancer based on some
+background information. This can be quantified as (see \citet[Chapter
+3]{Lindley}): \textit{The doctor’s degree of belief
+in the uncertain event that the patient has cancer is the same as
+the degree of belief of the uncertain event of drawing a red ball
+from an urn containing 2 red balls and 98 green balls.}
+
+Lindley goes on to clearly say that there is no frequency
+interpretation here. \textit{There is no repetition in this
+  definition. The ball is to be 
+taken once, and once only, and the long-run frequency of red balls in
+repeated drawings is irrelevant. After its withdrawal, the urn and its
+contents can go up in smoke for all that it matters.}
+
+For a concrete example, consider the probability assignment $\P\{H
+\mid I\} = 0.5$  where $H$ denotes heads (in the context of tossing a
+coin) and $I$ denotes some background information. In the Bayesian
+context, this is not an informative statement on some long-run
+frequency of heads while tossing the coin. Instead, it is an
+assignment of probability by some individual for the next coin toss,
+based on some information. Since $\P\{H \mid I\} = \P\{T \mid I\}$, it
+implies that the background information is symmetric between H and
+T. The actual information itself might vary, for example, consider the
+following two kinds of background information both of which can
+justify this assignment $\P\{H \mid I\} = 0.5$:
+\begin{enumerate}
+\item \textbf{Information $I_1$}: We don't know anything at all about the
+  coin. We don't even know if it really has two sides $H$ and $T$ or
+  both of its sides are of only one kind (either $H$ or $T$). In
+  addition, we don't know how exactly it will be tossed. 
+\item \textbf{Information $I_2$}: We know that it is a ``regular'' coin
+  and that it has two sides $H$ and $T$, and that it will be tossed in
+  the ``usual'' way. 
+\end{enumerate}
+In the first case above, it might very well happen that the coin has
+both sides H, in which case repeated tossing of the coin will lead to
+HHHHH.. so the long run frequency of heads will be 1 (and not
+0.5). But this does not invalidate the assignment $\P(H \mid I_1) =
+0.5$ because it is not a statement on long run frequency of heads, but
+it claims something about the next toss. 
+
+Now consider the third kind of information: We know that this coin has
+been tossed a large number of times in the past and it landed heads
+70\% of the time. Now is the assumption $\P\{H \mid I\} =
+0.5$ justifiable? In this case, the probability we need to calculate
+is:
+\begin{align}\label{info3}
+  \P \left\{X_{n+1} = 1 \mid \frac{X_1 + \dots + X_n}{n} = 0.7 \right\}
+\end{align}
+where $X_1, \dots, X_n$ represent the historical tosses and $X_{n+1}$
+denotes the outcome of the next toss (1 here represents $H$ and 0
+represents $T$). The probability \eqref{info3} cannot be assigned
+arbitrarily but instead it should be calculated based on some joint
+model for $X_1, \dots, X_{n+1}$. Consider the following two models:
+\begin{align}\label{mod1}
+  X_1, \dots, X_{n+1} \overset{\text{i.i.d}}{\sim} \text{Bernoulli}(0.5)
+\end{align}
+and
+\begin{align}\label{mod1}
+  X_1, \dots, X_{n+1} \mid \theta \overset{\text{i.i.d}}{\sim}
+  \text{Bernoulli}(\theta) ~~ \text{ and } ~~ \theta \sim
+  \text{uniform}(0, 1). 
+\end{align}
+For the first model, $X_{n+1}$ is independent of $X_1, \dots, X_n$ and
+we indeed get $\P(X_{n+1} = 1) = 0.5$. For the second model, the
+situation is more interesting, and we will get an answer to
+\eqref{info3} that is close to $0.7$ when $n$ is large. So here,
+probability still does not have anything to do with frequency, but in
+this case, the right kind of model will lead to the frequency
+assignment. 
+
+This flexibility with modeling is a positive
+feature of the Bayesian framework. However, there remains the question
+of justification of the 
+rules of probability. If analysts are allowed to come up arbitrary
+probability models, then why do they have to carry out
+calculations in accordance with the rules of probability. What is the
+justification for using the rules of probability? This question was
+raised by many people including R. A. Fisher, who in \cite{Fisher1934} writes:  
+
+\textit{Keynes establishes the laws of addition and multiplication of
+  probabilities, by stating these laws in the form of definitions of
+  the processes of addition and multiplication. The important step of
+  showing that, when these probabilities have numerical values,
+  ``addition'' and ``multiplication'' are so defined, are equivalent
+  to the arithmetical processes ordinarily known by these names, is
+  omitted. The omission is an interesting one, since it shows the
+  difficulty of establishing the laws of mathematical probability,
+  without basing the notion of probability on the concept of
+  frequency, for which these laws are really true, and from which they
+  were originally derived.}
+
+It turns out that the rules of probability can be justified without
+using any connections between probability and frequency. The following
+arguments are due to the physicist R. T. Cox and are described in Chapters 1 and
+Chapter 2 of \citet{Jaynes}. I will give a sketch of the argument
+skipping some important technical details. For the full argument,
+please read \citet[Chapter 1 and 2]{Jaynes}.
+
+\section{Justification of the Rules of Probability without using any
+  connections to Long-run Frequencies}
+As just mentioned, the following argument is due to the physicist
+R. T. Cox, and can be read in the book \citet{rtcox}. I will follow
+the treatment given in \citet[Chapter 1 and 2]{Jaynes}. 
+
+
+Let us first remove all restrictions on probabilities and even allow
+them to take values outside the interval $[0, 1]$. To avoid confusion,
+let us use the term ``plausibilities''. We are assigning
+plausibilities of various events (or propositions) conditional on
+other events. Let us denote the plausibility of event $A$ conditional
+on event $B$ by $(A|B)$. Let us first make the assumption that
+plausibilities take values in the set of real numbers (no restriction
+now to be in the interval $[0, 1]$) and that a higher value of
+plausibility represents a greater belief.
+
+\subsection{Product Rule}
+Let us first investigate why the product rule should be true. The
+product rule in terms of probabilities states that
+\begin{equation*}
+  \P(AB|C) = \P(B|C) \P(A|BC)
+\end{equation*}
+Here $AB$ denotes the event $A \cap B$. Should our plausibilities
+satisfy a similar inequality? Let us first assume that the
+plausibility $(AB|C)$ should really be determined  by the two
+plausibilities $(B|C)$ and $(A|BC)$. This is basically because the
+process of deciding that $AB$  is true can be broken down into first
+deciding whether $B$ is true and then, having accepted $B$ as true,
+deciding whether $A$ is true. We shall therefore assume that there
+should be a function $F$ such that
+\begin{equation*}
+  (AB|C) = F((B|C), (A|BC)). 
+\end{equation*}
+We also assume that we should use the same function $F$ for all
+possible events $A, B, C$ (i.e., we are not using one function $F$ for
+some $A, B, C$ while calculating $(AB|C)$ from $(B|C)$ and $(A|BC)$
+and using another function $F$ for different $A, B, C$). This means in
+particular that
+\begin{equation*}
+  (AB|C) = F((A|C), (B|AC)). 
+\end{equation*}
+It is also reasonable to assume that $F(x, y)$ is monotone increasing
+in each of its arguments and that it is continuous. If it is not
+continuous, then a small change in $(B|C)$ (or $(A|BC)$) might lead to
+a large change in $(AB|C)$ which is undesirable.
+
+Now if we have four events $A, B, C, D$, we can write
+\begin{equation*}
+  (ABC|D) = F((BC|D), (A|BCD)) = F(F((C|D), (B|CD)), (A|BCD)). 
+\end{equation*}
+We can also write
+\begin{equation*}
+  (ABC|D) = F((C|D), (AB|CD)) = F((C|D), F((B|CD), (A|BCD))). 
+\end{equation*}
+We shall now make the following important consistency assumption:
+\textbf{If a plausibility can be calculated via two different methods,
+then both methods  should give the same answer}. Clearly if this
+assumption were violated, then our answer to a plausibility
+calculation would depend on the specific method chosen to calculate
+and this would be highly undesirable. This assumption immediately
+implies that
+\begin{equation*}
+  F(F((C|D), (B|CD)), (A|BCD)) = F((C|D), F((B|CD), (A|BCD))). 
+\end{equation*}
+for all $A, B, C, D$. If the individual plausibilities are arbitrary,
+we would get the following condition that the function $F$ should
+satisfy
+\begin{equation*}
+  F(F(x, y), z) = F(x, F(y, z)) \qt{for all real numbers $x, y, z$}. 
+\end{equation*}
+It now turns out the only functions $F$ which satisfy the above
+equation are of the form
+\begin{equation*}
+  F(x, y) = w^{-1}(w(x) w(y))
+\end{equation*}
+for a positive continuous increasing function $w$. I will skip this
+derivation (see Section 2.1, Chapter 2 of \citet{Jaynes}). We thus have
+\begin{equation}\label{abc}
+  (AB|C) = F((B|C), (A|BC)) = w^{-1} \left(w(B|C) w(A|BC) \right). 
+\end{equation}
+This is equivalent to
+\begin{equation*}
+  w(AB|C) = w(B|C) w(A|BC). 
+\end{equation*}
+Now if we take $B = A$, we get
+\begin{equation*}
+  w(A|C) = w(A|C) w(A|AC)
+\end{equation*}
+The event $A|AC$ can be seen as certainty so we get
+\begin{equation*}
+  w(A|C) = w(A|C) w(\text{certainty})
+\end{equation*}
+for all $A$ and $C$. This can happen only if
+\begin{equation}\label{cert}
+  w(\text{certainty}) = 1. 
+\end{equation}
+Also if we take $B = A^c$ in \eqref{abc}, we get
+\begin{equation*}
+  w(AA^c | C) = w(A^c|C) w(A|A^c C)
+\end{equation*}
+$AA^c|C$ and $A|A^cC$ can both be taken to represent impossibility so
+we get
+\begin{equation*}
+  w(\text{impossible}) = w(A^c|C) w(\text{impossible})
+\end{equation*}
+for all $A$ and $C$ which gives
+\begin{equation}\label{impo}
+  w(\text{impossible}) = 0. 
+\end{equation}
+\eqref{cert} and \eqref{impo}, along with the monotonicity of $w$,
+imply
+\begin{equation}\label{w01}
+0 \leq  w(A|B) \leq 1 \qt{for all $A$ and $B$}. 
+\end{equation}
+We have thus proved that $w(A|B)$ lies always between 0 and 1 (is 0
+for impossibility and 1 for certainty) and it satisfies the product
+rule of probability: 
+\begin{equation}\label{w1}
+  w(AB|C) = w(A|C) w(B|AC) = w(B|C) w(A | BC). 
+\end{equation}
+In other words, if we apply this this function $w$ to our plausibilities, then the
+resulting assignments satisfy the first two rules of
+probability.
+
+\subsection{Sum Rule}
+
+Next the goal is to derive the sum rule. We will first derive the sum rule
+in the simplified form: $\P(A^c) = 1 - \P(A)$, and then prove it in
+the general case. We shall discuss this argument in the next lecture. 
+
+
+
+\begin{thebibliography}{99}
+
+\bibitem[{Cox(2001)}]{rtcox}Cox, R. T. (2001)
+       \textit{Algebra of Probable Inference}. John Hopkins University
+       Press, 2001. 
+
+\bibitem[Fisher(1934)]{Fisher1934}
+R.~A. Fisher,
+\newblock ``Probability, likelihood and quantity of information in the logic of
+uncertain inference,''
+\newblock \emph{Proceedings of the Royal Society of London. Series~A,
+Containing Papers of a Mathematical and Physical Character}, vol.~146,
+no.~856, pp.~1--8, 1934.
+
+     \bibitem[Jaynes(2003)]{Jaynes} Jaynes, E. T, (2003)
+  \textit{Probability theory: the logic of science}. Cambridge
+  University Press, 2003.
+
+%  \bibitem[Sinai(1992)]{Sinai} Sinai, Y. G, (1992)
+%  \textit{Probability theory: an introductory course}. Springer
+%  Verlag, 1992.  
+
+\bibitem[{deGroot(1986)}]{DeGrootBlackwell}DeGroot, M. H. (1986)
+       A conversation with David Blackwell.
+\newblock \emph{Statistical Science}, \textbf{1}, 40--53.
+
+%         \bibitem[Mosteller(1987)]{Mosteller} Mosteller, F, (1987)
+%  \textit{Fifty challenging problems in probability with
+%    solutions}. Courier Corporation, 1987.
+
+%    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+%  \textit{Information theory, inference, and learning
+%  algorithms}. Cambridge University Press, 2003.
+
+\bibitem[{Lindley(2013)}]{Lindley}Lindley, D. V. (2013)
+       \textit{Understanding Uncertainty}. John Wiley and sons, 2013.
+
+
+  \end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
