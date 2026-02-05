@@ -96,7 +96,7 @@
           href: "./LectureSeven238Spring2026.tex"
         - type: "Lecture"
           id: "7 Code"
-          name: "Kidney Cancer Data"
+          name: "Kidney Cancer Data Analysis"
           href: "./CodeLectureSeven238Spring2026.ipynb"
         - type: "PDF"
           id: "7"
