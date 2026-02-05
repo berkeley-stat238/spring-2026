@@ -102,3 +102,7 @@
           id: "7"
           name: "LectureSeven238Spring2026.pdf"
           href: "./LectureSeven238Spring2026.pdf"
+        - type: 'Dataset'
+          id: '1'
+          name: Kidney Cancer Dataset
+          href: "./KidneyCancerClean.csv"
