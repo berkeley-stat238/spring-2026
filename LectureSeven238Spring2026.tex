@@ -1,0 +1,337 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry}
+\usepackage{graphicx}
+
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Seven} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{04 Feb 2026}
+
+\maketitle
+
+\section{Derivation of the Rules of Probability for Subjective
+  Probability} 
+
+In the last class, we sketched the derivation of the rules of
+probability from logical consistency \textbf{without} relying on any
+imagined frequency considerations for defining probability. The
+argument (taken from \citet[Chapter 2]{Jaynes}) proceeded in the
+following way.
+
+We denoted the ``plausibility'' of a proposition $A$ given some
+information in the form of proposition $B$ by $(A \mid B)$. We assumed
+that these plausibilities take values in the set of real numbers (no
+restriction to be in the interval $[0, 1]$) and that a higher value of
+plausibility represents greater belief.
+
+To deduce the usual product rule of probability, we assumed the
+existence of a continuous coordinate-wise increasing function $F$ of
+two real variables such that
+\begin{equation*}
+  (AB \mid C) = F \left((B \mid C), (A \mid BC) \right) 
+\end{equation*}
+for all $A, B, C$. This function can then be employed in two different
+sequences to calculate $(ABC \mid D)$ for four propositions $A, B, C, D$:
+\begin{align*}
+&  (ABC \mid D) =   F(F((C|D), (B|CD)), (A|BCD)) \\ &
+  (ABC \mid D) = F((C|D), F((B|CD), (A|BCD))). 
+\end{align*}
+It is therefore natural to require that the function $F$ should be such
+that the right hand sides of the above two equations produce the same
+answer. From this, one gets the condition:
+\begin{equation*}
+  F(F(x, y), z) = F(x, F(y, z)) \qt{for all real numbers $x, y, z$}. 
+\end{equation*}
+As proved in \citet[Section 2.1]{Jaynes}, the only functions $F$ which
+satisfy the above equation are of the form
+\begin{equation}\label{Fw}
+  F(x, y) = w^{-1}(w(x) w(y))
+\end{equation}
+for a positive continuous increasing function $w$. Note that the
+function $w$ is not unique. For example, if $w$ satisfies \eqref{Fw},
+then $\tilde{w}(x) := (w(x))^{\alpha}$ (which means $\tilde{w}^{-1}(u)
+= w^{-1}(u^{1/\alpha})$) also satisfies \eqref{Fw} for every $\alpha >
+0$. It can be proved that there is uniqueness up to this power
+transformation. 
+
+From here, we derived the following:
+\begin{enumerate}
+\item $w(AB \mid C) = w(A \mid C) w(B \mid AC) = w(B \mid C) w(A \mid
+  BC)$.
+\item $w(A \mid C)$ always lies between 0 and 1 with
+  $w(\text{impossible}) = 0$ and $w(\text{certain}) = 1$. 
+\end{enumerate}
+In other words, the function $w$ applied to the plausibilities leads
+to quantities which satisfy the first two rules of probability.
+
+Next the goal is to derive the sum rule. Here we first assume that
+there exists a function $S: [0, 1] \rightarrow [0, 1]$  such that
+\begin{equation*}
+  w(A^c \mid C) = S(w(A \mid C))
+\end{equation*}
+for all $A$ and $C$. Note that we are working with $w(A \mid C)$
+instead of the raw plausibilities $(A \mid C)$. This allows us to use
+the product rule which has already been derived. We can assume that
+$S$ is strictly decreasing, $S(0) = 0$, $S(1) = 1$ and that $S$ is
+continuous. 
+
+To set up the
+characterizing equation for $S(\cdot)$, consider the setting of Figure
+\ref{fig}. We are looking at $A$ and $B$ such that $B^c$ is contained
+in $A$ (or equivalently, $A^c$ is contained in $B$). 
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[scale = 0.3]{SumRule.jpeg}}
+\caption{Setting for deriving the Sum Rule}
+\label{fig}
+\end{figure}
+
+In this setting, there are two different ways of
+calculating the plausibility of the proposition $R = A B$ in terms of
+$x := w(A)$ and $y := w(B)$ and the function $S$. Both these
+calculations use the product rule. The first method for calculating
+$w(R) = w(AB)$ is:
+\begin{align*}
+  w(AB) &= w(A) w(B \mid A) \\
+        &= w(A) S \left(w(B^c \mid A) \right) \\
+        &= w(A) S \left(\frac{w(B^c)}{w(A)} \right) \\
+                                                      &=  w(A) S
+                                                        \left(\frac{S(w(B))}{w(A)}
+                                                        \right) = x S
+                                                        \left(\frac{S(y)}{x}
+                                                        \right). 
+\end{align*}
+The second method for calculating $w(R) = w(A B)$ simply switches the
+roles of $A$ and $B$ in the first method:
+\begin{align*}
+  w(AB) &= w(B)  w(A \mid B) \\
+  &= w(B) S \left(w(A^c \mid B) \right) \\
+        &= w(B) S \left(\frac{w(A^c)}{w(B)} \right) \\
+                                                      &=  w(B) S
+                                                        \left(\frac{S(w(A))}{w(B)}
+                                                        \right) = y S
+                                                        \left(\frac{S(x)}{y}
+                                                        \right). 
+\end{align*}
+It is therefore natural to assume that $S$ satisfies:
+\begin{equation*}
+  x S
+                                                        \left(\frac{S(y)}{x}
+                                                        \right) =y S
+                                                        \left(\frac{S(x)}{y}
+                                                        \right).  
+\end{equation*}
+Recall that here $x = w(A)$  and $y = w(B)$. The setting is such that
+$x$ and $y$ cannot be completely arbitrary. Indeed because $B^c
+\subseteq A$, we must have
+\begin{equation*}
+  w(B^c) \leq w(A) ~~ \text{ or equivalently } ~~ S(y) \leq x.  
+\end{equation*}
+Our condition on $S$ is therefore
+\begin{equation*}
+  xS\left(\frac{S(y)}{x} \right) = y S \left(\frac{S(x)}{y} \right)
+  \qt{for all $0 \leq x, y \leq 1$ with $0 \leq S(y) \leq x$}. 
+\end{equation*}
+It is now proved in \citet[Section 2.2]{Jaynes} that the above condition implies that
+\begin{equation*}
+  S(x) = (1 - x^{\alpha})^{1/\alpha} \qt{for $x \in [0, 1]$}
+\end{equation*}
+for some $\alpha > 0$. This $\alpha$ is uniquely determined by $S$. 
+
+We have thus proved that
+\begin{equation*}
+  w(A^c|C) = \left(1 - w^{\alpha}(A|C) \right)^{1/\alpha} 
+\end{equation*}
+which is equivalent to
+\begin{equation*}
+  w^{\alpha}(A^c|C) = 1 - w^{\alpha}(A|C) ~~ \text{ or } ~~
+  w^{\alpha}(A^c|C) + w^{\alpha}(A|C) = 1. 
+\end{equation*}
+It can now be noted that the first two rules that are satisfied by
+$w(A|B)$ are also satisfied by $w^{\alpha}(A|B)$. Thus
+$w^{\alpha}(A|B)$ satisfies all the three rules 
+\begin{enumerate}
+\item $0 \leq w^{\alpha}(A|B) \leq 1$,  $w^{\alpha}(\text{impossible}) = 0$, and
+  $w^{\alpha}(\text{certain}) = 1$, 
+\item $w^{\alpha}(AB|C) = w^{\alpha}(A|C) w^{\alpha}(B|AC) =
+  w^{\alpha}(B|C) w^{\alpha}(A|BC)$, and
+\item $w^{\alpha}(A^c|C) + w^{\alpha}(A|C) = 1$. 
+\end{enumerate}
+Denoting $w^{\alpha}$ by $\P$, we have
+\begin{enumerate}
+\item $0 \leq \P(A|B) \leq 1$,  $\P(\text{impossible}) = 0$, and
+  $\P(\text{certain}) = 1$, 
+\item \textbf{Product Rule}: $\P(AB|C) = \P(A|C) \P(B|AC) =
+\P(B|C) \P(A|BC)$, and
+\item \textbf{Sum Rule}: $\P(A^c|C) + \P(A|C) = 1$. 
+\end{enumerate}
+We have thus derived the rules of probability without invoking any
+relationship between probability and long-run frequency.   
+
+To summarize: If we argue in terms of plausibilities but we take care
+to ensure some natural constraints for logical consistency, then we
+cannot manipulate the plausibilities arbitrarily but have to reason
+according to the usual rules of probability after an appropriate
+transformation (this transformation is given by the function
+$w^{\alpha}$).
+
+The sum rule of probability is usually stated as
+\begin{equation}\label{usum}
+  \P(A \cup B|C) = \P(A|C) + \P(B|C) - \P(A B|C)
+\end{equation}
+where $A \cup B$ denotes the proposition ``at least one of $A$ and $B$
+is true'' (Jaynes uses the notation $A + B$ for $A \cup
+B$). \eqref{usum} can be derived from the stated rules as 
+\begin{align*}
+  \P(A \cup B|C) &= 1 - \P((A\cup B)^c|C) \\
+               &= 1 - \P(A^c \cap B^c|C) \\
+               &= 1 - \P(B^c | A^cC) \P(A^c|C) \\
+               &= 1 - \left(1 - \P(B|A^cC) \right) \P(A^c|C) \\
+               &= 1 - \P(A^c|C) + \P(B|A^cC) \P(A^c|C) \\
+               &= \P(A|C) + \P(A^c B|C) \\
+               &= \P(A|C) + \P(B|C) \P(A^c | BC) \\
+  &= \P(A|C) + \P(B|C) (1 - \P(A | BC)) \\ &= \P(A|C) + \P(B|C) -
+                                             \P(B|C) \P(A|BC) =
+                                             \P(A|C) + \P(B|C) - \P(A
+                                             B|C). 
+\end{align*}
+
+
+\begin{thebibliography}{99}
+
+  
+%\bibitem[Fisher(1934)]{Fisher1934}
+%R.~A. Fisher,
+%\newblock ``Probability, likelihood and quantity of information in the logic of
+%uncertain inference,''
+%\newblock \emph{Proceedings of the Royal Society of London. Series~A,
+%Containing Papers of a Mathematical and Physical Character}, vol.~146,
+%no.~856, pp.~1--8, 1934.
+
+     \bibitem[Jaynes(2003)]{Jaynes} Jaynes, E. T, (2003)
+  \textit{Probability theory: the logic of science}. Cambridge
+  University Press, 2003.
+
+%  \bibitem[Sinai(1992)]{Sinai} Sinai, Y. G, (1992)
+%  \textit{Probability theory: an introductory course}. Springer
+%  Verlag, 1992.  
+
+%\bibitem[{deGroot(1986)}]{DeGrootBlackwell}DeGroot, M. H. (1986)
+%       A conversation with David Blackwell.
+%\newblock \emph{Statistical Science}, \textbf{1}, 40--53.
+
+%         \bibitem[Mosteller(1987)]{Mosteller} Mosteller, F, (1987)
+%  \textit{Fifty challenging problems in probability with
+%    solutions}. Courier Corporation, 1987.
+
+%    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+%  \textit{Information theory, inference, and learning
+%  algorithms}. Cambridge University Press, 2003.
+
+%\bibitem[{Lindley(2013)}]{Lindley}Lindley, D. V. (2013)
+%   \textit{Understanding Uncertainty}. John Wiley and sons, 2013.
+
+
+  \end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
