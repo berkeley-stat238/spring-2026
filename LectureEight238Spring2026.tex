@@ -1,0 +1,377 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry}
+\usepackage{graphicx}
+
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Eight} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{06 Feb 2026}
+
+\maketitle
+
+The main goal today is to go over Bayesian inference of a parameter $\theta
+\in [0, 1]$ from observation $X \sim Bin(n, \theta)$ ($n$ is also
+observed) with a Beta distribution prior on $\theta$.
+
+Let us start by recalling the Beta distribution. 
+
+\section{Beta Distribution}
+The Beta distribution with parameters $a$ and $b$ is given by the
+density: 
+\begin{align*}
+  f_{\theta}(\theta) = \frac{\theta^{a-1} (1 - \theta)^{b-1}}{B(a, b)} I\{0
+  \leq \theta \leq 1\}
+\end{align*}
+where the normalizing constant $B(a, b)$ is the Beta function given by
+\begin{align*}
+  B(a, b) = \int_0^1 \theta^{a-1} (1 - \theta)^{b-1} d\theta. 
+\end{align*}
+For the Beta density to be proper, we need both $a$ and $b$ to be
+strictly positive. Here are some basic properties of the Beta
+distribution:
+\begin{enumerate}
+\item When $a = 1$ and $b = 1$, we get the uniform distribution on
+  $(0, 1)$. We consider the uniform distribution as the simplest
+  example of a Beta distribution.
+\item The mean of the Beta distribution is
+  \begin{equation*}
+    \text{mean} = \frac{a}{a + b}. 
+  \end{equation*}
+  For example, if $a$ is much smaller compared to $b$, then
+  the mean will be small. 
+\item The variance of the Beta distribution is
+  \begin{equation*}
+    \text{variance} = \frac{a}{a + b}
+    \frac{b}{a + b} \frac{1}{a + b + 1}. 
+  \end{equation*}
+ An implication is that, when $a + b$ is large, the variance
+ tends to be small, so the Beta density will look skinny.
+\item More generally, any moment $\E (\theta^k)$  (for positive integers $k$)
+  can be written in closed form as (here $\theta \sim Beta(a, b)$)
+  \begin{equation*}
+    \E (\theta^k) = \frac{a(a + 1) \dots (a +
+      k-1)}{(a + b) (a + b + 1) \dots (a +
+      b + k - 1)} \qt{for every $k \geq 1$}. 
+  \end{equation*}
+\end{enumerate}
+In Bayesian inference, improper priors are also sometimes used. In the
+case of Beta priors, it is common to use the distributions $Beta(0,
+0)$ as a prior. This corresponds to the density
+\begin{align*}
+  f_{Beta(0, 0)}(\theta) \propto \frac{I\{0 < \theta <
+    1\}}{\theta (1 - \theta)}. 
+\end{align*}
+This improper density cannot be normalized so we don't put any
+normalizing constants on the right hand side.
+
+If one wants to interpret $Beta(0, 0)$ as a probability distribution,
+the correct answer is the discrete distribution taking
+the values 0 and 1 with equal probability:
+\begin{align*}
+  Beta(0, 0) = Bernoulli(0.5). 
+\end{align*}
+One way to formalize this equivalence is to argue that the
+distribution $Beta(\epsilon, \epsilon)$ converges to $Bernoulli(0.5)$
+as $\epsilon \downarrow 0$ in the usual sense of weak convergence. The
+easiest way to see this is that the moments of $Beta(\epsilon,
+\epsilon)$ converge to the moments of $Bernoulli(0.5)$.
+
+\section{Beta-Binomial Inference}
+
+The goal is to infer $\theta$ from observations $X$ (and $n$) where $X
+\sim Bin(n, \theta)$. One can also formulate this problem as that of
+estimating $\theta$ from $n$ i.i.d Bernoulli observations $Z_1, \dots,
+Z_n \overset{\text{i.i.d}}{\sim} Ber(\theta)$. The likelihood is given
+by:
+\begin{align*}
+  f_{X \mid \theta}(x) = {n \choose x} \theta^x (1 - \theta)^{n-x}
+  \propto \theta^{x} (1 - \theta)^{n-x}. 
+\end{align*}
+The frequentist estimator (MLE) for $\theta$ is $x/n$. For Bayesian
+inference, we will use the $Beta(a, b)$ prior:
+\begin{align*}
+  f_{\theta}(\theta) \propto \theta^{a-1} (1 - \theta)^{b-1} I\{0 \leq
+  \theta \leq 1\}
+\end{align*}
+leading to the posterior:
+\begin{align*}
+  f_{\theta \mid x}(\theta) &\propto \theta^{a-1} (1 - \theta)^{b-1} I\{0 \leq
+                              \theta \leq 1\} \theta^{x} (1 - \theta)^{n-x} \\
+  &= \theta^{x + a - 1} (1 - \theta)^{n-x + b - 1} I\{0 \leq \theta
+    \leq 1\}. 
+\end{align*}
+Thus
+\begin{align*}
+  \theta \mid x \sim Beta(x + a, n-x + b). 
+\end{align*}
+A natural  point estimate of $\theta$ is the posterior mean:
+\begin{align*}
+  \hat{\theta} = \E(\theta \mid x) = \frac{x+a}{n + a + b}. 
+\end{align*}
+Here are two things to note about the posterior mean:
+\begin{enumerate}
+\item It is a convex combination of the MLE and the prior mean
+  $a/(a+b)$:
+  \begin{align*}
+    \frac{x+a}{n + a + b} = \left(\frac{n}{a+b+n} \right) \frac{x}{n}
+    + \left(\frac{a+b}{a+b+n} \right) \frac{a}{a+b}. 
+  \end{align*}
+  So if $n$ is much larger compared to $a+b$, then the posterior mean
+  will be very close to the MLE. Conversely if $n$ is much smaller
+  compared to $a + b$, then the posterior mean will be very close to
+  the prior mean.
+\item When $a = b = 0$, then the posterior mean exactly coincides with
+  the MLE. Thus if we use the $Beta(0, 0)$ prior, then posterior
+  inference will be close to frequentist inference. Note again that
+  this prior is improper.
+\item If we use the $Beta(0, 0)$ prior and if we observe $n = x = 1$
+  (i.e., we only have data on one Bernoulli trial which resulted in a
+  heads). Then the posterior is $Beta(x + a, n-x + b) =
+  Beta(1,0)$. $Beta(1, 0)$ is also improper but it can be
+  interpreted as the point mass at 1:
+  \begin{align*}
+    Beta(1, 0) = Bernoulli(1) = \delta_{\{1\}}. 
+  \end{align*}
+  This can be proved, for example, by computing the moments of
+  $Beta(1, \epsilon)$ and showing that they all approach 1 (which are
+  the moments of $\delta_{\{1\}}$) as $\epsilon \rightarrow 0$. 
+  Similarly for $x = 0$ and $n = 1$, the posterior becomes $Beta(0,
+  1)$ which should be interpreted as $\delta_{\{0\}}$. If $n = 2$ and
+  $x = 1$ (i.e., we observe one head and one tail), the posterior is
+  the uniform distribution on $(0, 1)$.
+\item The process of going from the $Beta(0, 0)$ prior to the $Beta(1,
+  0)$ posterior when $n = x = 1$ is described as intuitive in the
+  following situation by \citet[Section 12.4.3]{Jaynes}: \textit{...in a
+    chemical laboratory we find a jar containing an unknown and
+    unlabeled compound. We are at first completely ignorant as to
+    whether a small sample of this compound will dissolve in water or
+    not. But, having observed that one small sample does dissolve, we
+    infer immediately that all samples of this compound are water
+    soluble, and although the conclusion does not carry quite the
+    force of deductive proof, we feel strongly that the inference was
+    justified}. 
+\end{enumerate}
+
+\section{Multiple Replications of the Same Problem}
+Consider the problem of estimating $\theta_i$ from
+$(X_i, n_i)$ for each $i = 1, \dots, N$, with $X_i \sim Bin(n_i,
+\theta_i)$. For a concrete example, take all counties in the United
+States with $X_i$ denoting the number of deaths
+due to kidney cancer (in the period $1980-89$) and $n_i$ denoting the
+average population (during the same period) for the $i$-th county.
+
+It is easy to see that the naive frequentist estimate $X_i/n_i$ can be
+very bad for $\theta_i$ if $n_i$ is small. We will therefore use
+Bayes estimation using the prior:
+\begin{align*}
+  \theta_i \overset{\text{i.i.d}}{\sim} Beta(a, b). 
+\end{align*}
+The choice of $a$ and $b$ is crucial here. Since we have a large
+dataset, it makes sense to learn good values of $a$ and $b$ from the
+observed data. We will look at the following three ways of doing
+this.
+
+\begin{enumerate}
+\item \textbf{Method One}: We place a threshold on $n_i$ and filter out
+  $i$ for which $n_i$ exceeds the threshold. We then select $a$ and
+  $b$ by fitting the $Beta(a, b)$ density to the data $\{X_i/n_i : n_i
+  \geq \text{threshold}\}$. The Beta density fitting can be done by
+  just matching mean and variances. Let $m$ and $V$ denote the mean
+  and variance of $\{X_i/n_i : n_i
+  \geq \text{threshold}\}$. Then we obtain $a$ and $b$ by solving:
+  \begin{equation*}
+    \frac{a}{a+b} = m ~~~ \text{ and } ~~~ \frac{a}{a+b} \frac{b}{a+b}
+    \frac{1}{a+b+1} = V
+  \end{equation*}
+  which gives
+  \begin{equation*}
+    \hat{a} = m \left(\frac{m(1-m)}{V} - 1 \right) \text{ and } \hat{b} = (1
+    - m) \left(\frac{m(1-m)}{V} - 1 \right). 
+  \end{equation*}
+  One drawback of this method is that the selection of threshold can
+  be arbitrary. In the kidney cancer example, we choose 300000 as the
+  threshold, but we could have also chosen some other threshold such
+  as 350K or 400K.
+\item \textbf{Method Two}: We consider the marginal likelihood of
+  $X_i$ given $a, b$. Note that
+  \begin{align*}
+    \P \{X_i = x \mid a, b\} &= \int_0^1  \P\{X_i = x \mid \theta_i = \theta\}
+                               f_{\theta_i \mid a, b}(\theta) d\theta
+    \\
+    &= \int_0^1 {n_i \choose x} \theta^x (1 - \theta)^{n_i - x}
+      \frac{\theta^{a-1} (1 - \theta)^{b-1}}{B(a, b)} d\theta \\
+    &={n_i \choose x} \frac{1}{B(a, b)} \int_0^1 \theta^{x + a - 1} (1 -
+      \theta)^{n_i - x + b - 1} d\theta \\ &= {n_i \choose x} \frac{B(x + a,
+      n_i - x + b)}{B(a, b)}
+  \end{align*}
+  As a result, the marginal likelihood of the data  given  in terms of
+  $a$, $b$ is:
+  \begin{align*}
+    \prod_{i=1}^N {n_i \choose X_i} \frac{B(X_i + a,
+      n_i - X_i + b)}{B(a, b)}
+  \end{align*}
+  So the maximum likelihood estimates of $a$, $b$ are given by:
+  \begin{align*}
+    (\hat{a}_{\text{MLE}}, \hat{b}_{\text{MLE}}) = \underset{a,
+    b}{\text{argmax}} \prod_{i=1}^N {n_i 
+    \choose X_i} \frac{B(X_i + a, n_i - X_i + b)}{B(a, b)}.  
+  \end{align*}
+  This maximization can be done numerically by taking a grid of $a$
+  and $b$ values.
+\item \textbf{Method Three}: This is the fully Bayes solution where we
+  simply place priors on $a$ and $b$. It is sensible to reparametrize
+  as:
+  \begin{align*}
+    \mu = \frac{a}{a+b} ~~ \text{ and } ~~ \kappa = a + b. 
+  \end{align*}
+  Now we take the priors:
+  \begin{align*}
+    \mu \sim \text{uniform}(0, 1) ~~ \text{ and } ~~ \log \kappa \sim
+    \text{uniform}(-\infty, \infty). 
+  \end{align*}
+  Inference under this fully Bayesian model is nontrivial from a
+  computational point of view. We shall discuss this in the next
+  lecture. 
+\end{enumerate}
+
+
+
+
+\begin{thebibliography}{99}
+
+  
+%\bibitem[Fisher(1934)]{Fisher1934}
+%R.~A. Fisher,
+%\newblock ``Probability, likelihood and quantity of information in the logic of
+%uncertain inference,''
+%\newblock \emph{Proceedings of the Royal Society of London. Series~A,
+%Containing Papers of a Mathematical and Physical Character}, vol.~146,
+%no.~856, pp.~1--8, 1934.
+
+     \bibitem[Jaynes(2003)]{Jaynes} Jaynes, E. T, (2003)
+  \textit{Probability theory: the logic of science}. Cambridge
+  University Press, 2003.
+
+%  \bibitem[Sinai(1992)]{Sinai} Sinai, Y. G, (1992)
+%  \textit{Probability theory: an introductory course}. Springer
+%  Verlag, 1992.  
+
+%\bibitem[{deGroot(1986)}]{DeGrootBlackwell}DeGroot, M. H. (1986)
+%       A conversation with David Blackwell.
+%\newblock \emph{Statistical Science}, \textbf{1}, 40--53.
+
+%         \bibitem[Mosteller(1987)]{Mosteller} Mosteller, F, (1987)
+%  \textit{Fifty challenging problems in probability with
+%    solutions}. Courier Corporation, 1987.
+
+%    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+%  \textit{Information theory, inference, and learning
+%  algorithms}. Cambridge University Press, 2003.
+
+%\bibitem[{Lindley(2013)}]{Lindley}Lindley, D. V. (2013)
+%   \textit{Understanding Uncertainty}. John Wiley and sons, 2013.
+
+
+\end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

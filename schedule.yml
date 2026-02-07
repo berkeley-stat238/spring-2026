@@ -106,3 +106,14 @@
           id: '1'
           name: Kidney Cancer Dataset
           href: "./KidneyCancerClean.csv"
+    - date: "Feb 06"
+      items:
+        - type: "Lecture"
+          id: "8"
+          name: "Beta-Binomial Inference"
+          href: "./LectureEight238Spring2026.tex"
+        - type: "PDF"
+          id: "8"
+          name: "LectureEight238Spring2026.pdf"
+          href: "./LectureEight238Spring2026.pdf"
+	  
