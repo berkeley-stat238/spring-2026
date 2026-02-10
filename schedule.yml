@@ -116,4 +116,16 @@
           id: "8"
           name: "LectureEight238Spring2026.pdf"
           href: "./LectureEight238Spring2026.pdf"
+- week: 4
+  days:
+    - date: "Feb 09"
+      items:
+        - type: "Lecture"
+          id: "9 Code"
+          name: "Kidney Cancer Data Analysis with Bayesian Methods"
+          href: "./CodeLectureNine238Spring2026.ipynb"
+        - type: 'Dataset'
+          id: '1'
+          name: Kidney Cancer Dataset
+          href: "./KidneyCancerClean.csv"
 	  
