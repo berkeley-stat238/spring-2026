@@ -128,4 +128,9 @@
           id: '1'
           name: Kidney Cancer Dataset
           href: "./KidneyCancerClean.csv"
-	  
+	  - date: "Feb 10"
+      items:
+        - type: "Lab"
+          id: "3 Code"
+          name: "Intro to PyMC"
+          href: "./lab03.ipynb"

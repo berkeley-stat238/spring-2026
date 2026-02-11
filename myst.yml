@@ -53,6 +53,8 @@ project:
          title: "2"
        - file: lab02.ipynb
          title: "2 Code"
+       - file: lab03.ipynb
+         title: "3 Code"
   downloads:
     - file: syllabus.pdf
       title: "Syllabus"
@@ -70,12 +72,6 @@ project:
       title: "Lecture 5"
     - file: LectureSix238Spring2026.pdf
       title: "Lecture 6"
-    - file: lab01.pdf
-      title: "Lab 1"
-    - file: lab02.pdf
-      title: "Lab 2"
-    - file: lab02.ipynb
-      title: "Lab 2 Code"
     - file: LectureSeven238Spring2026.pdf
       title: "Lecture 7"      
     - file: CodeLectureSeven238Spring2026.ipynb
@@ -84,6 +80,14 @@ project:
       title: "Lecture 8"      
     - file: CodeLectureNine238Spring2026.ipynb
       title: "Lecture 9 Code"
+    - file: lab01.pdf
+      title: "Lab 1"
+    - file: lab02.pdf
+      title: "Lab 2"
+    - file: lab02.ipynb
+      title: "Lab 2 Code"
+    - file: lab03.ipynb
+      title: "Lab 3 Code"
 
 site:
   template: book-theme
