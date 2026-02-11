@@ -132,5 +132,5 @@
       items:
         - type: "Lab"
           id: "3 Code"
-          name: "Intro to PyMC"
+          name: "Probabilistic Programming via PyMC"
           href: "./lab03.ipynb"
