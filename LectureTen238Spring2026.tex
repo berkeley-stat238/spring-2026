@@ -1,0 +1,291 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry}
+\usepackage{graphicx}
+
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Ten} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{11 Feb 2026}
+
+\maketitle
+
+\section{Additional Comments on the Kidney Cancer Data Analysis}
+For the kidney cancer dataset $(X_i, n_i), i = 1, \dots, N$ ($N$
+denotes the total number of counties, $n_i$ is the average population
+of county $i$ and $X_i$ is the number of deaths due to kidney cancer
+in the fixed time period $1980-89$). Consider the following three
+models for this dataset:
+\begin{enumerate}
+\item \textbf{Model One}: $\theta_i \overset{\text{i.i.d}}{\sim} Beta(0, 0)$
+and $X_i \mid \theta_i \overset{\text{ind}}{\sim} Bin(n_i,
+\theta_i)$. This model uses an uniformative prior on $\theta_i$, and
+the posterior mean estimate of each $\theta_i$ coincides with the
+frequentist MLE $X_i/n_i$. This model performs poorly for the present
+dataset. In particular, rankings of counties by estimated risk (e.g.,
+the top 100 values of $\hat{\theta}_i$) are 
+dominated by counties with small populations. Moreover, the model
+yields inaccurate predictions for future county-level death counts.
+\item \textbf{Model Two}: $\theta_i \overset{\text{i.i.d}}{\sim} Beta(15, 150000)$
+and $X_i \mid \theta_i \overset{\text{ind}}{\sim} Bin(n_i,
+\theta_i)$. This model employs a highly informative prior on
+$\theta_i$, where the hyperparameters $(15, 150000)$ may be viewed as
+arising from a Beta distribution fitted to historical data. The prior
+encodes strong prior knowledge about the prevalence of kidney cancer
+mortality. This leads to substantial shrinkage of the posterior
+estimates towards the prior mean. Unsurprisingly, given the strength
+of the prior information, this model yields good empirical performance
+on the dataset. 
+\item \textbf{Model Three}: $\log a, \log b
+  \overset{\text{i.i.d}}{\sim} \text{uniform}(-\infty, \infty)$,
+  $\theta_i   \overset{\text{i.i.d}}{\sim} Beta(a, b)$, $X_i \mid
+  \theta_i \overset{\text{ind}}{\sim} Bin(n_i, \theta_i)$. This model
+  places an uninformative prior on the hyperparameters $a$ and $b$,
+  and hence does not inject strong prior knowledge about the
+  prevalence of kidney cancer mortality. Compared to Models One and
+  Two, this is a substantially more flexible and principled model, as
+  it allows the amount of shrinkage to be learned from the data rather
+  than fixed a priori.
+
+  When fitted to the data, the posterior distribution of $(a, b)$
+  concentrates sharply around values close to $(15, 150000)$ (see the
+  code file for this lecture), indicating that the model successfully
+  infers from the data that kidney cancer deaths are rate events. As a
+  consequence, the posterior estimates of the individual $\theta_i$
+  are adaptively shrunk toward a common mean, with the degree of
+  shrinkage depending on the corresponding population sizes
+  $n_i$. This hierarchical borrowing of strength leads to stable
+  estimation, sensible county-level rankings, and accurate predictions
+  of future death counts, and overall the model performs very well.
+
+  Note that this model does not require any a priori knowledge
+  specific to kidney cancer and is therefore broadly applicable. For
+  example, the same hierarchical framework can be used to predict
+  batting averages in the baseball example, which will be explored in
+  Homework Two. 
+\end{enumerate}
+
+\section{Normal Likelihoods}
+We will next discuss Bayesian inference with normal likelihoods, and
+also study some connections to the James-Stein estimator. Normal
+likelihoods are applicable even in Binomial situations, such as in the
+baseball data analysis example from \citet[Chapter 1]{Efron}. Here
+$X_i$ denotes the number of hits in $n_i = n = 45$ at bats for player
+$i$. The natural model is: $X_i \sim Bin(n_i, p_i)$ with parameter
+$p_i$ but a normal likelihood (as opposed to Binomial likelihood) can
+also be used because by invoking the Central Limit Theorem, we can
+write
+\begin{align*}
+  \frac{X_i}{n_i} \overset{\text{approx}}{\sim} N\left(p_i,
+  \frac{p_i(1-p_i)}{n_i} \right). 
+\end{align*}
+This is because:
+\begin{align}\label{clt}
+  \sqrt{n} \left(\frac{X_i}{n_i} - p_i \right)
+  \overset{\text{Law}}{\rightarrow} N(0, p_i(1 - p_i)) \text{  as } n
+  \rightarrow \infty. 
+\end{align}
+Note that the unknown parameter $p_i$ appears in the variance
+above. If we want to work with normal likelihoods with known variance,
+a clean way is to use a variance stabilizing transformation. This is
+justified by the use of Delta method.
+\begin{theorem}[Delta Method]
+  If $\sqrt{n}(T_n - p) \overset{\text{Law}}{\rightarrow} N(0,
+  \tau^2)$ as $n \rightarrow \infty$, then
+  \begin{equation*}
+    \sqrt{n} \left(g(T_n) - g(p) \right)
+    \overset{\text{Law}}{\rightarrow} N(0, \tau^2 (g'(\theta))^2) 
+  \end{equation*}
+  as $n \rightarrow \infty$ provided $g'(p)$ exists and is
+  non-zero.  
+\end{theorem}
+Informally, the Delta method states that if $T_n$ has a limiting
+Normal distribution, then $g(T_n)$ also has  a limiting normal
+distribution and also gives an explicit  formula for the asymptotic
+variance of $g(T_n)$. This is surprising because $g$ can be linear or
+non-linear. In general, non-linear functions of normal random
+variables do not have a normal distribution. But the Delta method
+works because under the assumption that $\sqrt{n}(T_n - p) \overset{\text{Law}}{\rightarrow}
+N(0, \tau^2)$, it follows that $T_n$  converges in probability to
+$p$ so that $T_n$ will be close to $p$ at least for large $n$. In a neighborhood of
+$p$, the non-linear function $g$ can be approximated by a linear
+function which means that $g$ effectively behaves like a linear
+function. Indeed, the Delta method is a consequence of the
+approximation: 
+\begin{equation*}
+  g(T_n) - g(p) \approx g'(p) \left(T_n - p \right). 
+\end{equation*}
+By the Delta method and \eqref{clt}, we have
+\begin{equation*}
+  \sqrt{n_i} \left(g(X_i/n_i) - g(p_i) \right)
+  \overset{\text{Law}}{\rightarrow} N(0, (g'(p_i))^2 p_i(1 -
+  p_i)). 
+\end{equation*}
+The variance above will not depend on $p_i$ if we choose the
+function $g$ so that
+\begin{equation*}
+  g'(p_i) = \frac{1}{\sqrt{p_i(1 - p_i)}}
+\end{equation*}
+Solving this for $g$, we get $g(p_i) = 2
+\arcsin(\sqrt{p_i})$. This is a variance stabilizing transformation
+for the Binomial. Thus by the Delta method, we have
+\begin{equation*}
+  2 \sqrt{n} \left(\arcsin(\sqrt{X_i/n_i}) - \arcsin(\sqrt{p_i})
+  \right)   \overset{\text{Law}}{\rightarrow} N(0, 1). 
+\end{equation*}
+While working with binomial counts, it thus makes sense to transform
+the observation $X_i$ and parameter $p_i$ into
+\begin{equation*}
+  Y_i := 2 \sqrt{n_i} \arcsin(\sqrt{X_i/n_i}) ~~ \text{ and } ~~
+  \theta_i := 2 \sqrt{n_i} \arcsin(\sqrt{p_i})  
+\end{equation*}
+respectively and then work with the likelihood
+\begin{equation*}
+  Y_i | \theta_i \sim N(\theta_i, 1). 
+\end{equation*}
+We will study Bayesian estimation under this model in the next
+lecture. 
+
+
+\begin{thebibliography}{99}
+
+  
+%\bibitem[Fisher(1934)]{Fisher1934}
+%R.~A. Fisher,
+%\newblock ``Probability, likelihood and quantity of information in the logic of
+%uncertain inference,''
+%\newblock \emph{Proceedings of the Royal Society of London. Series~A,
+%Containing Papers of a Mathematical and Physical Character}, vol.~146,
+%no.~856, pp.~1--8, 1934.
+
+\bibitem[Efron(2010)]{Efron}
+Efron, B. (2010)
+\textit{Large-scale inference: empirical Bayes methods for estimation,
+testing, and prediction}. Cambridge University Press, 2010.
+  
+%     \bibitem[Jaynes(2003)]{Jaynes} Jaynes, E. T, (2003)
+%  \textit{Probability theory: the logic of science}. Cambridge
+%  University Press, 2003.
+
+%  \bibitem[Sinai(1992)]{Sinai} Sinai, Y. G, (1992)
+%  \textit{Probability theory: an introductory course}. Springer
+%  Verlag, 1992.  
+
+%\bibitem[{deGroot(1986)}]{DeGrootBlackwell}DeGroot, M. H. (1986)
+%       A conversation with David Blackwell.
+%\newblock \emph{Statistical Science}, \textbf{1}, 40--53.
+
+%         \bibitem[Mosteller(1987)]{Mosteller} Mosteller, F, (1987)
+%  \textit{Fifty challenging problems in probability with
+%    solutions}. Courier Corporation, 1987.
+
+%    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+%  \textit{Information theory, inference, and learning
+%  algorithms}. Cambridge University Press, 2003.
+
+%\bibitem[{Lindley(2013)}]{Lindley}Lindley, D. V. (2013)
+%   \textit{Understanding Uncertainty}. John Wiley and sons, 2013.
+
+
+\end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
