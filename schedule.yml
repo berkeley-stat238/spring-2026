@@ -161,4 +161,10 @@
         - type: "PDF"
           id: "11"
           name: "LectureEleven238Spring2026.pdf"
-          href: "./LectureEleven238Spring2026.pdf"	  	  
+          href: "./LectureEleven238Spring2026.pdf"
+    - date: "Feb 17"
+      items:
+        - type: "Lab"
+          id: "7 Code"
+          name: "Posterior Predictive Distribution"
+          href: "./lab04.ipynb"
