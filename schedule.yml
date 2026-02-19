@@ -162,9 +162,25 @@
           id: "11"
           name: "LectureEleven238Spring2026.pdf"
           href: "./LectureEleven238Spring2026.pdf"
+- week: 5
+  days:
     - date: "Feb 17"
       items:
         - type: "Lab"
-          id: "7 Code"
+          id: "4 Code"
           name: "Posterior Predictive Distribution"
           href: "./lab04.ipynb"
+    - date: "Feb 18"
+      items:
+        - type: "Lecture"
+          id: "12"
+          name: "Dirichlet-Multinomial Inference" 
+          href: "./LectureTwelve238Spring2026.tex"
+        - type: "Lecture"
+          id: "12 Code"
+          name: "Dirichlet-Multinomial Inference"
+          href: "./CodeLectureTwelve238Spring2026.ipynb"
+        - type: "PDF"
+          id: "12"
+          name: "LectureTwelve238Spring2026.pdf"
+          href: "./LectureTwelve238Spring2026.pdf"
