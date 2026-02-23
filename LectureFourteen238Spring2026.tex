@@ -1,0 +1,368 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry}
+\usepackage{graphicx}
+
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Fourteen} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{23 Feb 2026}
+
+\maketitle
+
+
+We will illustrate Dirichlet-Multinomial inference on a text data
+example. This analysis is taken from
+\citet{MacKay1995HierarchicalDirichlet}. 
+
+\section{A Text Example}
+
+We observe some text $y_1, \dots, y_n$. The vocabulary consists of the
+number of distinct words (including punctuation marks) in the
+text. Assume the vocabulary size is $k$.
+
+\subsection{A simple i.i.d model}
+
+The simplest model assumes that $y_1, \dots, y_n$ are i.i.d with an
+distribution $P$ that is supported on the vocabulary. The likelihood
+then becomes:
+\begin{align}\label{lik_unigram}
+ \prod_{i=1}^n p_{y_i} = \prod_{i=1}^k p_i^{N_i}
+\end{align}
+where $N_i$ is the observed count for the $i$-th word in the
+vocabulary. We can place a Dirichlet prior on $(p_1, \dots, p_k)$
+(e.g., $\text{Dirichlet}(0, \dots, 0)$) which would result in the
+$\text{Dirichlet}(N_1, \dots, N_k)$  posterior distribution. One can
+then generate new text in the following way:
+\begin{enumerate}
+\item First generate $(p_1, \dots, p_k)$ from the posterior
+  distribution.
+\item Then generate new words $y_{n+1}, y_{n+2}, \dots$ i.i.d from the
+  multinomial distribution $\text{Mult}(1; p_1, \dots, p_k)$ until a
+  specific word (e.g., the period symbol '$\cdot$')) is generated. 
+\end{enumerate}
+Obviously, this will not result in realistic text. This is because the
+i.i.d assumption collapses the text into a bag-of-words
+representation, discarding all sequential information. Indeed, in this
+model, we are effectively working with the counts 
+$N_1, \dots, N_k$ instead of the raw data $y_1, \dots, y_n$. The
+likelihood in terms of the counts is:
+\begin{align*}
+  \frac{n}{N_1! \dots N_k!} p_1^{N_1} \dots p_k^{N_k} \propto
+  \prod_{i=1}^k p_i^{N_i}
+\end{align*}
+which coincides with \eqref{lik_unigram}. As a result, it cannot
+capture even the most basic linguistic dependencies (e.g., that
+``the'' is likely to be followed by a noun). 
+
+
+\subsection{AR(1) model}
+
+A slightly better model will be obtained if we replace the i.i.d
+assumption with a Markovian one. This is also referred to as the first
+order AutoRegressive AR(1) model.
+
+The likelihood here then becomes:
+\begin{align*}
+  p_{y_1} p_{y_2 \mid y_1} p_{y_3 \mid y_2, y_1} \dots p_{y_n \mid
+  y_{n-1}, \dots, y_1}
+\end{align*}
+We assume now that $p_{y_i \mid y_{i-1}, \dots, y_1} = p_{y_i \mid
+  y_{i-1}}$ for each $i = 3, \dots, n$. This gives
+\begin{align*}
+  \text{Likelihood} = p_{y_1} \prod_{i=2}^n p_{y_i \mid y_{i-1}}. 
+\end{align*}
+We also assume that $p_{y_1}$ is constant so we don't need to model
+it. This gives: 
+\begin{align}\label{lik_ar1}
+  \text{Likelihood} \propto  \prod_{i=2}^n p_{y_i \mid y_{i-1}}. 
+\end{align}
+If you don't like the assumption that $p_{y_1}$ is constant, you can
+interpret the above as the conditional likelihood of $(y_2, \dots,
+y_n)$ given $y_1$.
+
+Just as in the i.i.d model where we could write the likelihood in
+terms of counts, we can rewrite the likelihood \eqref{lik_ar1} using
+'bi-gram counts'. For each $i$ and $j$ in $\{1, \dots, k\}$, let $x_{j
+  \mid i}$ denote the number of times the word $j$ follows word $i$ in
+the text. Also let $x_i = \sum_{j=1}^k x_{j \mid i}$ denote the number
+of times word $i$ appears as the ``previous word'' in the text.
+
+Then the likelihood \eqref{lik_ar1} is the same as:
+\begin{align}\label{lik_ar1_c}
+    \prod_{i=1}^k  \prod_{j=1}^k p_{j \mid i}^{x_{j \mid i}}
+\end{align}
+where $p_{j \mid i}$ denotes the probability that word $j$ appears
+as the next word given that the previous word is $i$.
+
+We can also directly write the likelihood in terms of the bigram
+counts $(x_{j \mid i}, j = 1, \dots, k)$ and $i = 1, \dots, k$. The
+model here is:
+\begin{align*}
+  (x_{j \mid i}, j = 1, \dots, k) \overset{\text{ind}}{\sim}
+  \text{Multinomial}(x_i; p_{j \mid i}, j = 1, \dots, k). 
+\end{align*}
+so that the likelihood in terms of the bigram counts is: 
+\begin{align}\label{lik_bigram}
+  \prod_{i=1}^k  \frac{x_i!}{\prod_{j=1}^k x_{j \mid
+  i}!} \prod_{j=1}^k p_{j \mid i}^{x_{j \mid i}}. 
+\end{align}
+The unknown parameters in this model are the probability vectors
+$(p_{j \mid i}, 1 \leq j \leq k)$ for each $i = 1, \dots, k$.
+
+\citet{MacKay1995HierarchicalDirichlet} perform Bayesian inference
+with the following prior: 
+\begin{align*}
+  (p_{j \mid i}, j = 1, \dots, k) \overset{\text{i.i.d}}{\sim}
+  \text{Dirichlet}(a_1, \dots, a_k)
+\end{align*}
+for some $a_1, \dots, a_k > 0$. This means that all the $k$
+probability vectors $(p_{j \mid i}, 1 \leq j \leq k)$ are assumed to
+be independently distributed according to the same Dirichlet
+distribution $\text{Dirichlet}(a_1, \dots, a_k)$. The prior density is
+therefore
+\begin{align*}
+  \prod_{i=1}^k \frac{\Gamma(a_1 + \dots + a_k)}{\Gamma(a_1) \dots
+  \Gamma(a_k)} \prod_{j=1}^k p_{j \mid i}^{a_j - 1}. 
+\end{align*}
+The posterior is then:
+\begin{align*}
+ \prod_{i=1}^k  \frac{x_i!}{\prod_{j=1}^k x_{j \mid
+  i}!} \prod_{j=1}^k p_{j \mid i}^{x_{j \mid i}} \times \prod_{i=1}^k
+  \frac{\Gamma(a_1 + \dots + a_k)}{\Gamma(a_1) \dots \Gamma(a_k)}
+  \prod_{j=1}^k p_{j \mid i}^{a_j - 1} \propto \prod_{i=1}^k \prod_{j=1}^k p_{j \mid i}^{x_{j \mid i} + a_j
+  - 1}
+\end{align*}
+which means that: 
+\begin{align*}
+  (p_{j \mid i}, j = 1, \dots, k) \overset{\text{ind}}{\sim}
+  \text{Dirichlet}(x_{j \mid i} + a_j, j = 1, \dots, k). 
+\end{align*}
+So the posterior mean estimate of $p_{j \mid i}$ is:
+\begin{align*}
+  \hat{p}_{j \mid i} = \frac{x_{j \mid i} + a_j}{x_i + a_1 + \dots +
+  a_k}. 
+\end{align*}
+The choice of $a_1, \dots, a_k$ controls the properties of the above
+posterior. Instead of plugging in some values for $a_1, \dots, a_k$,
+\citet{MacKay1995HierarchicalDirichlet} propose estimating them by maximizing the
+marginal likelihood of the data $(x_{j \mid i}, 1 \leq i, j \leq k)$
+over all values of $a_1, \dots, a_k$.
+
+The marginal distribution of the data given the Dirichlet
+hyperparameters $a_1, \dots, a_k$ is: 
+\begin{align*}
+&  \P \left\{x_{j \mid i}, 1 \leq i, j \leq k \mid a_1, \dots, a_k
+  \right\} \\
+&= \int \prod_{i=1}^k  \frac{x_i!}{\prod_{j=1}^k x_{j \mid
+  i}!} \prod_{j=1}^k p_{j \mid i}^{x_{j \mid i}} \times \prod_{i=1}^k
+  \frac{\Gamma(a_1 + \dots + a_k)}{\Gamma(a_1) \dots \Gamma(a_k)}
+  \prod_{j=1}^k p_{j \mid i}^{a_j - 1} d(p_{j \mid i} \text{ all } j,
+  i) \\
+&=    \prod_{i=1}^k \frac{x_i!}{\prod_{j=1}^k x_{j \mid
+  i}!} \frac{\Gamma(a_1 + \dots + a_k)}{\Gamma(a_1) \dots \Gamma(a_k)}
+  \int \prod_{j=1}^k p_{j \mid i}^{x_{j \mid i} + a_j - 1} d(p_{j \mid
+  i}, 1 \leq j \leq k)\\
+&=  \prod_{i=1}^k \frac{x_i!}{\prod_{j=1}^k x_{j \mid
+  i}!}\left[\frac{\Gamma(a_1 + \dots + 
+  a_k)}{\Gamma(x_i + a_1 + \dots + a_k)} \prod_{j=1}^k
+  \frac{\Gamma(x_{j \mid i} + a_j)}{\Gamma(a_j)} \right]. 
+\end{align*}
+In the machine learning literature, the marginal distribution of the
+data given the hyperparameters of the prior is referred to as the
+Evidence (see e.g.,
+\url{https://en.wikipedia.org/wiki/Marginal_likelihood}). So: 
+\begin{align*}
+  \text{Evidence}(a_1, \dots, a_k) = \prod_{i=1}^k \frac{x_i!}{\prod_{j=1}^k x_{j \mid
+  i}!}\left[\frac{\Gamma(a_1 + \dots + 
+  a_k)}{\Gamma(x_i + a_1 + \dots + a_k)} \prod_{j=1}^k
+  \frac{\Gamma(x_{j \mid i} + a_j)}{\Gamma(a_j)} \right]. 
+\end{align*}
+The Evidence can be maximized over $a_1, \dots, a_k$ to get a good
+choice of 
+the hyperparameters. Note that the factorial terms do not involve $
+a_j$s so they can dropped in this maximization:
+\begin{align*}
+ \text{Evidence}(a_1, \dots, a_k) \propto \prod_{i=1}^k \left[\frac{\Gamma(a_1 + \dots + 
+  a_k)}{\Gamma(x_i + a_1 + \dots + a_k)} \prod_{j=1}^k
+  \frac{\Gamma(x_{j \mid i} + a_j)}{\Gamma(a_j)} \right]. 
+\end{align*}
+It is always better to optimize the logarithm of the evidence (rather than the
+evidence directly):
+\begin{align*}
+ & \log \text{Evidence}(a_1, \dots, a_k) \\ &= \text{constant} + \sum_{i=1}^k \left\{ \log \Gamma(A) - \log \Gamma(x_i + A) +
+  \sum_{j=1}^k \left[ \log \Gamma(x_{j \mid i} + a_j) - \log
+                \Gamma(a_j) \right] \right\}. 
+\end{align*}
+where $A := a_1 + \dots + a_k$ and $x_i = \sum_{j=1}^k x_{j \mid
+  i}$. One can compute the gradient with respect to $a$ 
+using the digamma function (see
+\url{https://en.wikipedia.org/wiki/Digamma_function}):
+\begin{align*}
+  \Psi(z) := \frac{d}{dz} \log \Gamma(z). 
+\end{align*}
+This gives:
+\begin{align*}
+ \frac{\partial}{\partial a_j} \log \text{Evidence}(a_1, \dots, a_k)
+  = \sum_{i=1}^k \left\{\Psi(A) - \Psi(x_i + A) + \Psi(x_{j \mid i} +
+  a_j) - \Psi(a_j) \right\}. 
+\end{align*}
+With these gradients (scipy has an inbuilt function for digamma
+calculation), some numerical optimization routine can be used for
+maximizing the log-Evidence over $a_1, \dots, a_k$ (see code). 
+
+
+
+\begin{thebibliography}{99}
+
+\bibitem[MacKay and Peto(1995)]{MacKay1995HierarchicalDirichlet}
+D.~J.~C. MacKay and L.~C. Peto,
+\newblock ``A hierarchical Dirichlet language model,''
+\newblock \emph{Natural Language Engineering}, vol.~1,
+no.~3, pp.~289--308, 1995.
+
+%\bibitem[Rubin(1981)]{Rubin1981BayesianBootstrap}
+%D.~B. Rubin,
+%\newblock ``The Bayesian bootstrap,''
+%\newblock \emph{The Annals of Statistics}, vol.~9,
+%no.~1, pp.~130--134, 1981.
+  
+%\bibitem[Fisher(1934)]{Fisher1934}
+%R.~A. Fisher,
+%\newblock ``Probability, likelihood and quantity of information in the logic of
+%uncertain inference,''
+%\newblock \emph{Proceedings of the Royal Society of London. Series~A,
+%Containing Papers of a Mathematical and Physical Character}, vol.~146,
+%no.~856, pp.~1--8, 1934.
+
+%\bibitem[Efron(2010)]{Efron}
+%Efron, B. (2010)
+%\textit{Large-scale inference: empirical Bayes methods for estimation,
+%testing, and prediction}. Cambridge University Press, 2010.
+  
+%     \bibitem[Jaynes(2003)]{Jaynes} Jaynes, E. T, (2003)
+%  \textit{Probability theory: the logic of science}. Cambridge
+%  University Press, 2003.
+
+%  \bibitem[Sinai(1992)]{Sinai} Sinai, Y. G, (1992)
+%  \textit{Probability theory: an introductory course}. Springer
+%  Verlag, 1992.  
+
+%\bibitem[{deGroot(1986)}]{DeGrootBlackwell}DeGroot, M. H. (1986)
+%       A conversation with David Blackwell.
+%\newblock \emph{Statistical Science}, \textbf{1}, 40--53.
+
+%         \bibitem[Mosteller(1987)]{Mosteller} Mosteller, F, (1987)
+%  \textit{Fifty challenging problems in probability with
+%    solutions}. Courier Corporation, 1987.
+
+%    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+%  \textit{Information theory, inference, and learning
+%  algorithms}. Cambridge University Press, 2003.
+
+%\bibitem[{Lindley(2013)}]{Lindley}Lindley, D. V. (2013)
+%   \textit{Understanding Uncertainty}. John Wiley and sons, 2013.
+
+
+\end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

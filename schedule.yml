@@ -197,4 +197,21 @@
         - type: "PDF"
           id: "13"
           name: "LectureThirteen238Spring2026.pdf"
-          href: "./LectureThirteen238Spring2026.pdf"	  
+          href: "./LectureThirteen238Spring2026.pdf"
+- week: 6
+  days:
+    - date: "Feb 23"
+      items:
+        - type: "Lecture"
+          id: "14"
+          name: "Simple text analysis example" 
+          href: "./LectureFourteen238Spring2026.tex"
+        - type: "Lecture"
+          id: "14 Code"
+          name: "Simple text analysis example"
+          href: "./CodeLectureFourteen238Spring2026.ipynb"
+        - type: "PDF"
+          id: "14"
+          name: "LectureFourteen238Spring2026.pdf"
+          href: "./LectureFourteen238Spring2026.pdf"
+	  
