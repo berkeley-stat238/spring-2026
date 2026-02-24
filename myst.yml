@@ -77,6 +77,8 @@ project:
          title: "3 Code"
        - file: lab04.ipynb
          title: "4 Code"
+       - file: lab05.ipynb
+         title: "5 Code"
   downloads:
     - file: syllabus.pdf
       title: "Syllabus"
@@ -132,6 +134,8 @@ project:
       title: "Lab 3 Code"
     - file: lab04.ipynb
       title: "Lab 4 Code"
+    - file: lab05.ipynb
+      title: "Lab 5 Code"
 
 site:
   template: book-theme

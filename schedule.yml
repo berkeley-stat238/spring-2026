@@ -214,4 +214,9 @@
           id: "14"
           name: "LectureFourteen238Spring2026.pdf"
           href: "./LectureFourteen238Spring2026.pdf"
-	  
+    - date: "Feb 24"
+      items:
+        - type: "Lab"
+          id: "5 Code"
+          name: "Bayesian Bootstrap"
+          href: "./lab05.ipynb"
