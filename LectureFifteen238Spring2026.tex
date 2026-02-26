@@ -1,0 +1,623 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry}
+\usepackage{graphicx}
+
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Fifteen} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{25 Feb 2026}
+
+\maketitle
+
+\section{Linear Regression}
+
+Our next topic is (multiple) linear regression. Here, we have one
+response variable $y$ and 
+$m$ covariates $x_1, \dots, x_m$  ($m = 1$ corresponds to simple linear
+regression). We observe data on $n$ instances or subjects for all
+these variables: $(y_i, x_{i1}, \dots, x_{im})$ for $i = 1, \dots,
+n$. The multiple linear regression model (with normal errors) is given
+by: 
+\begin{equation}\label{lm}
+  y_i = \beta_0 + \beta_1 x_{i1} + \dots + \beta_m x_{im} + \epsilon_i
+~~  \text{with $\epsilon_i \overset{\text{i.i.d}}{\sim} N(0, \sigma^2)$}. 
+\end{equation}
+The default prior for linear regression is: 
+\begin{equation*}
+  \beta_0, \beta_1, \dots, \beta_m, \log \sigma
+  \overset{\text{i.i.d}}{\sim} \text{unif}(-C, C)
+\end{equation*}
+for a very large positive $C$. The joint posterior density of
+$\beta_0, \dots, \beta_m, \sigma$ is then given by
+\begin{align*}
+&  f_{\beta_0, \beta_1, \dots, \beta_m, \sigma \mid \text{data}}(\beta_0, \beta_1,
+  \dots, \beta_m,
+  \sigma) \\ &\propto  \sigma^{-n-1} \exp 
+                                        \left(-\frac{S(\beta_0, \dots,
+               \beta_m)}{2 \sigma^2}
+    \right) I \left\{-C < \beta_0,
+    \beta_1, \dots, \beta_m, \log \sigma < C \right\}. 
+\end{align*}
+where we use the notation
+\begin{equation*}
+  S(\beta_0, \beta_1, \dots, \beta_m)  := \sum_{i=1}^n (y_i - \beta_0 - \beta_1
+      x_{i1} - \dots - \beta_m x_{im})^2
+\end{equation*}
+for the sum of squares. 
+
+The 
+posterior over only the coefficient parameters $\beta_0, \dots, \beta_m$ can
+be obtained by integrating (or marginalizing) the parameter $\sigma$. 
+\begin{align*}
+ & f_{\beta_0, \beta_1, \dots, \beta_m \mid \text{data}} (\beta_0, \beta_1, \dots,
+   \beta_m) \\  &= \int 
+                                                              f_{\beta_0, 
+                                                              \beta_1,
+                  \dots, \beta_m,
+                                                              \sigma
+                                                              \mid
+                                                              \text{data}}(\beta_0,
+                                                              \beta_1,
+                  \dots, \beta_m,
+                                                              \sigma)
+                                                              d\sigma
+  \\
+  &\propto I\{-C < \beta_0, \beta_1, \dots, \beta_m < C\}
+    \int_{e^{-C}}^{e^C} \sigma^{-n-1} \exp 
+                                        \left(-\frac{S(\beta_0, \dots,
+    \beta_m)}{2 \sigma^2} \right) d\sigma \\
+&\approx 
+    I\{-C < \beta_0, \beta_1, \dots, \beta_m < C\} \int_{0}^{\infty} \sigma^{-n-1}
+    \exp 
+                                        \left(-\frac{S(\beta_0,\dots, \beta_m)}{2 \sigma^2}                               
+  \right)  d\sigma \\
+&=    I\{-C < \beta_0, \beta_1, \dots, \beta_m < C\}
+  \left(\frac{1}{S(\beta_0, \dots, \beta_m)}\right)^{n/2} \int_{0}^{\infty} s^{-n-1} \exp
+  \left(-\frac{1}{2s^2} \right) ds \\
+&\propto   I\{-C < \beta_0, \beta_1, \dots, \beta_m < C\}
+  \left(\frac{1}{S(\beta_0, \dots, \beta_m)}\right)^{n/2} \\
+ &\approx   \left(\frac{1}{S(\beta_0, \dots, \beta_m)}\right)^{n/2} \propto 
+  \left(\frac{S(\hat{\beta}_0, \hat{\beta}_1, \dots,
+      \hat{\beta}_m)}{S(\beta_0, \beta_1, \dots, \beta_m)} 
+  \right)^{n/2}
+\end{align*}
+where $\hat{\beta}_0, \dots, \hat{\beta}_m$ denote the least squares
+estimators of $\beta_0, \dots, \beta_m$ (i.e., $(\hat{\beta}_0, \dots,
+\hat{\beta}_m)$ minimizes $S(\beta_0, \dots, \beta_m)$ over all values
+of $\beta_0, \dots, \beta_m$). 
+
+Our posterior density for $\beta_0, \dots, \beta_m$ is thus:  
+\begin{equation}\label{bayespost_lm}
+   f_{\beta_0, \beta_1, \dots, \beta_m \mid \text{data}} (\beta_0, \beta_1, \dots,
+   \beta_m) \propto \left(\frac{S(\hat{\beta}_0, \hat{\beta}_1, \dots,
+      \hat{\beta}_m)}{S(\beta_0, \beta_1, \dots, \beta_m)} 
+  \right)^{n/2}. 
+\end{equation}
+It turns out that this is a multivariate $t$-density. Here is some
+basic background on multivariate $t$-densities.
+
+\section{$t$-density}
+The formula for the density corresponding to the $t$-distribution
+$t_{p}(\mu, \Sigma, \nu)$ is (see
+(\url{https://en.wikipedia.org/wiki/Multivariate_t-distribution}): 
+\begin{align}
+ f(x) &:= \frac{\Gamma((\nu + p)/2)}{\Gamma(\nu/2) \nu^{p/2} \pi^{p/2}
+   \sqrt{\text{det}~\Sigma}} \left[\frac{1}{1 + \frac{1}{\nu} (x - \mu)^T
+      \Sigma^{-1} (x - \mu)} \right]^{(\nu + p)/2} \nonumber \\
+      &\propto  \left[\frac{1}{1 + \frac{1}{\nu} (x - \mu)^T 
+      \Sigma^{-1} (x - \mu)} \right]^{(\nu + p)/2}. \label{tdens}
+\end{align}
+Here:
+\begin{enumerate}
+\item $p$ denotes dimension of the vector $x$ (this is a $p$-variate
+  joint density)
+\item $\mu$ is a $p \times 1$ vector called the location
+\item $\Sigma$ is a $p \times p$ matrix called the scale matrix
+\item $\nu > 0$   denotes the degrees of freedom. 
+\end{enumerate}
+Here is some more information about the $t$-density \eqref{tdens}:
+
+\begin{enumerate}
+\item \textbf{Connection to the Multivariate Normal Density}: 
+The
+most important term in the formula \eqref{tdens}  is $(x -
+\mu)^T\Sigma^{-1}(x - \mu)$. This exact term also appears in the
+multivariate normal density. If $X \sim N(\mu, \Sigma)$, then the
+density of $X$ is given by:
+\begin{equation*}
+  \frac{1}{(2\pi)^{p/2}\sqrt{\det \Sigma}} \exp \left(-\frac{1}{2} (x
+    - \mu)^T \Sigma^{-1} (x - \mu) 
+  \right). 
+\end{equation*}
+This suggests that the $t$-density is closely related to the
+multivariate normal density. Here is the connection. Suppose $X \sim
+N_p(\mu, \Sigma)$ and $V \sim \chi^2_{\nu}$ (this is the chi-squared
+distribution with $\nu$ degrees of freedom) are independent. Then 
+\begin{equation}\label{t_fact}
+  T := \mu + \frac{X - \mu}{\sqrt{V/\nu}} \sim t_p(\mu, \Sigma, \nu). 
+\end{equation}
+Thus, in the notation $t_{p}(\mu, \Sigma, \nu)$, $\nu$ denotes
+degrees of freedom, $p$ denotes dimension, $\mu$ and $\Sigma$ denote
+the mean vector and covariance matrix of the corresponding normal
+random vector $X$. For completeness, we include a proof of
+\eqref{t_fact} in Section \ref{proof_t_norm}.
+
+\item \textbf{Individual Components as well as Linear Combinations of
+    Components of $T$ are also $t$-distributed}: Suppose $T \sim
+  t_p(\mu, \Sigma, \nu)$ and the components of $T$ are $T_1, \dots,
+  T_p$. Then each individual component $T_j$ is also
+  $t$-distributed. Also every linear combination $a_0 + a_1 T_1 + a_2
+  T_2 +  \dots + a_p T_p$ is also $t$-distributed. To see this, first
+  write
+  \begin{equation*}
+    a_0 + a_1 T_1 + \dots + a_p T_p = a_0 + a^T T 
+  \end{equation*}
+  where $a$ is the $p \times 1$ vector with components $a_1, \dots,
+  a_p$. Using the formula \eqref{t_fact}, we can write
+  \begin{equation*}
+    a_0 + a^T T = (a_0 + a^T \mu) + \frac{(a_0 + a^TX) - (a_0 +
+      a^T\mu)}{\sqrt{V/\nu}} 
+  \end{equation*}
+  Because $a_0 + a^T X \sim N(a_0 + a^T \mu, a^T \Sigma a)$, the same
+  fact \eqref{t_fact} applied to this case gives:
+  \begin{equation*}
+    a_0 + a^T T \sim t_1(a_0 + a^T \mu, a^T \Sigma a, \nu). 
+  \end{equation*}
+  In particular, this implies that for each $j = 1, \dots, p$,
+  \begin{equation*}
+    T_j \sim t_1(\mu_j, \Sigma(j, j), \nu)
+  \end{equation*}
+  where $\mu_j$ is the $j$th component of $\mu$ and $\Sigma(j, j)$ is
+  the $(j, j)$th entry of $\Sigma$. 
+ \item \textbf{When $\nu$ is large, $t$ is very close to normal}:
+   This can intuitively be seen by noting that when $\nu$ is
+large, the term $(x - \mu)^T \Sigma^{-1} (x - \mu)/\nu$ is small so
+that
+\begin{equation*}
+1 + \frac{1}{\nu}  (x - \mu)^T \Sigma^{-1} (x - \mu) \approx \exp
+\left(\frac{1}{\nu}  (x - \mu)^T \Sigma^{-1} (x - \mu) \right), 
+\end{equation*}
+where we used the observation that $1 + z \approx e^z$ when $z$
+is small. Thus the $t$-density \eqref{tdens} for large $\nu$ becomes
+approximately:
+\begin{equation*}
+  \exp \left(-\frac{\nu + p}{2 \nu} (x - \mu)^T \Sigma^{-1} (x - \mu)
+  \right) \approx \exp \left(-\frac{1}{2} (x - \mu)^T
+    \Sigma^{-1} (x - \mu) \right) 
+\end{equation*}
+because $\frac{\nu + p}{\nu} \approx 1$ when $\nu$ is large. This gets
+us the normal density:
+\begin{equation*}
+  t_{p}(\mu, \Sigma, \nu) \approx N_p(\mu, \Sigma) ~~\text{if $\nu$ is
+    large}. 
+\end{equation*}
+\end{enumerate}
+
+It turns out that \eqref{bayespost_lm} is a special case of
+\eqref{tdens} for some $p, \mu, \Sigma, \nu$. To see this, we need to
+first rewrite \eqref{bayespost_lm} using matrix notation which we do
+in the next section.
+
+
+\section{Matrix Notation for Multiple Linear Regression}
+\begin{equation*}
+  y =
+  \begin{pmatrix}
+    y_1 \\ \cdot \\ \cdot \\ \cdot \\ y_n
+  \end{pmatrix} ~~~ X =
+  \begin{pmatrix}
+    1 & x_{11} & \dots & x_{1m} \\
+    1 & x_{21} & \dots & x_{2m} \\
+    \cdot & \cdot & \dots & \cdot \\
+    \cdot & \cdot & \dots & \cdot \\
+    \cdot & \cdot & \dots & \cdot \\
+    1 & x_{n1} & \dots & x_{nm}
+  \end{pmatrix} ~~~
+  \beta =
+  \begin{pmatrix}
+    \beta_0 \\ \beta_1 \\ \cdot \\ \cdot \\ \cdot \\ \beta_m
+  \end{pmatrix} ~~~
+  \hat{\beta} =
+  \begin{pmatrix}
+    \hat{\beta}_0 \\ \hat{\beta}_1 \\ \cdot \\ \cdot \\ \cdot \\ \hat{\beta}_m
+  \end{pmatrix}
+\end{equation*}
+This notation is used not just to write formulae for linear
+regression, but also in code. For example, the OLS function in
+\texttt{statsmodels} uses the syntax \texttt{sm.OLS(y, X).fit()} to
+fit the linear regression model, where $y$ ($n \times 1$ vector) and
+$X$ ($n \times (m+1)$ matrix) are defined above. 
+
+With this notation, one can write the sum of squares $S(\beta_0,
+\dots, \beta_m)$ as: 
+\begin{equation*}
+  S(\beta) = S(\beta_0, \dots, \beta_m) = \|y - X \beta\|^2. 
+\end{equation*}
+There are two important facts about $S(\beta)$:
+\begin{enumerate}
+\item \textbf{Fact 1}: the least squares estimator $\hat{\beta}$
+  is given by the formula:
+  \begin{equation}\label{lse}
+    \hat{\beta} = (X^T X)^{-1} X^T y. 
+  \end{equation}
+  The proof of \eqref{lse} is as follows. The gradient of $S(\beta)$
+  is given by
+  \begin{align*}
+    \nabla S(\beta) &= \nabla \left[ \|y - X \beta\|^2 \right] \\
+                    &= \nabla \left[ (y - X\beta)^T (y - X \beta) \right] \\
+                    &= \nabla \left[ y^T y - \beta^T X^T y - y^T X
+                      \beta + \beta^T X^T X \beta\right] = 2 X^T y -
+                                                           2 X^T X
+                                                           \beta.  
+  \end{align*}
+  Because $\hat{\beta}$ minimizes $S(\beta)$, the gradient should
+  equal zero when $\beta = \hat{\beta}$, and this leads to
+  \begin{align}\label{normeq}
+    X^T (y - X \hat{\beta}) = 0 \implies X^T X \hat{\beta} = X^T y
+    \implies \hat{\beta} = (X^T X)^{-1} X^T y. 
+  \end{align}
+\item \textbf{Fact 2}: The following Pythagorean identity holds:
+  \begin{align}
+    \label{pyth}
+    S(\beta) = S(\hat{\beta}) + \|X \beta - X \hat{\beta}\|^2 =
+    S(\hat{\beta}) + (\beta - \hat{\beta})^T X^T X (\beta - 
+    \hat{\beta}). 
+  \end{align}
+  To prove \eqref{pyth}, write
+  \begin{align*}
+    S(\beta) &= \|y - X \beta\|^2 \\
+             &= \|y - X\hat{\beta} + X \hat{\beta} - X \beta\|^2 \\
+    &= \|y - X \hat{\beta}\|^2 + \|X \hat{\beta} - X \beta\|^2 + 2
+      \left<y - X \hat{\beta}, X \hat{\beta} - X \beta \right>. 
+  \end{align*}
+  The cross product is zero (leading to \eqref{pyth}) because:
+  \begin{align*}
+     \left<y - X \hat{\beta}, X \hat{\beta} - X \beta \right> &=
+                                                                \left(X
+                                                                \hat{\beta}
+                                                                - X \beta
+                                                                \right)^T
+                                                                \left(y
+                                                                - X
+                                                                \hat{\beta}
+                                                                \right)
+    \\
+    &= \left( \hat{\beta} - \beta \right)^T X^T (y - X \hat{\beta}) =
+      \left( \hat{\beta} - \beta \right)^T \left(X^T y - X^T X
+      \hat{\beta} \right) = 0
+  \end{align*}
+  where we used \eqref{normeq}. 
+\end{enumerate}
+Using \eqref{pyth}, we can write the posterior density
+\eqref{bayespost_lm} as
+\begin{align}
+  f_{\beta \mid \text{data}}(\beta) &\propto \left(
+                                      \frac{S(\hat{\beta})}{S(\beta)}
+                                      \right)^{n/2} \nonumber \\
+  &= \left(\frac{S(\hat{\beta})}{S(\hat{\beta}) + \left(\beta -
+    \hat{\beta} \right)^T X^T X \left(\beta - \hat{\beta} \right)}
+    \right)^{n/2} \nonumber \\ &= \left(\frac{1}{1 + \left(\beta -
+    \hat{\beta} \right)^T \frac{X^T X}{S(\hat{\beta})} \left(\beta - \hat{\beta} \right)}
+    \right)^{n/2}.  \label{post2}
+\end{align}
+The above formula is a special case of \eqref{tdens} with
+\begin{equation*}
+x = \beta, ~~~~  p = m+1, ~~~~ \mu = \hat{\beta}, ~~~~ \nu + p = n, ~~~~
+\frac{\Sigma^{-1}}{\nu} = \frac{X^T X}{S(\hat{\beta})}
+\end{equation*}
+or equivalently
+\begin{equation*}
+  x = \beta, ~~~~  p = m+1, ~~~~ \mu = \hat{\beta}, ~~~~ \nu = n - m -
+  1, ~~~~ \Sigma = \frac{S(\hat{\beta})}{n - m - 1} \left(X^T X
+  \right)^{-1}. 
+\end{equation*}
+We thus have
+\begin{equation}\label{post3}
+  \beta_0, \dots, \beta_m \mid \text{data} \sim
+  t_{m+1}\left(\hat{\beta},\frac{S(\hat{\beta})}{n - m - 1} \left(X^T
+      X 
+  \right)^{-1}, n - m - 1 \right). 
+\end{equation}
+With the posterior density \eqref{post3}, one can do uncertainty
+quantification 
+about the parameters $\beta_0, \beta_1, \dots, \beta_m$. One can generate
+multiple samples from $t_{m+1}(\hat{\beta}, (S(\hat{\beta})/(n-m-1))
+  (X^T X)^{-1}, n-m-1)$ and plot the resulting fitted values to visualize the
+  uncertainty in the coefficients.
+
+
+In \eqref{post3}, the quantity
+$S(\hat{\beta})/(n-m-1)$ is the \textbf{frequentist 
+  unbiased} estimator for $\sigma^2$, so we denote it by
+$\hat{\sigma}^2$:
+\begin{equation*}
+  \hat{\sigma} := \sqrt{\frac{S(\hat{\beta})}{n-m-1}}. 
+\end{equation*}
+$\hat{\sigma}$ can also be justified as a Bayesian estimator of
+$\sigma$ (this will be a question in Homework three). The terminology
+\textbf{Residual Standard Error} is sometimes used for
+$\hat{\sigma}$. 
+
+With the notation for $\hat{\sigma}$, the posterior \eqref{post3}
+becomes:
+\begin{equation}\label{post4}
+  \beta_0, \dots, \beta_m \mid \text{data} \sim
+  t_{m+1}\left(\hat{\beta},\hat{\sigma}^2 \left(X^T
+      X 
+  \right)^{-1}, n - m - 1 \right). 
+\end{equation}
+By one of the facts mentioned about the $t$-distribution, the
+posterior of each individual $\beta_j$ is also $t$:  
+  \begin{equation}\label{marg4}
+    \beta_j \mid \text{data} \sim t_{1}\left(\hat{\beta}_j,
+\hat{\sigma}^2 (X^T X)^{j+1, j+1}, n-m-1 \right) 
+  \end{equation}
+  where $(X^T X)^{j+1, j+1}$ is the $(j+1)^{th}$ diagonal entry 
+  of $(X^T X)^{-1}$ (note that we are using the $(j+1)$th diagonal
+  entry of $X^TX$ because $\beta_j$ is the $(j+1)$th component of
+  $\beta$). Writing this density out, we have
+  \begin{equation*}
+    f_{\beta_j \mid \text{data}}(\beta_j) \propto \left(\frac{1}{1 +
+        \frac{1}{n-m-1} \frac{(\beta_j -
+          \hat{\beta}_j)^2}{\hat{\sigma}^2 (X^TX)^{j+1,
+            j+1}}}  \right)^{n/2} 
+  \end{equation*}
+  which implies that
+  \begin{equation*}
+    \frac{\beta_j - \hat{\beta}_j}{\hat{\sigma} \sqrt{(X^T X)^{j+1,
+          j+1}}} \sim \text{univariate standard } t \text{ with }
+    n-m-1 \text{ d.f.}
+  \end{equation*}
+  This can be used to obtain uncertainty intervals for $\beta_j$. If
+  $t_{n-m-1, \alpha/2}$ is the point beyond which the $t$-distribution
+  (with $n-m-1$ degrees of freedom) assigns probability $\alpha/2$,
+  then
+  \begin{equation*}
+    \P \left\{-t_{n-m-1, \alpha/2} \leq     \frac{\beta_j - \hat{\beta}_j}{\hat{\sigma} \sqrt{(X^T X)^{j+1,
+          j+1}}} \leq t_{n-m-1, \alpha/2} \mid \text{data} \right\} =
+  1 - \alpha
+\end{equation*}
+which is same as:
+\begin{equation*}
+  \P \left\{\hat{\beta}_j - \hat{\sigma} \sqrt{(X^T X)^{j+1,
+          j+1}} t_{n-m-1, \alpha/2} \leq \beta_j \leq \hat{\beta}_j - \hat{\sigma} \sqrt{(X^T X)^{j+1,
+          j+1}} t_{n-m-1, \alpha/2}  \mid \text{data}  \right\} = 1 -
+    \alpha 
+\end{equation*}
+This interval:
+\begin{equation*}
+  \left[\hat{\beta}_j - \hat{\sigma} \sqrt{(X^T X)^{j+1,
+          j+1}} t_{n-m-1, \alpha/2},  \hat{\beta}_j - \hat{\sigma} \sqrt{(X^T X)^{j+1,
+          j+1}} t_{n-m-1, \alpha/2} \right]
+  \end{equation*}
+  is called the $100(1-\alpha)\%$ Bayesian Credible interval for
+  $\beta_j$. It \textbf{exactly coincides} with the frequentist $100(1
+  - \alpha)\%$ confidence interval for $\beta_j$.
+
+The degrees of freedom corresponding to the $t$-density in \eqref{post3} is $n - m - 1$ where
+$n$ is the number of observations, and $m$ is the number of
+covariates. Thus \textbf{if $n-m-1$ is large}, then the posterior
+distribution (which is actually $t$) is approximately normal: 
+\begin{equation*}
+    t_{m+1}\left(\hat{\beta},\frac{S(\hat{\beta})}{n - m - 1} \left(X^T
+      X 
+  \right)^{-1}, n - m - 1 \right) \approx N_{m+1}(\hat{\beta},
+\frac{S(\hat{\beta})}{n - m - 1} \left(X^T X  \right)^{-1}).  
+\end{equation*}
+In other words, when $n-m-1$ is large, the $t$-density \eqref{post3} is approximately
+equal to the $N_{m+1}(\hat{\beta}, \hat{\sigma}^2 (X^T
+X)^{-1})$. Further, when $n-m-1$ is large, the distribution \eqref{marg4}
+will be close to the normal  distribution $N(\hat{\beta}_j,
+\hat{\sigma}^2 (X^T X)^{j+1, j+1})$. The quantity $\hat{\sigma}
+\sqrt{(X^T X)^{j+1, j+1}}$ is known as the standard error
+corresponding to $\beta_j$.  
+
+
+
+\subsection{Proof of \eqref{t_fact}}\label{proof_t_norm}
+
+\begin{proof}[Proof of \eqref{t_fact}]
+  Start with the formula: 
+\begin{equation*}
+  f_T(y) = \int_0^{\infty} f_{T \mid V = x}(y) f_V(x) dx. 
+\end{equation*}
+Observe that
+\begin{equation*}
+  T \mid V = x \sim N\left(\mu,  \frac{\nu}{x} \Sigma \right)
+\end{equation*}
+so that
+\begin{align*}
+f_{T \mid V = x}(y) &= \frac{1}{(2 \pi)^{p/2}
+                      \sqrt{\text{det}(\frac{\nu}{x} \Sigma)}} \exp
+                      \left[-\frac{1}{2} (y - \mu)^T \left(\frac{\nu}{x}
+                      \Sigma\right)^{-1} (y - \mu) \right] \\
+  &= \frac{x^{p/2}}{(2 \pi)^{p/2} \nu^{p/2} \sqrt{\text{det}(\Sigma)}}
+    \exp \left(-\frac{x}{2\nu} (y - \mu)^T \Sigma^{-1} (y - \mu)
+    \right)
+\end{align*}
+where we used $\text{det}(\frac{\nu}{x} \Sigma) = (\nu/x)^p
+\text{det}(\Sigma)$. As a result
+\begin{align*}
+  f_T(y) &= \int_0^{\infty} f_{T \mid V = x}(y) f_V(x) dx \\
+  &\propto \int_0^{\infty} \frac{x^{p/2}}{(2 \pi)^{p/2} \nu^{p/2}
+    \sqrt{\text{det}(\Sigma)}} 
+    \exp \left(-\frac{x}{2\nu} (y - \mu)^T \Sigma^{-1} (y - \mu)
+    \right) x^{\frac{\nu}{2} - 1} e^{-x/2} dx \\
+  &\propto \int_0^{\infty} x^{\frac{p+\nu}{2} - 1} \exp
+    \left(-\frac{x}{2} \left[1 + \frac{1}{\nu} (y - \mu)^T \Sigma^{-1}
+    (y - \mu)\right] 
+    \right) dx. 
+\end{align*}
+The change of variable
+\begin{equation*}
+  t = x \left[1 + \frac{1}{\nu} (y - \mu)^T \Sigma^{-1} (y - \mu)\right]
+\end{equation*}
+leads to
+\begin{align*}
+  f_T(y) &\propto \frac{1}{\left[1 + \frac{1}{\nu} (y - \mu)^T
+  \Sigma^{-1} (y - \mu) \right]^{\frac{\nu + p}{2}}} \int_0^{\infty}
+           t^{\frac{\nu+p}{2} - 1} e^{-t/2} dt \\
+  &\propto \frac{1}{\left[1 + \frac{1}{\nu} (y - \mu)^T
+  \Sigma^{-1} (y - \mu) \right]^{\frac{\nu + p}{2}}}. 
+\end{align*}
+which proves \eqref{t_fact}. 
+\end{proof}
+
+
+
+
+
+%\begin{thebibliography}{99}
+
+%\bibitem[MacKay and Peto(1995)]{MacKay1995HierarchicalDirichlet}
+%D.~J.~C. MacKay and L.~C. Peto,
+%\newblock ``A hierarchical Dirichlet language model,''
+%\newblock \emph{Natural Language Engineering}, vol.~1,
+%no.~3, pp.~289--308, 1995.
+
+%\bibitem[Rubin(1981)]{Rubin1981BayesianBootstrap}
+%D.~B. Rubin,
+%\newblock ``The Bayesian bootstrap,''
+%\newblock \emph{The Annals of Statistics}, vol.~9,
+%no.~1, pp.~130--134, 1981.
+  
+%\bibitem[Fisher(1934)]{Fisher1934}
+%R.~A. Fisher,
+%\newblock ``Probability, likelihood and quantity of information in the logic of
+%uncertain inference,''
+%\newblock \emph{Proceedings of the Royal Society of London. Series~A,
+%Containing Papers of a Mathematical and Physical Character}, vol.~146,
+%no.~856, pp.~1--8, 1934.
+
+%\bibitem[Efron(2010)]{Efron}
+%Efron, B. (2010)
+%\textit{Large-scale inference: empirical Bayes methods for estimation,
+%testing, and prediction}. Cambridge University Press, 2010.
+  
+%     \bibitem[Jaynes(2003)]{Jaynes} Jaynes, E. T, (2003)
+%  \textit{Probability theory: the logic of science}. Cambridge
+%  University Press, 2003.
+
+%  \bibitem[Sinai(1992)]{Sinai} Sinai, Y. G, (1992)
+%  \textit{Probability theory: an introductory course}. Springer
+%  Verlag, 1992.  
+
+%\bibitem[{deGroot(1986)}]{DeGrootBlackwell}DeGroot, M. H. (1986)
+%       A conversation with David Blackwell.
+%\newblock \emph{Statistical Science}, \textbf{1}, 40--53.
+
+%         \bibitem[Mosteller(1987)]{Mosteller} Mosteller, F, (1987)
+%  \textit{Fifty challenging problems in probability with
+%    solutions}. Courier Corporation, 1987.
+
+%    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+%  \textit{Information theory, inference, and learning
+%  algorithms}. Cambridge University Press, 2003.
+
+%\bibitem[{Lindley(2013)}]{Lindley}Lindley, D. V. (2013)
+%   \textit{Understanding Uncertainty}. John Wiley and sons, 2013.
+
+
+%\end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

@@ -220,3 +220,14 @@
           id: "5 Code"
           name: "Bayesian Bootstrap"
           href: "./lab05.ipynb"
+    - date: "Feb 25"
+      items:
+        - type: "Lecture"
+          id: "15"
+          name: "Linear Regression" 
+          href: "./LectureFifteen238Spring2026.tex"
+        - type: "PDF"
+          id: "15"
+          name: "LectureFifteen238Spring2026.pdf"
+          href: "./LectureFifteen238Spring2026.pdf"
+	  
