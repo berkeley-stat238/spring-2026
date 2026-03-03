@@ -1,0 +1,537 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry}
+\usepackage{graphicx}
+
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Sixteen} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{02 Feb 2026}
+
+\maketitle
+
+\section{Linear Regression}
+
+In the last lecture, we discussed Bayesian inference for multiple
+linear regression. The setting is as follows: we have one
+response variable $y$ and 
+$m$ covariates $x_1, \dots, x_m$  ($m = 1$ corresponds to simple linear
+regression). We observe data on $n$ instances or subjects for all
+these variables: $(y_i, x_{i1}, \dots, x_{im})$ for $i = 1, \dots,
+n$. The multiple linear regression model (with normal errors) is given
+by: 
+\begin{equation}\label{lm}
+  y_i = \beta_0 + \beta_1 x_{i1} + \dots + \beta_m x_{im} + \epsilon_i
+~~  \text{with $\epsilon_i \overset{\text{i.i.d}}{\sim} N(0, \sigma^2)$}. 
+\end{equation}
+
+Using the matrix vector notation: 
+\begin{equation*}
+  y =
+  \begin{pmatrix}
+    y_1 \\ \cdot \\ \cdot \\ \cdot \\ y_n
+  \end{pmatrix} ~~~ X =
+  \begin{pmatrix}
+    1 & x_{11} & \dots & x_{1m} \\
+    1 & x_{21} & \dots & x_{2m} \\
+    \cdot & \cdot & \dots & \cdot \\
+    \cdot & \cdot & \dots & \cdot \\
+    \cdot & \cdot & \dots & \cdot \\
+    1 & x_{n1} & \dots & x_{nm}
+  \end{pmatrix} ~~~
+  \beta =
+  \begin{pmatrix}
+    \beta_0 \\ \beta_1 \\ \cdot \\ \cdot \\ \cdot \\ \beta_m
+  \end{pmatrix} ~~~
+  \hat{\beta} =
+  \begin{pmatrix}
+    \hat{\beta}_0 \\ \hat{\beta}_1 \\ \cdot \\ \cdot \\ \cdot \\ \hat{\beta}_m
+  \end{pmatrix}
+\end{equation*}
+the model can be written as:
+\begin{align*}
+  y = X \beta + \epsilon ~~ \text{ where } \epsilon \sim N(0, \sigma^2
+  I_n). 
+\end{align*}
+Below we review standard frequentist and Bayesian approaches to linear
+regression. Both lead to identical answers. 
+
+\subsection{Frequentist Approach}
+
+Here the focus is on the least squares estimate which is given by:
+\begin{align*}
+  \hat{\beta} = (X^T X)^{-1} X^T y. 
+\end{align*}
+To perform inference, the key is to compute the distribution of
+$\hat{\beta}$. The dependence of the above on the $X$ matrix is quite
+complicated. On the other hand, the dependence on $y$ is linear. If we
+assume that $X$ is fixed (non-random), then it is easy to write the
+distribution of $\hat{\beta}$. Indeed because $y \sim N(X \beta,
+\sigma^2 I_n)$, it is easy to check that
+\begin{align*}
+  \hat{\beta} \sim N \left( \beta, \sigma^2 (X^T X)^{-1} \right). 
+\end{align*}
+This implies that
+\begin{align*}
+  \hat{\beta}_j \sim N(\beta_j, \sigma^2 (X^T X)^{j+1, j+1}) ~~ \text{
+  for each } j = 0, 1, \dots, m, 
+\end{align*}
+where $(X^T X)^{j+1, j+1}$ is the $(j+1, j+1)$-th diagonal entry of
+$(X^T X)^{-1}$. The above is equivalent to:
+\begin{align}\label{sigk}
+  \frac{\hat{\beta}_j - \beta_j}{\sigma \sqrt{(X^T X)^{j+1, j+1}}}
+  \sim N(0, 1). 
+\end{align}
+Because $\sigma$ is unknown, it is natural to replace it with a
+suitable estimate $\sigma$. The standard estimate used is the residual
+standard error: 
+\begin{equation*}
+  \hat{\sigma} := \sqrt{\frac{S(\hat{\beta})}{n-m-1}}. 
+\end{equation*}
+where $S(\beta) = \|y - X \beta\|^2$ is the sum of squares and
+$S(\hat{\beta})$ is the smallest possible value of the sum of
+squares. Replacing $\sigma$ by $\hat{\sigma}$ in \eqref{sigk} will
+change the distribution. In fact, it can be shown that $N(0, 1)$ will
+be replaced by the standard $t$ distribution with $n-m-1$ degrees of
+freedom:
+\begin{align}\label{siguk}
+  \frac{\hat{\beta}_j - \beta_j}{\hat{\sigma} \sqrt{(X^T X)^{j+1, j+1}}}
+  \sim t_{n-m-1}. 
+\end{align}
+This can be used to derive confidence intervals for $\beta_j$. If 
+  $t_{n-m-1, \alpha/2}$ is the point beyond which the $t$-distribution
+  (with $n-m-1$ degrees of freedom) assigns probability $\alpha/2$,
+  then
+  \begin{equation*}
+    \P \left\{-t_{n-m-1, \alpha/2} \leq     \frac{\beta_j - \hat{\beta}_j}{\hat{\sigma} \sqrt{(X^T X)^{j+1,
+          j+1}}} \leq t_{n-m-1, \alpha/2}  \right\} = 
+  1 - \alpha
+\end{equation*}
+which is same as:
+\begin{equation*}
+  \P \left\{\hat{\beta}_j - \hat{\sigma} \sqrt{(X^T X)^{j+1,
+          j+1}} t_{n-m-1, \alpha/2} \leq \beta_j \leq \hat{\beta}_j - \hat{\sigma} \sqrt{(X^T X)^{j+1,
+          j+1}} t_{n-m-1, \alpha/2}    \right\} = 1 -
+    \alpha 
+\end{equation*}
+This interval:
+\begin{equation}\label{freqint}
+  \left[\hat{\beta}_j - \hat{\sigma} \sqrt{(X^T X)^{j+1,
+          j+1}} t_{n-m-1, \alpha/2},  \hat{\beta}_j - \hat{\sigma} \sqrt{(X^T X)^{j+1,
+          j+1}} t_{n-m-1, \alpha/2} \right]
+  \end{equation}
+  is the $100(1-\alpha)\%$ confidence interval for
+  $\beta_j$.
+
+The quantity $\hat{\sigma}
+\sqrt{(X^T X)^{j+1, j+1}}$ is known as the standard error
+corresponding to $\beta_j$.   
+
+\subsection{Bayesian Approach}
+
+The default prior for linear regression is: 
+\begin{equation*}
+  \beta_0, \beta_1, \dots, \beta_m, \log \sigma
+  \overset{\text{i.i.d}}{\sim} \text{unif}(-\infty, \infty). 
+\end{equation*}
+The likelihood is given by:
+\begin{align}\label{liklin}
+  \propto \sigma^{-n} \exp \left(-\frac{1}{2 \sigma^2} \|y - X
+  \beta\|^2 \right). 
+\end{align}
+To obtain this likelihood, we can assume that $X$ is fixed (and that
+$\epsilon \sim N(0, \sigma^2 I_d)$). Or we can assume that $\epsilon$
+is independent of $X$ and that the distribution of $X$ does not depend
+on the parameters $\beta, \sigma$. There could be other assumptions on
+$\epsilon, X$ which can lead to the same (or very similar) likelihood
+(see Section \ref{armods}). 
+
+Under this prior and likelihood, we calculated (see last lecture notes) that the
+posterior density of $\beta$ is given by:
+\begin{equation}\label{post3}
+  \beta_0, \dots, \beta_m \mid \text{data} \sim
+  t_{m+1}\left(\hat{\beta},\frac{S(\hat{\beta})}{n - m - 1} \left(X^T
+      X 
+  \right)^{-1}, n - m - 1 \right). 
+\end{equation}
+Note that, in \eqref{post3}, the quantity
+$S(\hat{\beta})/(n-m-1)$ is the \textbf{frequentist 
+  unbiased} estimator for $\sigma^2$, which is denoted by 
+$\hat{\sigma}^2$. $\hat{\sigma}$ can also be justified as a Bayesian
+estimator of $\sigma$ (this will be a question in Homework three). 
+
+With the notation for $\hat{\sigma}$, the posterior \eqref{post3}
+becomes:
+\begin{equation}\label{post4}
+  \beta_0, \dots, \beta_m \mid \text{data} \sim
+  t_{m+1}\left(\hat{\beta},\hat{\sigma}^2 \left(X^T
+      X 
+  \right)^{-1}, n - m - 1 \right). 
+\end{equation}
+By one of the facts mentioned about the multivariate $t$-distribution,
+the posterior of each individual $\beta_j$ is also $t$:  
+  \begin{equation}\label{marg4}
+    \beta_j \mid \text{data} \sim t_{1}\left(\hat{\beta}_j,
+\hat{\sigma}^2 (X^T X)^{j+1, j+1}, n-m-1 \right) 
+  \end{equation}
+  where $(X^T X)^{j+1, j+1}$ is the $(j+1)^{th}$ diagonal entry 
+  of $(X^T X)^{-1}$ (note that we are using the $(j+1)$th diagonal
+  entry of $X^TX$ because $\beta_j$ is the $(j+1)$th component of
+  $\beta$). This implies that
+  \begin{equation}\label{bayes_t}
+    \frac{\beta_j - \hat{\beta}_j}{\hat{\sigma} \sqrt{(X^T X)^{j+1,
+          j+1}}} \mid \text{data} \sim \text{univariate standard } t \text{ with }
+    n-m-1 \text{ d.f.}
+  \end{equation}
+  This can be used to obtain uncertainty intervals for $\beta_j$. If
+  $t_{n-m-1, \alpha/2}$ is the point beyond which the $t$-distribution
+  (with $n-m-1$ degrees of freedom) assigns probability $\alpha/2$,
+  then
+  \begin{equation*}
+    \P \left\{-t_{n-m-1, \alpha/2} \leq     \frac{\beta_j - \hat{\beta}_j}{\hat{\sigma} \sqrt{(X^T X)^{j+1,
+          j+1}}} \leq t_{n-m-1, \alpha/2} \mid \text{data} \right\} =
+  1 - \alpha
+\end{equation*}
+which is same as:
+\begin{equation*}
+  \P \left\{\hat{\beta}_j - \hat{\sigma} \sqrt{(X^T X)^{j+1,
+          j+1}} t_{n-m-1, \alpha/2} \leq \beta_j \leq \hat{\beta}_j - \hat{\sigma} \sqrt{(X^T X)^{j+1,
+          j+1}} t_{n-m-1, \alpha/2}  \mid \text{data}  \right\} = 1 -
+    \alpha 
+\end{equation*}
+This interval:
+\begin{equation}\label{bayesint}
+  \left[\hat{\beta}_j - \hat{\sigma} \sqrt{(X^T X)^{j+1,
+          j+1}} t_{n-m-1, \alpha/2},  \hat{\beta}_j - \hat{\sigma} \sqrt{(X^T X)^{j+1,
+          j+1}} t_{n-m-1, \alpha/2} \right]
+  \end{equation}
+  is the $100(1-\alpha)\%$ Bayesian Credible interval for
+  $\beta_j$.
+
+From \eqref{freqint} and \eqref{bayesint}, it is clear that the
+Bayesian and frequentist $100(1
+- \alpha)\%$ intervals for $\beta_j$ coincide.
+
+\subsection{When $n$ is large}
+
+The degrees of freedom corresponding to the $t$-density in \eqref{post3} is $n - m - 1$ where
+$n$ is the number of observations, and $m$ is the number of
+covariates. Thus \textbf{if $n-m-1$ is large}, then the posterior
+distribution (which is actually $t$) is approximately normal: 
+\begin{equation*}
+    t_{m+1}\left(\hat{\beta},\frac{S(\hat{\beta})}{n - m - 1} \left(X^T
+      X 
+  \right)^{-1}, n - m - 1 \right) \approx N_{m+1}(\hat{\beta},
+\frac{S(\hat{\beta})}{n - m - 1} \left(X^T X  \right)^{-1}).  
+\end{equation*}
+In other words, when $n-m-1$ is large, the $t$-density \eqref{post3} is approximately
+equal to the $N_{m+1}(\hat{\beta}, \hat{\sigma}^2 (X^T
+X)^{-1})$. Further, when $n-m-1$ is large, the distribution \eqref{marg4}
+will be close to the normal  distribution $N(\hat{\beta}_j,
+\hat{\sigma}^2 (X^T X)^{j+1, j+1})$. In such cases, $t_{n-m-1,
+  \alpha/2}$ can be replaced by $z_{\alpha/2}$ in the intervals. 
+
+\subsection{Bayesian vs Frequentist}
+We mentioned above that the Bayesian uncertainty interval for
+$\beta_j$ exactly coincides with the standard frequentist confidence
+interval. But the Bayesian reasoning that led to the interval differs
+fundamentally from the frequentist reasoning. The Bayesian reasoning
+is based on the fact \eqref{bayes_t} while frequentist reasoning is
+based on \eqref{siguk}. 
+
+The only difference between \eqref{siguk} and \eqref{bayes_t} is in
+the conditioning. In \eqref{bayes_t}, the random variable is $\beta_j$
+and we are computing its distribution conditional on the observed
+data. In contrast, in the frequentist statement \eqref{siguk}, the
+random variable is $\hat{\beta}_j$ (which is a function of $y_1,
+\dots, y_n$) and we are computing its distribution the parameters
+$\beta, \sigma$ are fixed.  Note that $X$ is assumed to be fixed
+here.
+
+The fact that both Bayesian and frequentist reasoning lead to the same
+interval is a matter of coincidence. By changing the setting slightly,
+this coincidence can be broken. One such example involves AR models
+and is discussed next. 
+
+\section{AutoRegression}\label{armods}
+
+We observe a time series $\{y_t, t = 1, \dots, n\}$. The
+AutoRegressive Model of order 1 (in short, AR(1)) is given by:
+\begin{align}\label{ar1}
+  y_t = \beta_0 + \beta_1 y_{t-1} + \epsilon_t \qt{where $t = 2,
+  \dots, n$}. 
+\end{align}
+In the above equation, $y_1$ does not appear on the right hand side,
+so we can treat $y_1$ as a constant. The equation \eqref{ar1} is
+simply a linear regression model with covariate given by $x_t =
+y_{t-1}$. Frequentist and Bayesian inference now give different
+answers (although in practice the answers will be quite similar) and
+with very different justifications. This is explained below.
+
+\subsection{Frequentist Inference}
+
+We start with the least squares estimate of $\hat{\beta}$:
+\begin{align*}
+  \hat{\beta} = (X^T X)^{-1} X^T y
+\end{align*}
+where
+\begin{equation*}
+  y =
+  \begin{pmatrix}
+    y_2 \\ \cdot \\ \cdot \\ \cdot \\ y_n
+  \end{pmatrix} ~~~ X =
+  \begin{pmatrix}
+    1  & y_1\\
+    1 & y_2 \\
+    \cdot & \cdot \\
+    \cdot & \cdot \\
+    \cdot & \cdot \\
+    1 & y_{n-1} 
+  \end{pmatrix} ~~~
+  \beta =
+  \begin{pmatrix}
+    \beta_0 \\ \beta_1 
+  \end{pmatrix} ~~~
+  \hat{\beta} =
+  \begin{pmatrix}
+    \hat{\beta}_0 \\ \hat{\beta}_1
+  \end{pmatrix}
+\end{equation*}
+Unlike in the previous case, we cannot compute the distribution of
+$\hat{\beta}$ assuming that $X$ is fixed. This is because $X$ involves
+depends on $y_1, \dots, y_{n-1}$. Instead, we need to use other
+arguments. For example, note that
+\begin{align*}
+  \hat{\beta}_1 = \frac{\sum_{t=2}^n (y_t - \bar{y})(x_t -
+  \bar{x})}{\sum_{t=2}^n (x_t - \bar{x})^2} = \frac{\sum_{t=2}^n (y_t
+  - \bar{y}_{2:n})(y_{t-1} - 
+  \bar{y}_{1:(n-1)})}{\sum_{t=2}^n (y_{t-1} - \bar{y}_{1:(n-1)})^2}  
+\end{align*}
+where $\bar{y} = \bar{y}_{2:n} := (y_2 + \dots + y_n)/(n-1)$ and
+$\bar{x} = \bar{y}_{1:(n-1)} := (y_1 +
+\dots + y_{n-1})/(n-1)$. The distribution of $\hat{\beta}_1$ is
+actually quite complicated. Asymptotic arguments can be used to derive
+a limiting normal distribution. For the full argument, see, for
+example, \citet[Subsection B.3]{ShumwayStoffer} which uses a dependent
+Central Limit Theorem.
+
+\subsection{Bayesian Inference}
+For Bayesian inference, we need to write the prior and likelihood. The
+prior will obviously be the same as in usual linear regression:
+\begin{align*}
+  \beta_0, \beta_1, \log \sigma \overset{\text{i.i.d}}{\sim}
+  \text{unif}(-\infty, \infty). 
+\end{align*}
+For the likelihood, we write:
+\begin{align*}
+  \text{Likelihood} &= f_{y_1, \dots, y_n \mid \beta, \sigma}(y_1,
+                      \dots, y_n) \\
+  &= f_{y_1 \mid \beta, \sigma}(y_1) \prod_{t=2}^{n} f_{y_t \mid y_1,
+    \dots, y_{t-1}, \beta, \sigma}(y_t) \\
+  &= f_{y_1 \mid \beta, \sigma}(y_1) \prod_{t=2}^n f_{\beta_0 +
+    \beta_1 y_{t-1} + \epsilon_t \mid y_1, \dots, y_{t-1}, \beta,
+    \sigma} (y_t) \\
+  &= f_{y_1 \mid \beta, \sigma}(y_1) \prod_{t=2}^n f_{\epsilon_t \mid
+    y_1, \dots, y_{t-1}, \beta, \sigma} (y_t - \beta_0 - \beta_1
+    y_{t-1}). 
+\end{align*}
+We can now assume that $\epsilon_t$ is independent of $y_1, \dots,
+y_{t-1}$ for each $t = 2, \dots, n$. This gives
+\begin{align*}
+  \text{Likelihood} &= f_{y_1 \mid \beta, \sigma}(y_1) \prod_{t=2}^n
+                      f_{\epsilon_t}(y_t - \beta_0 - \beta_1 y_{t-1}) \\
+  &= f_{y_1 \mid \beta, \sigma}(y_1) \prod_{t=2}^n
+    \frac{1}{\sigma\sqrt{2 \pi}} \exp \left(-\frac{(y_t - \beta_0 -
+    \beta_1 y_{t-1})^2}{2 \sigma^2} \right). 
+\end{align*}
+For $f_{y_1 \mid \beta, \sigma}(y_1)$, the simplest thing is to assume
+that it does not depend on the parameters $\beta, \sigma$ so that this
+term can be ignored. This assumption leads to
+\begin{align}
+  \text{Likelihood} &= f_{y_1 \mid \beta, \sigma}(y_1) \prod_{t=2}^n
+    \frac{1}{\sigma\sqrt{2 \pi}} \exp \left(-\frac{(y_t - \beta_0 -
+    \beta_1 y_{t-1})^2}{2 \sigma^2} \right) \nonumber \\ &\propto \sigma^{-(n-1)}
+                      \exp \left(-\frac{1}{2 \sigma^2} \|y - X
+                      \beta\|^2 \right). \label{like_ar}
+\end{align}
+This is exactly the same likelihood as in usual linear regression (see
+\eqref{liklin}) except that $n$ in \eqref{liklin} is now replaced by
+$n-1$ which is the number of observations in the regression model
+\eqref{ar1}. Because the likelihood is of the same form as in
+\eqref{liklin}, the posterior of $\beta$ follows the same calculation
+as in usual linear regression and we obtain:
+\begin{align*}
+  \beta_0, \beta \mid \text{data} \sim t_{2} \left(\hat{\beta},
+  \frac{S(\hat{\beta})}{n-3} (X^T X)^{-1}, n-3 \right) 
+\end{align*}
+This is the same as \eqref{post3} with $n-1$ replacing $n$ and $m =
+2$.
+
+Therefore, Bayesian inference gives the same posterior
+$t$-distribution in AutoRegression as in usual linear
+regression. Unlike frequentist AutoRegression, there is no need for
+asymptotics assuming $n \rightarrow \infty$. This example is useful
+for highlighting the differences between Bayesian and frequentist
+inference. 
+
+
+
+
+\begin{thebibliography}{99}
+
+%\bibitem[MacKay and Peto(1995)]{MacKay1995HierarchicalDirichlet}
+%D.~J.~C. MacKay and L.~C. Peto,
+%\newblock ``A hierarchical Dirichlet language model,''
+%\newblock \emph{Natural Language Engineering}, vol.~1,
+%no.~3, pp.~289--308, 1995.
+
+%\bibitem[Rubin(1981)]{Rubin1981BayesianBootstrap}
+%D.~B. Rubin,
+%\newblock ``The Bayesian bootstrap,''
+%\newblock \emph{The Annals of Statistics}, vol.~9,
+%no.~1, pp.~130--134, 1981.
+  
+%\bibitem[Fisher(1934)]{Fisher1934}
+%R.~A. Fisher,
+%\newblock ``Probability, likelihood and quantity of information in the logic of
+%uncertain inference,''
+%\newblock \emph{Proceedings of the Royal Society of London. Series~A,
+%Containing Papers of a Mathematical and Physical Character}, vol.~146,
+%no.~856, pp.~1--8, 1934.
+
+%\bibitem[Efron(2010)]{Efron}
+%Efron, B. (2010)
+%\textit{Large-scale inference: empirical Bayes methods for estimation,
+%testing, and prediction}. Cambridge University Press, 2010.
+
+\bibitem[Shumway and Stoffer(2017)]{ShumwayStoffer}
+Shumway, R. H. and Stoffer, D. S. (2017)
+\textit{Time Series Analysis and Its Applications: With R
+  Examples}. Springer, 4th edition. 
+  
+%     \bibitem[Jaynes(2003)]{Jaynes} Jaynes, E. T, (2003)
+%  \textit{Probability theory: the logic of science}. Cambridge
+%  University Press, 2003.
+ 
+%  \bibitem[Sinai(1992)]{Sinai} Sinai, Y. G, (1992)
+%  \textit{Probability theory: an introductory course}. Springer
+%  Verlag, 1992.  
+
+%\bibitem[{deGroot(1986)}]{DeGrootBlackwell}DeGroot, M. H. (1986)
+%       A conversation with David Blackwell.
+%\newblock \emph{Statistical Science}, \textbf{1}, 40--53.
+
+%         \bibitem[Mosteller(1987)]{Mosteller} Mosteller, F, (1987)
+%  \textit{Fifty challenging problems in probability with
+%    solutions}. Courier Corporation, 1987.
+
+%    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+%  \textit{Information theory, inference, and learning
+%  algorithms}. Cambridge University Press, 2003.
+
+%\bibitem[{Lindley(2013)}]{Lindley}Lindley, D. V. (2013)
+%   \textit{Understanding Uncertainty}. John Wiley and sons, 2013.
+
+
+\end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

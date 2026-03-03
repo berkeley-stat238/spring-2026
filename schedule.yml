@@ -230,4 +230,20 @@
           id: "15"
           name: "LectureFifteen238Spring2026.pdf"
           href: "./LectureFifteen238Spring2026.pdf"
+- week: 7
+  days:
+    - date: "Mar 02"
+      items:
+        - type: "Lecture"
+          id: "16"
+          name: "Linear regression -- frequentist and Bayesian inference" 
+          href: "./LectureSixteen238Spring2026.tex"
+        - type: "Lecture"
+          id: "16 Code"
+          name: "Linear Regression"
+          href: "./CodeLectureSixteen238Spring2026.ipynb"
+        - type: "PDF"
+          id: "16"
+          name: "LectureSixteen238Spring2026.pdf"
+          href: "./LectureSixteen238Spring2026.pdf"
 	  
