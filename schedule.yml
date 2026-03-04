@@ -246,4 +246,14 @@
           id: "16"
           name: "LectureSixteen238Spring2026.pdf"
           href: "./LectureSixteen238Spring2026.pdf"
+    - date: "Mar 03"
+      items:
+        - type: "Lab"
+          id: "6 Code"
+          name: "Linear Regression Details"
+          href: "./lab06.ipynb"
+        - type: 'Dataset'
+          id: '2'
+          name: GDP Dataset
+          href: "./GDP_12Nov2025.csv"
 	  
