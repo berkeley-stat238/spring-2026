@@ -1,0 +1,419 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry}
+\usepackage{graphicx}
+
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Seventeen} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{04 March 2026}
+
+\maketitle
+
+\section{Logistic Regression}
+
+We are again in the
+usual regression setting where we observe  data $(y_i,
+x_{i1},x_{i2}, \dots, x_{im})$ for $i = 1, \dots, n$. There are $m$
+explanatory variables $x_1, \dots, x_m$ and one response variable.
+$x_{ij}$ denotes the value of the $j^{th}$ explanatory variable for
+the $i^{th}$ individual and $y_i$ is the value of the response
+variable for the $i^{th}$ individual. Suppose now that the response
+variable is binary i.e., $y_1, \dots, y_n$ take values in $\{0,
+1\}$. In this case, the logistic regression model assumes that: 
+  \begin{equation*}
+    y_i  \overset{\text{independent}}{\sim} \text{Bernoulli} \left(\frac{\exp
+        \left(\beta_0 + \beta_1 x_{i1} + \dots + \beta_m x_{im} \right)}{1 + \exp \left(\beta_0 + \beta_1 x_{i1} + \dots + \beta_m x_{im} \right)} 
+    \right) ~~\text{for $i = 1, \dots, n$}. 
+  \end{equation*}
+Letting $x_i = (1, x_{i1}, \dots, x_{im})^T$  and $\beta = (\beta_0,
+\beta_1, \dots, \beta_m)^T$, we can write the model also as
+  \begin{equation*}
+    y_i  \overset{\text{independent}}{\sim} \text{Bernoulli} \left(\frac{\exp
+        \left(x_i^T \beta\right)}{1 + \exp \left(x_i^T \beta \right)} 
+    \right) ~~\text{for $i = 1, \dots, n$}
+  \end{equation*}
+  where $\beta$ is the $(m+1) \times 1$ vector with components
+  $\beta_0, \beta_1, \dots, \beta_m$.
+
+  This gives the likelihood:
+  \begin{align*}
+  \text{Likelihood} =\prod_{i=1}^n \left(\frac{\exp
+        \left(x_i^T\beta \right)}{1 + \exp \left(x_i^T\beta \right)}
+    \right)^{y_i} \left(1 - \frac{\exp
+        \left(x_i^T\beta \right)}{1 + \exp \left(x_i^T\beta \right)}
+    \right)^{1-y_i} 
+  \end{align*}
+Suppose $x_1^T, \dots, x_n^T$ form the rows of the $n \times p$
+  design matrix $X$ (where $p = m+1$). The unknown parameters in the
+  logistic regression model are $\beta_0, \dots, \beta_m$ (note that,
+  in contrast to the linear regression model, there is no $\sigma$
+  parameter in logistic regression). As in linear regression, we use the prior: 
+\begin{equation}\label{unilog}
+\beta_0,  \beta_1, \dots, \beta_m \overset{\text{i.i.d}}{\sim} \text{Unif} (-C, C)
+\end{equation}
+  for a large $C$. The posterior of $\beta$ is then
+  \begin{align*}
+    f_{\beta \mid \text{data}}(\beta) &\propto \text{Likelihood} \times \text{prior} \\
+    &\propto \left[\prod_{i=1}^n \left(\frac{\exp
+        \left(x_i^T\beta \right)}{1 + \exp \left(x_i^T\beta \right)}
+    \right)^{y_i} \left(1 - \frac{\exp
+        \left(x_i^T\beta \right)}{1 + \exp \left(x_i^T\beta \right)}
+    \right)^{1-y_i} \right] I\{\beta_0, \beta_1, \dots, \beta_p \in (-C, C)\}
+    \\ &= \left[\prod_{i=1}^n \frac{\exp(y_ix_i^T\beta)
+    }{1 + \exp(x_i^T\beta)} \right]I\{\beta_0, \beta_1, \dots, \beta_p
+         \in (-C, C)\} \\
+    &= \left[\exp \left(\ell(\beta) \right) \right]I\{\beta_0, \beta_1, \dots, \beta_p
+         \in (-C, C)\}
+  \end{align*}
+  where
+\begin{equation*}
+  \ell(\beta) := \sum_{i=1}^n \left[ y_i (x_i^T\beta) - \log \left(1 +
+    \exp(x_i^T \beta) \right) \right]. 
+\end{equation*}
+Note that $\ell(\beta)$ is simply the log-likelihood in this
+problem. This posterior density is not in standard form involving some
+well-known densities. If $p = 1$ or $p = 2$, 
+then this can be plotted. One can use various MCMC techniques to
+obtain samples from this posterior.
+
+Instead of MCMC, we shall derive a closed form multivariate normal
+approximation that works quite well in practice. This method is called
+Laplace Approximation or Posterior Normal Approximation. It turns out
+that Bayesian inference from this normal approximation to the
+posterior coincides with usual frequentist inference for logistic
+regression.
+
+To get the normal approximation, first let us drop the
+indicator which will be irrelevant when $C$ is large to get
+\begin{align*}
+  f_{\beta | Y = y}(\beta) \propto \exp(\ell(\beta)). 
+\end{align*}
+The normal approximation will be obtained by a second-order Taylor
+expansion of $\ell(\beta)$. We shall do the Taylor expansion around
+the MLE $\hat{\beta}$ because the posterior is peaked at $\hat{\beta}$
+and the high regions of the posterior are most likely very close to
+$\hat{\beta}$. Recall that the MLE $\hat{\beta}$ is defined as the
+maximizer of the likelihood (or log-likelihood):
+\begin{align*}
+  \hat{\beta} := \underset{\beta \in \R^p}{\text{argmax}} ~
+  \ell(\beta). 
+\end{align*}
+It is obtained by taking the gradient of the log-likelihood and
+solving the equation obtained by setting the gradient to zero. It is
+easy to check that the gradient of the log-likelihood is
+\begin{equation}\label{grad1}
+  \nabla \ell(\beta) = \sum_{i=1}^n \left(y_i - \frac{\exp
+        \left(x_i'\beta \right)}{1 + \exp \left(x_i'\beta \right)}
+    \right) x_i. 
+  \end{equation}
+  To get the maximum likelihood estimator $\hat{\theta}$, we need to
+  set the gradient above to zero and solve the resulting equation for
+  $\theta$. This cannot be done in closed form and the usual method is
+  to use an iterative scheme such as Newton's algorithm. The answer
+  can be obtained from inbuilt functions in R or Python. More details
+  behind the Newton algorithm will be provided a bit later. 
+
+   Coming back to the posterior $\exp(\ell(\beta))$, Taylor expansion of
+   $\ell(\beta)$ around the MLE $\hat{\beta}$ gives
+   \begin{align*}
+     f_{\beta | Y = y}(\beta) \propto \exp(\ell(\beta)) \approx \exp
+     \left(\ell(\hat{\beta}) + \left<\nabla \ell(\hat{\beta}), \beta -
+     \hat{\beta}\right> + \frac{1}{2} (\beta - \hat{\beta})^T
+     H\ell(\hat{\beta}) (\beta - \hat{\beta}) \right)
+   \end{align*}
+   where $H\ell(\beta)$ denotes the Hessian of $\ell(\beta)$: 
+  \begin{equation*}
+    H \ell(\beta) = - \sum_{i=1}^n \frac{\exp(x_i' \beta)}{\left(1 +
+      \exp(x_i' \beta)\right)^2} x_i x_i'. 
+\end{equation*}
+ Because the $\ell(\hat \beta)$ term is a constant, it can be ignored
+ in proportionality. Also $\nabla \ell(\hat{\beta})$ equals zero. We
+ thus have
+ \begin{align*}
+   f_{\beta \mid Y = y} (\beta) \propto \exp
+     \left(\frac{1}{2} (\beta - \hat{\beta})^T
+     H\ell(\hat{\beta}) (\beta - \hat{\beta}) \right) = \exp
+     \left(-\frac{1}{2} (\beta - \hat{\beta})^T
+     \left(-H\ell(\hat{\beta}) \right) (\beta - \hat{\beta}) \right) 
+ \end{align*}
+We have switched above to $-H\ell(\hat{\beta})$ because this matrix is
+positive semi-definite as $\hat{\beta}$ maximizes $\ell(\beta)$. The
+above term is simply the unnormalized density of the multivariate
+normal distribution with mean $\hat{\beta}$ and covariance matrix $(-H
+\ell(\hat{\beta}))^{-1}$. Observe that 
+\begin{equation*}
+ - H \ell(\hat \beta) =  \sum_{i=1}^n \frac{\exp(x_i' \hat{\beta})}{\left(1 +
+      \exp(x_i' \hat{\beta})\right)^2} x_i x_i'. 
+\end{equation*}
+Now let $W$ denote the $n \times n$ diagonal matrix whose
+$i^{th}$ diagonal entry is
+\begin{equation*}
+  \frac{\exp(x_i' \hat{\beta})}{\left(1 +
+      \exp(x_i' \hat{\beta})\right)^2}
+\end{equation*}
+and also recall again that $X$ is the $n \times p$ matrix with rows
+$x_1', \dots, x_n'$. It is then easy to check that
+\begin{equation}\label{hess1}
+-  H \ell(\hat \beta) = X' W X. 
+\end{equation}
+The posterior normal approximation is thus
+\begin{equation}\label{blogna}
+  N(\hat{\beta}, (X' W X)^{-1}). 
+\end{equation}
+The standard errors corresponding to $\beta_0, \dots, \beta_m$ can
+then be obtained by the square roots of the diagonal entries of $(X' W
+X)^{-1}$. 
+
+It turns out that Bayesian inference done with the above normal
+posterior approximation \eqref{blogna} coincides with the frequentist
+inference in 
+the logistic regression model. It is easy to check this, say, in
+Python using statsmodels
+(construct a 95\% credible interval for, say, one of the components of
+$\beta$ and then compare it with the frequentist interval). Thus the
+usual frequentist inference for the logistic regression model can be
+viewed from a Bayesian perspective.
+
+Note that the above analysis
+relies on two assumptions: (a) the prior for $\beta$ is assumed to be
+uniform on the large cube $(-C, C)^p$, and (b) the posterior is
+approximated by a normal distribution. These assumptions may be of
+course not reasonable in a particular application. In such a
+situation, it is conceptually very clear as to how one would proceed: 
+if the normal approximation to the posterior is not accurate, one
+needs to work with the actual posterior. If the uniform prior is not
+reasonable, one can do the full posterior analysis (or by taking a
+normal approximation to the posterior) for a more appropriate prior. 
+
+\subsection{Details behind the Newton Algorithm for computing the MLE}
+
+The MLE $\hat{\beta}$ of $\beta$ is the maximizer of $\ell(\beta)$. The maximizer of
+$\ell(\beta)$ cannot be computed in closed form. Newton's
+method is commonly used for maximizing $\ell(\beta)$. Newton's method
+uses the iterative scheme
+\begin{equation}\label{ish}
+  \beta^{(m+1)} = \beta^{(m)} - \left(H\ell(\beta^{(m)})\right)^{-1}
+  \nabla \ell(\beta^{(m)}) 
+\end{equation}
+As we saw in \eqref{grad1},
+\begin{equation*}
+  \nabla \ell(\beta) = \sum_{i=1}^n \left(y_i - \pi_i \right) x_i
+\end{equation*}
+where $\pi_i$ is given by
+\begin{equation*}
+  \pi_i = \frac{\exp(x_i' \beta)}{1 + \exp(x_i' \beta)}
+\end{equation*}
+Letting $\pi$ be the $n \times 1$ vector with entries $\pi_1, \dots,
+\pi_n$, we can write $\nabla \ell(\beta)$ in matrix notation as (note
+that $X$ has rows $x_1^T, \dots, x_n^T$ or, equivalently, $X^T$ has
+columns $x_1, \dots, x_n$):
+\begin{equation*}
+\nabla  \ell(\beta) = X^T \left(y - \pi \right)
+\end{equation*}
+where, as usual in regression, $y$ denotes the $n \times 1$  vector of
+response values. Also from \eqref{hess1}, we can write
+\begin{equation*}
+  H\ell(\beta) = - X^T W X
+\end{equation*}
+where $W$ is the $n \times n$ diagonal matrix whose $i^{th}$ diagonal
+entry is $\pi_i(1 - \pi_i)$. Newton's iterative scheme~\eqref{ish}
+therefore becomes 
+\begin{equation*}
+  \beta^{(m+1)} = \beta^{(m)} + (X^T W X)^{-1} X^T (y - \pi). 
+\end{equation*}
+This can be rewritten as 
+\begin{equation}\label{wlse}
+  \beta^{(m+1)} = (X^T W X)^{-1} X^T W Z
+\end{equation}
+where 
+\begin{equation}\label{zdef}
+  Z = X \beta^{(m)} + W^{-1}(y - \pi). 
+\end{equation}
+The method of obtaining the MLE $\hat{\beta}$ therefore proceeds iteratively as
+follows. First have an initial estimate of $\beta$. Call this initial
+estimator $\hat{\beta}^{(0)}$. Use this 
+estimator to calculate $\pi_i$ via 
+\begin{equation*}
+\pi_i = \frac{\exp(\hat{\beta}^{(0)}_0 + \hat{\beta}^{(0)}_1 x_{i1} + \dots +
+  \hat{\beta}^{(0)}_p x_{ip})}{1 + \exp(\hat{\beta}^{(0)}_0 +
+  \hat{\beta}^{(0)}_1 x_{i1} \dots + \hat{\beta}^{(0)}_p x_{ip})}.        
+\end{equation*}
+Use these values of $\pi_i$ to create the response variable values $Z_i$
+via~\eqref{zdef} and also use values of $\pi_i$ to construct the matrix
+$W$. With $Z$ and $W$, we can estimate $\beta$ via 
+\begin{equation*}
+  \hat{\beta}^{(1)} = (X^T W X)^{-1} X^T W Z. 
+\end{equation*}
+Now replace the initial estimator $\hat{\beta}^{(0)}$ by
+$\hat{\beta}^{(1)}$ and repeat this process. Keep repeating this until
+two successive estimates $\hat{\beta}^{(m)}$ and $\hat{\beta}^{(m+1)}$
+do not change much. At that point, stop and report the estimate of
+$\beta$ in the logistic regression model as $\hat{\beta}^{(m)}$. 
+
+The expression $(X^T W X)^{-1} X^T W Z$ is reminiscent of the usual
+$(X^T X)^{-1} X^T y$ which is the usual estimate of $\beta$ in the
+linear model. In fact, this is the least squares estimate in a
+weighted least squares model. 
+
+
+
+
+%\begin{thebibliography}{99}
+
+%\bibitem[MacKay and Peto(1995)]{MacKay1995HierarchicalDirichlet}
+%D.~J.~C. MacKay and L.~C. Peto,
+%\newblock ``A hierarchical Dirichlet language model,''
+%\newblock \emph{Natural Language Engineering}, vol.~1,
+%no.~3, pp.~289--308, 1995.
+
+%\bibitem[Rubin(1981)]{Rubin1981BayesianBootstrap}
+%D.~B. Rubin,
+%\newblock ``The Bayesian bootstrap,''
+%\newblock \emph{The Annals of Statistics}, vol.~9,
+%no.~1, pp.~130--134, 1981.
+  
+%\bibitem[Fisher(1934)]{Fisher1934}
+%R.~A. Fisher,
+%\newblock ``Probability, likelihood and quantity of information in the logic of
+%uncertain inference,''
+%\newblock \emph{Proceedings of the Royal Society of London. Series~A,
+%Containing Papers of a Mathematical and Physical Character}, vol.~146,
+%no.~856, pp.~1--8, 1934.
+
+%\bibitem[Efron(2010)]{Efron}
+%Efron, B. (2010)
+%\textit{Large-scale inference: empirical Bayes methods for estimation,
+%testing, and prediction}. Cambridge University Press, 2010.
+
+%\bibitem[Shumway and Stoffer(2017)]{ShumwayStoffer}
+%Shumway, R. H. and Stoffer, D. S. (2017)
+%\textit{Time Series Analysis and Its Applications: With R
+%  Examples}. Springer, 4th edition. 
+  
+%     \bibitem[Jaynes(2003)]{Jaynes} Jaynes, E. T, (2003)
+%  \textit{Probability theory: the logic of science}. Cambridge
+%  University Press, 2003.
+ 
+%  \bibitem[Sinai(1992)]{Sinai} Sinai, Y. G, (1992)
+%  \textit{Probability theory: an introductory course}. Springer
+%  Verlag, 1992.  
+
+%\bibitem[{deGroot(1986)}]{DeGrootBlackwell}DeGroot, M. H. (1986)
+%       A conversation with David Blackwell.
+%\newblock \emph{Statistical Science}, \textbf{1}, 40--53.
+
+%         \bibitem[Mosteller(1987)]{Mosteller} Mosteller, F, (1987)
+%  \textit{Fifty challenging problems in probability with
+%    solutions}. Courier Corporation, 1987.
+
+%    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+%  \textit{Information theory, inference, and learning
+%  algorithms}. Cambridge University Press, 2003.
+
+%\bibitem[{Lindley(2013)}]{Lindley}Lindley, D. V. (2013)
+%   \textit{Understanding Uncertainty}. John Wiley and sons, 2013.
+
+
+%\end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

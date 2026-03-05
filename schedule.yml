@@ -256,4 +256,18 @@
           id: '2'
           name: GDP Dataset
           href: "./GDP_12Nov2025.csv"
+    - date: "Mar 04"
+      items:
+        - type: "Lecture"
+          id: "17"
+          name: "Logistic Regression" 
+          href: "./LectureSeventeen238Spring2026.tex"
+        - type: "Lecture"
+          id: "17 Code"
+          name: "Logistic Regression"
+          href: "./CodeLectureSeventeen238Spring2026.ipynb"
+        - type: "PDF"
+          id: "17"
+          name: "LectureSeventeen238Spring2026.pdf"
+          href: "./LectureSeventeen238Spring2026.pdf"
 	  
