@@ -270,4 +270,9 @@
           id: "17"
           name: "LectureSeventeen238Spring2026.pdf"
           href: "./LectureSeventeen238Spring2026.pdf"
-	  
+    - date: "Mar 06"
+      items:
+        - type: "Lecture"
+          id: "18 code"
+          name: "High-dimensional linear regression" 
+          href: "./CodeLectureEighteen238Spring2026.ipynb"	  
