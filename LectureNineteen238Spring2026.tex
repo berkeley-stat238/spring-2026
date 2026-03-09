@@ -1,0 +1,409 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry}
+\usepackage{graphicx}
+
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+\newcommand{\relu}{{\text{ReLU}}}
+
+\newcommand{\ridge}{{\hat{\beta}_{\text{ridge}}(\lambda)}}
+\newcommand{\lasso}{{\hat{\beta}_{\text{lasso}}(\lambda)}}
+\newcommand{\ridgemu}{{\hat{\mu}_t^{\text{ridge}}(\lambda)}}
+\newcommand{\lassomu}{{\hat{\mu}_t^{\text{lasso}}(\lambda)}}
+
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Nineteen} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{09 March 2026}
+
+\maketitle
+
+\section{A High-Dimensional Linear Regression Model}
+We have a response variable $y$ and a single covariate $x$. In our
+example, $y$ denotes weekly earnings and $x$ denotes years of
+experience. The covariate $x$ takes the values $0, 1, \dots, m$ for
+some fixed integer $m$. 
+
+Our data is $(x_i, y_i), i = 1, \dots, n$. The model is:
+\begin{align}\label{ibm_mod}
+  y_i = \beta_0 + \beta_1 x_i + \beta_2 \relu(x_i - 1) + \dots +
+  \beta_{m}\relu(x_i - (m-1)) + \epsilon_i
+\end{align}
+where $\relu(u) := \max(u, 0)$, and $\epsilon_i
+\overset{\text{i.i.d}}{\sim} N(0, \sigma^2)$. Note we did not include
+$\relu(x_i - m)$ because it always equals 0. 
+
+This linear regression equation can be written in the usual notation as:
+\begin{align}\label{linreg}
+  y = X \beta + \epsilon
+\end{align}
+where $y = (y_1, \dots, y_n)^T$ and $X$ is the $n \times (m+1)$ matrix
+with columns $1$, $x$, $\relu(x - j)$ for $j = 1, \dots, m-1$.
+
+\section{Recap: Linear Regression with default priors}
+
+As we saw before, the default prior on $\beta_0, \dots, \beta_m$ in
+the linear regression model \eqref{linreg} is:
+\begin{align}\label{prior_uniform}
+  \beta_0, \dots, \beta_{m} \overset{\text{i.i.d}}{\sim}
+  \text{uniform}(-C, C) 
+\end{align}
+with $C \rightarrow \infty$. With this prior, the posterior of $\beta$
+given $\sigma$ becomes (see e.g., Problem 7(a) in Homework Three)
+\begin{align}\label{def_post}
+  \beta \mid \text{data}, \sigma \sim N\left((X^T X)^{-1} X^T y,
+  \sigma^2 (X^T X)^{-1} \right)
+\end{align}
+which means that the posterior mean of $\beta$ is just the least
+squares estimator $(X^T X)^{-1} X^T y$ (note that this posterior mean
+of $\beta$ does not depend on $\sigma$, so is both the conditional
+posterior mean given $\sigma$, as well as the unconditional posterior
+mean).
+
+The fact that the posterior mean of $\beta$ coincides with the least
+squares estimator is shared by some priors other than
+\eqref{prior_uniform} as well. For example, this is also true for the
+following prior:
+\begin{align}\label{def_norm}
+  \beta_0, \dots, \beta_m \overset{\text{i.i.d}}{\sim} N(0, C) 
+\end{align}
+as $C \rightarrow \infty$. This can be seen by the following general
+result (which follows, for example, from Problem 9 in Homework Two):
+\begin{align}\label{normnorm}
+  \beta \mid \sigma \sim N(0, Q) \implies 
+  \beta \mid \text{data}, \sigma \sim N \left(\left(\frac{X^T
+  X}{\sigma^2} + Q^{-1} \right)^{-1} \frac{X^T y}{\sigma^2},
+  \left(\frac{X^T X}{\sigma^2} + Q^{-1}\right)^{-1} \right). 
+\end{align}
+From here, it is clear that if $Q$ is chosen so that $Q^{-1} \approx
+0$, then we get the same posterior as \eqref{def_post}. The prior
+\eqref{def_norm} corresponds to $Q = C I$ so that $Q^{-1} = (1/C)I$
+which goes to zero when $C \rightarrow \infty$. So the prior
+\eqref{def_norm} leads to the same posterior \eqref{def_post}. 
+
+\section{Regularization}
+In the earnings-experience regression example, we have seen in the
+last class that the least squares estimator for \eqref{linreg} is not
+interpretable. We want the fitted curve
+\begin{align*}
+  x \mapsto \hat{\beta}_0 + \hat{\beta}_1 x + \sum_{j=2}^m
+  \hat{\beta}_j \relu(x - (j-1))
+\end{align*}
+to be smooth for it to be interpretable. This can be achieved in the
+Bayesian setting if we use the prior: 
+\begin{align}\label{regu_prior}
+  \beta_0, \beta_1 \overset{\text{i.i.d}}{\sim} N(0, C) ~~ \text{ and
+  } ~~ \beta_2, \dots, \beta_{m} \overset{\text{i.i.d}}{\sim} N(0,
+  \tau^2). 
+\end{align}
+for some small $\tau$. The above prior
+is equivalent to $\beta \sim N(0, Q)$ where $Q$ is the $(m+1) \times
+(m+1)$ diagonal matrix with diagonal entries $C, C, \tau^2, \dots,
+\tau^2$. So using the formula \eqref{normnorm}, the posterior mean
+corresponding to this prior is:
+\begin{align*}
+  \E \left(\beta \mid \text{data}, \sigma, \tau \right) =
+  \left(\frac{X^T X}{\sigma^2} + Q^{-1} \right)^{-1} \frac{X^T
+  y}{\sigma^2}. 
+\end{align*}
+Because $Q$ is diagonal with diagonal entries $C, C, 1/\tau^2, \dots,
+1/\tau^2$, it is easy to see that $Q^{-1}$ is also diagonal with
+diagonal entries $1/C, 1/C, \tau^{-2}, \dots, \tau^{-2}$. Because $C$
+is large, we can approximate $Q^{-1}$ by the matrix with diagonal
+entries $0, 0, \tau^{-2}, \dots, \tau^{-2}$. In other words:
+\begin{align*}
+   Q^{-1} \approx \frac{1}{\tau^2} J ~~~ \text{ where } J = \begin{pmatrix}
+      0 & 0 & 0 & 0 & \cdot & \cdot & \cdot & 0 \\
+      0 & 0 & 0 & 0 & \cdot & \cdot & \cdot & 0 \\
+      0 & 0 & 1 & 0 &\cdot & \cdot & \cdot & 0 \\
+      0 & 0 & 0 & 1 & \cdot & \cdot & \cdot & 0 \\
+      \cdot & \cdot & \cdot & \cdot & \cdot & \cdot & \cdot & \cdot \\
+      \cdot & \cdot & \cdot & \cdot & \cdot & \cdot & \cdot & \cdot \\
+      \cdot & \cdot & \cdot & \cdot & \cdot & \cdot & \cdot & \cdot \\
+      0 & 0 & 0 & 0 & \cdot & \cdot & \cdot & 1 \\
+\end{pmatrix}  
+\end{align*}
+Note that $J$ is an $(m+1) \times (m+1)$ diagonal matrix. Thus the
+posterior mean becomes: 
+\begin{align*}
+  \E \left(\beta \mid \text{data}, \sigma, \tau \right) =
+  \left(\frac{X^T X}{\sigma^2} + \frac{J}{\tau^2} \right)^{-1}
+  \frac{X^T 
+  y}{\sigma^2} = \left(X^T X + \frac{J}{\tau^2/\sigma^2} \right)^{-1}
+  X^T y. 
+\end{align*}
+We use the notation $\tau^2 = \sigma^2 \gamma^2$ or equivalently
+$\gamma^2 = \tau^2/\sigma^2$. This gives
+\begin{align}\label{pm_norm}
+  \E \left(\beta \mid \text{data}, \sigma, \tau \right) = \left(X^T X
+  + \frac{J}{\gamma^2} \right)^{-1} 
+  X^T y.  
+\end{align}
+It can be verified that this quantity $(X^TX + J/\gamma^2)^{-1} X^T y$
+coincides with a ridge regularized least squares estimator. This is
+shown in the next section.
+
+\section{Connection to Ridge Regularization}
+For the model \eqref{ibm_mod}, the ridge regression estimator $\ridge$
+for $\beta$ is given by the minimizer of: 
+\begin{equation}\label{ridge_est}
+  \begin{split}
+ & \sum_{i=1}^n \left(y_i - \beta_0 - \beta_1 x_i - \beta_2
+    \relu(x_i-1) - \dots - \beta_{m} \relu(x_i-(m-1)) \right)^2 \\ &+
+  \lambda \left(\beta_2^2 + \beta_3^2 + \dots + \beta_{m}^2
+    \right). 
+  \end{split}  
+\end{equation}
+The objective function above can also be written as 
+\begin{equation*}
+  \|y - X \beta\|^2 + \lambda \sum_{j=2}^{m} \beta_j^2. 
+\end{equation*}
+It turns out that $\ridge$ can be written in closed form using matrix
+notation. To see this, note first that the gradient of the above
+objective function with respect to $\beta$ is given by 
+\begin{equation*}
+\nabla \left(  \|y - X \beta\|^2 + \lambda \sum_{j=2}^{m} \beta_j^2
+\right) =  -2 X^T y + 2 X^T X \beta + 2 \lambda 
+  \begin{pmatrix}
+    0 \\ 0 \\ \beta_2 \\ \cdot \\ \cdot \\ \cdot \\ \beta_{m}
+  \end{pmatrix}
+\end{equation*}
+Recalling that $J$ is the $(m+1) \times (m+1)$  diagonal matrix with
+diagonal entries $0, 0, 1, \dots, 1$, we can write 
+\begin{equation*}
+\nabla \left(  \|y - X \beta\|^2 + \lambda \sum_{t=2}^{n-1} \beta_j^2
+\right) =  -2 X^T y + 2 X^T X \beta + 2 \lambda 
+  \begin{pmatrix}
+    0 \\ 0 \\ \beta_2 \\ \cdot \\ \cdot \\ \cdot \\ \beta_{n-1}
+  \end{pmatrix} = -2 X^T y + 2 X^T X \beta + 2 \lambda J \beta. 
+\end{equation*}
+Setting this gradient equal to zero, we get 
+\begin{equation*}
+  -2 X^T y + 2 X^T X \beta + 2 \lambda J \beta = 0 \implies \left(X^T
+    X + \lambda J \right) \beta = X^T y. 
+\end{equation*}
+which gives
+\begin{equation}\label{ridgeformula}
+  \ridge = (X^T X + \lambda J)^{-1} X^T y. 
+\end{equation}
+Note that $\lambda = 0$ corresponds to least squares, and $\lambda
+\rightarrow \infty$ leads to linear regression. When $\lambda$ is set
+to be neither very close to 0 nor very large, we should get a smooth
+estimate that still gives a good fit to the data. 
+
+Comparing \eqref{ridgeformula} to \eqref{pm_norm}, it is clear that
+they are identical when $\lambda = 1/\gamma^2$. In other words, when
+we use the prior \eqref{regu_prior}, then the posterior mean (given
+$\tau$ and $\sigma$) coincides with ridge regularized least squares
+with regularization parameter $\lambda = 1/\gamma^2 =
+\sigma^2/\tau^2$.
+
+\section{Bayesian inference for $\gamma$ and $\sigma$} 
+
+The big advantage of Bayesian inference is that it also allows
+inference on $\gamma$ and $\sigma$. We shall use the prior: 
+\begin{align*}
+  \log \gamma, \log \sigma \overset{\text{i.i.d}}{\sim}
+  \text{uniform}(-\infty, \infty).
+\end{align*}
+Recall again that $\tau = \gamma \sigma$. The joint prior on all the
+parameters $(\beta, \gamma, \sigma)$ is:
+\begin{align*}
+  f_{\beta, \gamma, \sigma}(\beta, \gamma, \sigma) \propto
+  \frac{1}{\gamma \sigma} \frac{1}{\sqrt{\det Q}} \exp
+  \left(-\frac{1}{2} \beta^T Q^{-1} \beta \right). 
+\end{align*}
+Here $Q$ is the $(m+1) \times (m+1)$ diagonal matrix with diagonal
+entries $C, C, \gamma^2 \sigma^2, \dots, \gamma^2 \sigma^2$.
+
+With this prior, we shall argue in the next lecture that the posterior
+is given by:
+\begin{align}\label{postQ}
+  \beta \mid \text{data}, \sigma, \gamma \sim N \left(\left(X^T X +
+  \gamma^{-2} J
+  \right)^{-1} X^T y, \sigma^2 \left(X^T X + \gamma^{-2} J \right)^{-1} \right)
+\end{align}
+and
+\begin{align}\label{sig_post}
+  \frac{1}{\sigma^2} \mid \text{data}, \gamma \sim
+  \text{Gamma}\left(\frac{n}{2} - 1, \frac{y^T y - y^T X \left(X^T X + 
+ \gamma^{-2} J \right)^{-1} X^T y}{2}. 
+  \right) 
+\end{align}
+and
+\begin{align*}
+  f_{\gamma \mid \text{data}}(\gamma) &\propto   \frac{\gamma^{-m}
+                                        \left|X^T X + \gamma^{-2} J  
+    \right|^{-1/2}}{\left(y^T y - y^T X \left(X^T X + 
+ \gamma^{-2} J \right)^{-1} X^T y \right)^{(n/2) - 1}}. 
+\end{align*}
+With this, inference can be carried out by first taking a grid of
+$\gamma$ values and computing the above posterior (on the logarithmic
+scale) at the grid points. This posterior can be used to obtain
+posterior samples of $\gamma$. For each sample of $\gamma$, we can
+then sample $\sigma$ using the distribution \eqref{sig_post}. Given
+samples from both $\gamma$ and $\sigma$, we can then sample $\beta$
+using \eqref{postQ}.
+
+
+
+
+
+
+%\begin{thebibliography}{99}
+
+%\bibitem[MacKay and Peto(1995)]{MacKay1995HierarchicalDirichlet}
+%D.~J.~C. MacKay and L.~C. Peto,
+%\newblock ``A hierarchical Dirichlet language model,''
+%\newblock \emph{Natural Language Engineering}, vol.~1,
+%no.~3, pp.~289--308, 1995.
+
+%\bibitem[Rubin(1981)]{Rubin1981BayesianBootstrap}
+%D.~B. Rubin,
+%\newblock ``The Bayesian bootstrap,''
+%\newblock \emph{The Annals of Statistics}, vol.~9,
+%no.~1, pp.~130--134, 1981.
+  
+%\bibitem[Fisher(1934)]{Fisher1934}
+%R.~A. Fisher,
+%\newblock ``Probability, likelihood and quantity of information in the logic of
+%uncertain inference,''
+%\newblock \emph{Proceedings of the Royal Society of London. Series~A,
+%Containing Papers of a Mathematical and Physical Character}, vol.~146,
+%no.~856, pp.~1--8, 1934.
+
+%\bibitem[Efron(2010)]{Efron}
+%Efron, B. (2010)
+%\textit{Large-scale inference: empirical Bayes methods for estimation,
+%testing, and prediction}. Cambridge University Press, 2010.
+
+%\bibitem[Shumway and Stoffer(2017)]{ShumwayStoffer}
+%Shumway, R. H. and Stoffer, D. S. (2017)
+%\textit{Time Series Analysis and Its Applications: With R
+%  Examples}. Springer, 4th edition. 
+  
+%     \bibitem[Jaynes(2003)]{Jaynes} Jaynes, E. T, (2003)
+%  \textit{Probability theory: the logic of science}. Cambridge
+%  University Press, 2003.
+ 
+%  \bibitem[Sinai(1992)]{Sinai} Sinai, Y. G, (1992)
+%  \textit{Probability theory: an introductory course}. Springer
+%  Verlag, 1992.  
+
+%\bibitem[{deGroot(1986)}]{DeGrootBlackwell}DeGroot, M. H. (1986)
+%       A conversation with David Blackwell.
+%\newblock \emph{Statistical Science}, \textbf{1}, 40--53.
+
+%         \bibitem[Mosteller(1987)]{Mosteller} Mosteller, F, (1987)
+%  \textit{Fifty challenging problems in probability with
+%    solutions}. Courier Corporation, 1987.
+
+%    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+%  \textit{Information theory, inference, and learning
+%  algorithms}. Cambridge University Press, 2003.
+
+%\bibitem[{Lindley(2013)}]{Lindley}Lindley, D. V. (2013)
+%   \textit{Understanding Uncertainty}. John Wiley and sons, 2013.
+
+
+%\end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

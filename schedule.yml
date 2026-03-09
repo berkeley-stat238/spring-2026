@@ -275,4 +275,21 @@
         - type: "Lecture"
           id: "18 code"
           name: "High-dimensional linear regression" 
-          href: "./CodeLectureEighteen238Spring2026.ipynb"	  
+          href: "./CodeLectureEighteen238Spring2026.ipynb"
+- week: 8
+  days:
+    - date: "Mar 09"
+      items:
+        - type: "Lecture"
+          id: "19"
+          name: "High-dimensional linear regression -- Bayesian inference"  
+          href: "./LectureNineteen238Spring2026.tex"
+        - type: "Lecture"
+          id: "19 Code"
+          name: "High-dimensional linear regression"
+          href: "./CodeLectureNineteen238Spring2026.ipynb"
+        - type: "PDF"
+          id: "19"
+          name: "LectureNineteen238Spring2026.pdf"
+          href: "./LectureNineteen238Spring2026.pdf"
+	  
