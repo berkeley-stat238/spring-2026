@@ -273,7 +273,7 @@
     - date: "Mar 06"
       items:
         - type: "Lecture"
-          id: "18 code"
+          id: "18 Code"
           name: "High-dimensional linear regression" 
           href: "./CodeLectureEighteen238Spring2026.ipynb"
 - week: 8
@@ -292,4 +292,13 @@
           id: "19"
           name: "LectureNineteen238Spring2026.pdf"
           href: "./LectureNineteen238Spring2026.pdf"
-	  
+    - date: "Mar 10"
+      items:
+        - type: "Lab"
+          id: "7 Code"
+          name: "Poisson Regression"
+          href: "./lab07.ipynb"
+        - type: 'Dataset'
+          id: '3'
+          name: MROZ Dataset
+          href: "./MROZ.csv"
