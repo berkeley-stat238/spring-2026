@@ -81,6 +81,10 @@ project:
          title: "19"
        - file: CodeLectureNineteen238Spring2026.ipynb
          title: "19 Code"
+       - file: LectureTwenty238Spring2026.tex
+         title: "20"
+       - file: CodeLectureTwenty238Spring2026.ipynb
+         title: "20 Code"
    - title: Labs
      children:
        - file: lab01.tex
@@ -160,6 +164,10 @@ project:
       title: "Lecture 19"      
     - file: CodeLectureNineteen238Spring2026.ipynb
       title: "Lecture 19 Code"
+    - file: LectureTwenty238Spring2026.pdf
+      title: "Lecture 20"      
+    - file: CodeLectureTwenty238Spring2026.ipynb
+      title: "Lecture 20 Code"
     - file: lab01.pdf
       title: "Lab 1"
     - file: lab02.pdf

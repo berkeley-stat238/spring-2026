@@ -1,0 +1,476 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry}
+\usepackage{graphicx}
+
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+\newcommand{\relu}{{\text{ReLU}}}
+
+\newcommand{\ridge}{{\hat{\beta}_{\text{ridge}}(\lambda)}}
+\newcommand{\lasso}{{\hat{\beta}_{\text{lasso}}(\lambda)}}
+\newcommand{\ridgemu}{{\hat{\mu}_t^{\text{ridge}}(\lambda)}}
+\newcommand{\lassomu}{{\hat{\mu}_t^{\text{lasso}}(\lambda)}}
+
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Twenty} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{11 March 2026}
+
+\maketitle
+
+\section{Bayesian Inference in a High-Dimensional Linear Regression
+  Model}
+
+We studied the following model in the last lecture.
+
+We have a response variable $y$ and a single covariate $x$. In our
+example, $y$ denotes weekly earnings and $x$ denotes years of
+experience. The covariate $x$ takes the values $0, 1, \dots, m$ for
+some fixed integer $m$. 
+
+Our data is $(x_i, y_i), i = 1, \dots, n$. The model is:
+\begin{align}\label{ibm_mod}
+  y_i = \beta_0 + \beta_1 x_i + \beta_2 \relu(x_i - 1) + \dots +
+  \beta_{m}\relu(x_i - (m-1)) + \epsilon_i
+\end{align}
+where $\relu(u) := \max(u, 0)$, and $\epsilon_i
+\overset{\text{i.i.d}}{\sim} N(0, \sigma^2)$. Note we did not include
+$\relu(x_i - m)$ because it always equals 0.
+
+The model \eqref{ibm_mod} can be rewritten in the usual regression way
+as:
+\begin{align*}
+  y = X \beta + \epsilon ~~\text{with $\epsilon \sim N(0, \sigma^2
+  I_d)$}. 
+\end{align*}
+Here $X$ is the $n \times (m+1)$ matrix with columns $1, x,
+\relu(x-j)$ for $j = 1, \dots, m-1$, where $x$ denotes observed values
+of the experience variable. 
+
+The usual least squares analysis coincides with Bayesian inference
+using the prior:
+\begin{align}\label{lsp}
+  \beta_0, \dots, \beta_m \overset{\text{i.i.d}}{\sim} N(0, C)
+  \text{ and } \log \sigma \sim \text{uniform}(-C, C). 
+\end{align}
+for $C \rightarrow \infty$. In Problem 7 of Homework 3, it is proved
+that the posterior for the above prior is: 
+\begin{align*}
+  \beta \mid \text{data}, \sigma \sim N_{m+1}(\hat{\beta}, \sigma^2
+  (X^T X)^{-1}) ~ \& ~  f_{\sigma \mid \text{data}}(\sigma)
+  \propto \sigma^{-n+m} \exp \left(-\frac{y^T y - y^T X (X^T X)^{-1}
+  X^T y}{2
+  \sigma^2} \right) I\{\sigma > 0\}
+\end{align*}
+where $\hat{\beta} = (X^T X)^{-1} X^T y$ is the least squares
+estimator. If we marginalize $\sigma$ and write the posterior
+distribution of $\beta$, we will get a $t$-distribution. The posterior
+distribution for $\sigma$ above can be written in terms of the Gamma
+(or chi-squared) distribution (this is problem 7(d) in Homework 3) as:
+\begin{align*}
+  \frac{1}{\sigma^2} \Big| \text{data} \sim
+ \text{Gamma} \left(\frac{n-m-1}{2}, \frac{y^T y -
+  y^T X (X^T X)^{-1} X^T y}{2}
+  \right). 
+\end{align*}
+Because least squares does not give
+sensible results in this example, we change the prior in \eqref{lsp}
+to:  
+\begin{align*}
+  \beta_0 \sim N(0, C), \beta_1 \sim N(0, C), \beta_2, \dots, \beta_m
+  \overset{\text{i.i.d}}{\sim} N(0, \tau^2) ~~ \text{ and }
+  \log \sigma \sim \text{uniform}(-C, C). 
+\end{align*}
+Therefore, we are bringing in a new parameter $\tau$ which controls
+the scale of $\beta_2, \dots, \beta_m$. For now, treat $\tau$ as
+fixed. So the prior on $\beta$ and $\sigma$ is now: 
+\begin{align*}
+  f_{\beta, \sigma}(\beta, \sigma) \propto  \frac{1}{\sigma}
+  \frac{1}{\sqrt{\det Q}} \exp \left(-\frac{1}{2} \beta^T Q^{-1} \beta \right)
+\end{align*}
+where $Q$ is the $(m+1) \times (m+1)$ diagonal matrix with diagonal
+entries $C, C, \tau^2, \dots, \tau^2$. 
+
+The likelihood is unchanged: 
+\begin{equation*}
+  \left(\frac{1}{\sqrt{2 \pi}} \right)^n \sigma^{-n} \exp
+  \left(-\frac{1}{2 \sigma^2} \|y - X \beta\|^2 \right). 
+\end{equation*}
+So the posterior for $\beta, \sigma$ is: 
+\begin{align*}
+  f_{\beta,\sigma \mid \text{data}}(\beta, \sigma)
+ & \propto \frac{\sigma^{-n-1}}{\sqrt{\det Q}} \exp
+   \left(-\frac{1}{2} \left(\frac{1}{\sigma^2} \|y - X \beta\|^2 +
+   \beta^T Q^{-1} \beta \right) \right). 
+\end{align*}
+Using the completing the square formula: 
+\begin{align*}
+  \frac{1}{\sigma^2} \|y - X \beta\|^2 +
+   \beta^T Q^{-1} \beta &= \left( \beta - \hat{\beta}\right)^T
+                          \left(\frac{X^T X}{\sigma^2} + Q^{-1}
+                          \right) \left(\beta - \hat{\beta} \right) \\
+  &+ \frac{y^T y}{\sigma^2} - \left(\frac{y^T X}{\sigma^2} \right)
+    \left(\frac{X^T X}{\sigma^2} + Q^{-1} \right)^{-1} \left(\frac{X^T
+    y}{\sigma^2} \right), 
+\end{align*}
+where
+\begin{align*}
+  \hat{\beta} = \left(\frac{X^T X}{\sigma^2} + Q^{-1} \right)^{-1}
+  \frac{X^T y}{\sigma^2}
+\end{align*}
+one can then show that
+\begin{align}\label{postQ}
+  \beta \mid \text{data}, \sigma, \tau \sim N\left( \left(\frac{X^T
+                          X}{\sigma^2} + Q^{-1}  \right)^{-1} \frac{X^T y}{\sigma^2}, \left(\frac{X^T 
+  X}{\sigma^2} + 
+   Q^{-1} \right)^{-1} \right)  
+\end{align}
+Note that when $Q \rightarrow \infty$ (i.e., when $C \rightarrow
+\infty$ and $\tau \rightarrow \infty$), this reverts to$N((X^T
+X)^{-1} X^T y, \sigma^2 (X^T X)^{-1})$. To get the posterior of
+$\sigma$ given $\tau$, we simply integrate $\beta$ from the joint
+posterior to obtain: 
+
+Integrating $\beta$ from the joint posterior gives the posterior of
+$\gamma, \sigma$:
+\begin{align*}
+&  f_{\sigma \mid \text{data}, \tau}(\sigma) \\ &\propto
+  \frac{\sigma^{-n-1}}{\sqrt{\det Q}}  \sqrt{\det
+  \left(\frac{X^T X}{\sigma^2} + Q^{-1} \right)^{-1}} \exp \left(-\frac{y^T y}{2 \sigma^2} \right)\exp
+  \left(\frac{y^T X}{2\sigma^2} \left(\frac{X^T 
+  X}{\sigma^2} + 
+   Q^{-1} \right)^{-1} \frac{X^T y}{\sigma^2}  \right). 
+\end{align*}
+Simplifying by using $\det Q \propto (\tau^2)^{m-1}$ and
+$Q^{-1} \approx J/\tau^2$ where $J$ is the $(m+1) \times
+(m+1)$ diagonal matrix with diagonals $0, 0, 1, \dots, 1$, we get
+\begin{align*}
+  &  f_{\sigma \mid \text{data}, \tau}(\sigma) \\ &\propto
+\frac{\sigma^{-n+m}}{\tau^{m-1}} \left|X^T X + \frac{\sigma^2}{\tau^2}
+                                                    J 
+  \right|^{-1/2} \exp 
+  \left(-\frac{y^T y - y^T X \left(X^T X + 
+ \sigma^2\tau^{-2} J \right)^{-1} X^T y}{2\sigma^2} 
+  \right) 
+\end{align*}
+This distribution is not easy to handle because of the presence of the
+term $\sigma^2/\tau^2$ inside the determinant as well as inside the
+inverse (in the exponent). One trick to simplify this is to
+reparametrize and assume $\tau = \sigma \gamma$. With this, the above
+conditional density becomes
+\begin{align*}
+  &  f_{\sigma \mid \text{data}, \gamma}(\sigma) \\ &\propto
+\frac{1}{\gamma^{m-1}\sigma^{n-1}} \left|X^T X + \gamma^{-2} J 
+  \right|^{-1/2} \exp 
+  \left(-\frac{y^T y - y^T X \left(X^T X + 
+\gamma^{-2} J \right)^{-1} X^T y}{2\sigma^2} 
+  \right) 
+\end{align*}
+Ignoring terms above which do not depend on $\gamma$, we get 
+\begin{equation*}
+  f_{\sigma \mid \text{data}, \gamma}(\sigma) \propto \sigma^{-n+1} \exp 
+  \left(-\frac{y^T y - y^T X \left(X^T X + 
+ \gamma^{-2} J \right)^{-1} X^T y}{2\sigma^2} 
+  \right). 
+\end{equation*}
+The right hand side above is actually the pdf of an inverse gamma
+density (see
+\url{https://en.wikipedia.org/wiki/Inverse-gamma_distribution}). This
+can be seen by converting it into the density of $1/\sigma^2$:
+\begin{align*}
+  f_{1/\sigma^2 \mid \text{data}, \gamma}(x) &\propto f_{\sigma \mid
+  \text{data}, \gamma}(x^{-1/2}) x^{-3/2} \\
+  &\propto \left(x^{-1/2} \right)^{-n+1} \exp 
+  \left(-x \frac{y^T y - y^T X \left(X^T X + 
+ \gamma^{-2} J \right)^{-1} X^T y}{2} 
+    \right) x^{-3/2} \\
+  &= x^{(n-4)/2} \exp 
+  \left(-x \frac{y^T y - y^T X \left(X^T X + 
+ \gamma^{-2} J \right)^{-1} X^T y}{2} 
+    \right). 
+\end{align*}
+Thus
+\begin{align}\label{sig_post}
+  \frac{1}{\sigma^2} \mid \text{data}, \gamma \sim
+  \text{Gamma}\left(\frac{n}{2} - 1, \frac{y^T y - y^T X \left(X^T X + 
+ \gamma^{-2} J \right)^{-1} X^T y}{2}. 
+  \right) 
+\end{align}
+Thus when $\gamma$ is fixed, we can perform inference on $\beta,
+\sigma$ using the above closed form formulae. Since $\gamma$ is also
+unknown, we can place a prior $p(\gamma)$ on it, and then calculate
+its posterior.  
+
+Finally, we can marginalize $\sigma$ to obtain the posterior of
+$\gamma$ alone as follows:
+\begin{align*}
+  f_{\gamma \mid \text{data}}(\gamma) &\propto \int_0^{\infty}
+                                        p(\gamma)
+                                        \frac{1}{\gamma^{m-1} \sigma^{n-1}}
+ \left|X^T X + \gamma^{-2} J 
+  \right|^{-1/2} \exp 
+  \left(-\frac{y^T y - y^T X \left(X^T X + 
+ \gamma^{-2} J \right)^{-1} X^T y}{2\sigma^2} 
+                                        \right)  d\sigma  \\
+&= p(\gamma)  \gamma^{-m+1} \left|X^T X + \gamma^{-2} J 
+  \right|^{-1/2} \int_0^{\infty}  \sigma^{-n+1}\exp 
+  \left(-\frac{y^T y - y^T X \left(X^T X + 
+ \gamma^{-2} J \right)^{-1} X^T y}{2\sigma^2} 
+                                        \right)  d\sigma. 
+\end{align*}
+Letting
+\begin{align*}
+  A := y^T y - y^T X \left(X^T X + 
+ \gamma^{-2} J \right)^{-1} X^T y, 
+\end{align*}
+we get
+\begin{align*}
+  f_{\gamma \mid \text{data}}(\gamma) &\propto  p(\gamma) \gamma^{-m+1} \left|X^T X + \gamma^{-2} J 
+  \right|^{-1/2} \int_0^{\infty} \sigma^{-n+1} \exp \left(-\frac{A}{2
+                                        \sigma^2} \right) d\sigma 
+\end{align*}
+By the change of variable $\sigma = s \sqrt{A}$, we obtain
+\begin{align*}
+  f_{\gamma \mid \text{data}}(\gamma) &\propto  p(\gamma)  \gamma^{-m+1} \left|X^T X + \gamma^{-2} J 
+  \right|^{-1/2} A^{-(n/2) + 1} \int_0^{\infty} s^{-n+1} \exp \left(-\frac{1}{2s^2}
+  \right) ds \\
+  &\propto p(\gamma)  \gamma^{-m+1} \left|X^T X + \gamma^{-2} J 
+    \right|^{-1/2} A^{-(n/2) + 1} \\
+  &=   \frac{p(\gamma)\gamma^{-m+1} \left|X^T X + \gamma^{-2} J 
+    \right|^{-1/2}}{\left(y^T y - y^T X \left(X^T X + 
+ \gamma^{-2} J \right)^{-1} X^T y \right)^{(n/2) - 1}}. 
+\end{align*}
+We usually choose $p(\gamma)$ as:
+\begin{align*}
+p(\gamma) \propto \frac{1}{\gamma} I\{\text{low} < \gamma <
+  \text{high}\}
+\end{align*}
+for two fixed values $\text{low}$ and $\text{high}$. These could be
+the values of  $\gamma$ which lead to the posterior mean (which
+coincides with ridge regression) leading to underfitting and
+overfitting respectively. 
+
+Inference can be carried out by first taking a grid of
+$\gamma$ values and computing the above posterior (on the logarithmic
+scale) at the grid points. This posterior can be used to obtain
+posterior samples of $\gamma$. For each sample of $\gamma$, we can
+then sample $\sigma$ using the distribution \eqref{sig_post}. Given
+samples from both $\gamma$ and $\sigma$, we can then sample $\beta$
+using \eqref{postQ}.
+
+\section{Induced Prior for the Regression Function}
+
+Our regression function is being modeled as:
+\begin{align}\label{reg_func}
+  f(x) = \beta_0 + \beta_1 x + \beta_2 (x - 1)_+ + \dots + \beta_m(x -
+  (m-1))_+
+\end{align}
+where $\beta_0, \beta_1, \dots, \beta_m$ are all independent with
+\begin{align*}
+  \beta_0, \beta_1 \overset{\text{i.i.d}}{\sim} N(0, C) ~~ \text{ and
+  } ~~ \beta_2, \dots, \beta_m \overset{\text{i.i.d}}{\sim} N(0,
+  \tau^2). 
+\end{align*}
+This can also be seen as a prior on the regression function $f$ more
+directly. For every $0 \leq u_1 < \dots < u_k < \infty$, the joint
+distribution of $(f(u_1), \dots, f(u_k))$ induced by \eqref{reg_func}
+will be multivariate normal. This implies that $(f(u), u \geq 0)$ is a
+Gaussian Process. The description of the GP can be done in terms of
+the mean function $\E f(u)$ and the covariance kernel
+$\text{Cov}(f(u), f(v))$.
+
+The mean function is clearly zero (because each $\E \beta_j = 0$). The
+covariance kernel is given by:
+\begin{align*}
+  &\text{cov}(f(u), f(v)) \\ &= \text{cov} \left(\beta_0 + \beta_1u  + \beta_2 (u - 1)_+ + \dots + \beta_m(u -
+  (m-1))_+, \beta_0 + \beta_1 v + \beta_2 (v - 1)_+ + \dots + \beta_m(v -
+                               (m-1))_+ \right) \\
+  &= C(1 + uv) + \tau^2 \sum_{j=1}^{m-1} (u - j)_+ (v - j)_+ \\
+  &= C(1 + uv) + \tau^2 \sum_{j=1}^{k} (u -
+    j)(v - j) \\
+  &= C(1 + uv) + \tau^2 \left(u v k + \frac{1}{6} k(k+1)(2k+1) -
+    (u+v)\frac{k(k+1)}{2} \right) 
+\end{align*}
+where $k = \lfloor u \wedge v \rfloor$ (and $u \wedge v := \min(u,
+v)$). 
+
+Suppose now we use the approximation
+\begin{align*}
+  k \approx u \wedge v ~~ \text{ and } ~~ k(k+1)(2k+1) \approx 2k^3
+  \approx 2(u \wedge v)^3 ~~ \text{ and } ~~ k(k+1) \approx k^2
+  \approx (u \wedge v)^2. 
+\end{align*}
+Then the covariance kernel becomes:
+\begin{align*}
+  \text{cov}(f(u), f(v)) \approx C(1 + uv) + \tau^2 \left(u v (u
+  \wedge v) + \frac{(u \wedge v)^3}{3} - \frac{(u \wedge v)^2}{2} (u + v)
+  \right). 
+\end{align*}
+It turns out that the right hand side above is precisely the
+covariance kernel of:
+\begin{align*}
+  G_x = \beta_0 + \beta_1 x + \tau I_x
+\end{align*}
+where $\beta_0, \beta_1 \overset{\text{i.i.d}}{\sim} N(0, C)$ and
+$I_x$ is \textbf{Integrated Brownian Motion} on $[0, \infty)$. 
+We will revisit this in the next lecture. 
+
+
+
+%\begin{thebibliography}{99}
+
+%\bibitem[MacKay and Peto(1995)]{MacKay1995HierarchicalDirichlet}
+%D.~J.~C. MacKay and L.~C. Peto,
+%\newblock ``A hierarchical Dirichlet language model,''
+%\newblock \emph{Natural Language Engineering}, vol.~1,
+%no.~3, pp.~289--308, 1995.
+
+%\bibitem[Rubin(1981)]{Rubin1981BayesianBootstrap}
+%D.~B. Rubin,
+%\newblock ``The Bayesian bootstrap,''
+%\newblock \emph{The Annals of Statistics}, vol.~9,
+%no.~1, pp.~130--134, 1981.
+  
+%\bibitem[Fisher(1934)]{Fisher1934}
+%R.~A. Fisher,
+%\newblock ``Probability, likelihood and quantity of information in the logic of
+%uncertain inference,''
+%\newblock \emph{Proceedings of the Royal Society of London. Series~A,
+%Containing Papers of a Mathematical and Physical Character}, vol.~146,
+%no.~856, pp.~1--8, 1934.
+
+%\bibitem[Efron(2010)]{Efron}
+%Efron, B. (2010)
+%\textit{Large-scale inference: empirical Bayes methods for estimation,
+%testing, and prediction}. Cambridge University Press, 2010.
+
+%\bibitem[Shumway and Stoffer(2017)]{ShumwayStoffer}
+%Shumway, R. H. and Stoffer, D. S. (2017)
+%\textit{Time Series Analysis and Its Applications: With R
+%  Examples}. Springer, 4th edition. 
+  
+%     \bibitem[Jaynes(2003)]{Jaynes} Jaynes, E. T, (2003)
+%  \textit{Probability theory: the logic of science}. Cambridge
+%  University Press, 2003.
+ 
+%  \bibitem[Sinai(1992)]{Sinai} Sinai, Y. G, (1992)
+%  \textit{Probability theory: an introductory course}. Springer
+%  Verlag, 1992.  
+
+%\bibitem[{deGroot(1986)}]{DeGrootBlackwell}DeGroot, M. H. (1986)
+%       A conversation with David Blackwell.
+%\newblock \emph{Statistical Science}, \textbf{1}, 40--53.
+
+%         \bibitem[Mosteller(1987)]{Mosteller} Mosteller, F, (1987)
+%  \textit{Fifty challenging problems in probability with
+%    solutions}. Courier Corporation, 1987.
+
+%    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+%  \textit{Information theory, inference, and learning
+%  algorithms}. Cambridge University Press, 2003.
+
+%\bibitem[{Lindley(2013)}]{Lindley}Lindley, D. V. (2013)
+%   \textit{Understanding Uncertainty}. John Wiley and sons, 2013.
+
+
+%\end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

@@ -302,3 +302,18 @@
           id: '3'
           name: MROZ Dataset
           href: "./MROZ.csv"
+    - date: "Mar 11"
+      items:
+        - type: "Lecture"
+          id: "20"
+          name: "Bayesian inference for high-dimensional linear regression (continued)"
+          href: "./LectureTwenty238Spring2026.tex"
+        - type: "Lecture"
+          id: "20 Code"
+          name: "Bayesian inference for high-dimensional linear regression (continued)"
+          href: "./CodeLectureTwenty238Spring2026.ipynb"
+        - type: "PDF"
+          id: "20"
+          name: "LectureTwenty238Spring2026.pdf"
+          href: "./LectureTwenty238Spring2026.pdf"
+	  
