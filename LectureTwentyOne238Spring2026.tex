@@ -1,0 +1,406 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry}
+\usepackage{graphicx}
+
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+\newcommand{\relu}{{\text{ReLU}}}
+
+\newcommand{\ridge}{{\hat{\beta}_{\text{ridge}}(\lambda)}}
+\newcommand{\lasso}{{\hat{\beta}_{\text{lasso}}(\lambda)}}
+\newcommand{\ridgemu}{{\hat{\mu}_t^{\text{ridge}}(\lambda)}}
+\newcommand{\lassomu}{{\hat{\mu}_t^{\text{lasso}}(\lambda)}}
+
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Twenty One} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{13 March 2026}
+
+\maketitle
+
+\section{Recap: Model from past few lectures}
+
+We studied the following model in the past few lectures.
+
+We have a response variable $y$ and a single covariate $x$. In our
+example, $y$ denotes weekly earnings and $x$ denotes years of
+experience. The covariate $x$ takes the values $0, 1, \dots, m$ for
+some fixed integer $m$. 
+
+Our data is $(x_i, y_i), i = 1, \dots, n$. The model is:
+\begin{align}\label{disc_mod}
+  y_i = \beta_0 + \beta_1 x_i + \beta_2 \relu(x_i - 1) + \dots +
+  \beta_{m}\relu(x_i - (m-1)) + \epsilon_i
+\end{align}
+where $\relu(u) := \max(u, 0)$, and $\epsilon_i
+\overset{\text{i.i.d}}{\sim} N(0, \sigma^2)$. Note we did not include
+$\relu(x_i - m)$ because it always equals 0.
+
+We discussed Bayesian inference in this model using the prior: 
+\begin{align}\label{coef_prior}
+  \beta_0 \sim N(0, C), \beta_1 \sim N(0, C), \beta_2, \dots, \beta_m
+  \overset{\text{i.i.d}}{\sim} N(0, \tau^2)
+\end{align}
+Towards the end of last lecture, we remarked that the resulting model
+on the regression function: 
+\begin{align*}
+  f(x) = \beta_0 + \beta_1 x + \beta_2 \relu(x - 1) + \dots +
+  \beta_{m}\relu(x - (m-1))
+\end{align*}
+with prior \eqref{coef_prior} is very similar to:
+\begin{align}\label{ibm_mod}
+  f(x) = \beta_0 + \beta_1 x + \tau I(x)
+\end{align}
+where $I(x)$ is integrated Brownian motion (and $\beta_0, \beta_1
+\overset{\text{i.i.d}}{\sim} N(0, C)$). We shall some intuition today
+as to why the Integrated Brownian Motion is appearing here. 
+
+\section{Brownian Motion and Integrated Brownian Motion}
+Before defining Brownian motion, let us recall the definition of
+Brownian motion. Brownian motion on $[0, M]$ (for some fixed $M > 0$)
+is a stochastic process $\{B(t), 0 \le t \le M\}$ characterized by the
+following two properties:
+
+\begin{enumerate}
+\item Every realization is a continuous function on $[0,M]$, and
+  $B(0) = 0$.
+
+\item For every fixed $t_1,\dots,t_k \in [0,M]$, the random vector
+  $(B(t_1),\dots,B(t_k))$ has a multivariate normal distribution with
+  mean zero and covariance matrix
+  \[
+  \text{Cov}(B(t_i), B(t_j)) = \min(t_i,t_j).
+  \]
+\end{enumerate}
+
+This definition suggests the following method for simulating
+$B(t)$. Construct the dense grid
+\[
+0 = t_0 < t_1 < \dots < t_N = M
+\]
+on $[0,M]$ with $t_i = iM/N$. One can then simulate
+$(B(t_1),\dots,B(t_N))$ from the multivariate normal distribution with
+mean zero and covariance matrix $\min(t_i,t_j)$.
+
+However, this approach is computationally inefficient for large $N$.
+Sampling directly from an $N \times N$ covariance matrix typically
+requires a matrix factorization (such as a Cholesky decomposition),
+which has computational cost on the order of $O(N^3)$.
+
+For simulations in particular, the following alternative definition is
+more appealing:
+\begin{enumerate}
+\item Every realization is a continuous function on $[0, M]$ with
+  $B(0) = 0$.
+\item The process has independent increments which means that $B(t_1),
+  B(t_2) - B(t_1), \dots, B(t_k) - B(t_{k-1})$ are independent
+  whenever $0 \leq t_1 < \dots < t_k \leq M$.
+\item $B(t) - B(s) \sim N(0, t-s)$ whenever $0 \leq s \leq t$. 
+\end{enumerate}
+With this definition, we can simulate $B(t_1), \dots, B(t_N)$ for $t_i
+= iM/N$ in the following way:
+\begin{itemize}
+\item First generate $\alpha_1, \dots, \alpha_N
+  \overset{\text{i.i.d}}{\sim} N(0, M/N)$
+\item Take $B(t_i) = \alpha_1 + \dots + \alpha_i$ for $i = 1, \dots,
+  N$. 
+\end{itemize}
+Note that in this way $\alpha_i = B(t_i) - B(t_{i-1})$. The equation
+$B(t_i) = \alpha_1 + \dots + \alpha_i$ can also be written as
+\begin{align*}
+  B(t) = \sum_{i=1}^N \alpha_i I\{t \geq t_i\} ~~ \text{ for $t \in
+  \{t_1, \dots, t_N\}$}. 
+\end{align*}
+Because of the denseness of the grid (when $N$ is  large), we are
+claiming that
+\begin{align}\label{app_bm}
+  B(t) \approx \sum_{i=1}^N \alpha_i I\{t \geq t_i\} ~~ \text{ for all
+  $t \in [0, M]$}. 
+\end{align}
+This means that Brownian motion can be well-approximated (when $N$ is
+large) by a piecewise constant process which jumps at each grid point
+$t_i = iM/N$ by a small amount given by $N(0, M/N)$. 
+
+We are now ready to define the Integrated Brownian Motion. This is
+given by:
+\begin{align}\label{ibm_def}
+  I(t) = \int_0^t B(s) ds. 
+\end{align}
+Using the approximation \eqref{app_bm}, we can write
+\begin{align*}
+  I(t) \approx \int_0^t \left(\sum_{i=1}^N \alpha_i I\{t \geq t_i\} \right)
+  ds = \sum_{i=1}^N \alpha_i \int_0^t I\{s \geq t_i\} ds =
+  \sum_{i=1}^N \alpha_i (t - t_i)_+. 
+\end{align*}
+Therefore Integrated Brownian Motion can be approximated as:
+\begin{align}\label{ibm_approx}
+  I(t) \approx   \sum_{i=1}^N \alpha_i (t - t_i)_+ 
+\end{align}
+when $N$ is large, $t_i = iM/N$ and $\alpha_i
+\overset{\text{i.i.d}}{\sim} N(0, M/N)$.
+
+\section{The Model \eqref{ibm_mod}}
+Using \eqref{ibm_approx}, the (prior) model \eqref{ibm_mod} can
+therefore be written as:
+\begin{align*}
+  f(x) \approx \beta_0 + \beta_1 x + \tau \sum_{i=1}^N \alpha_i
+  \left(x - \frac{iM}{N}\right)_+  
+\end{align*}
+Here $N$ is a large number. If we do a further coarse approximation
+with $N = M$, we get back the model \eqref{disc_mod} if we make the
+identification $\beta_i = \tau \alpha_{i-1}$ for $i = 2, \dots, N$ and $M =
+m$. Therefore, the model \eqref{disc_mod} can be understood as a
+coarse discretization of the model \eqref{ibm_mod} which stipulates
+that $f$ is an Integrated Brownian Motion (scaled by $\tau$) and added
+to a linear function $\beta_0 + \beta_1 x$ with the uniformative $N(0,
+C)$ prior on the coefficients $\beta_0, \beta_1$.
+
+The prior \eqref{ibm_mod} is an example of a Gaussian process prior. 
+
+\section{Gaussian Process Regression}
+Consider the usual nonparametric regression problem where the goal is
+to estimate an unknown function $f : \Omega \rightarrow \R$ from
+observations $(x_1, y_1), \dots, (x_n, y_n)$ under the model:
+\begin{equation*}
+  y_i = f(x_i) + \epsilon_i ~~\text{where $\epsilon_i
+    \overset{\text{i.i.d}}{\sim} N(0, \sigma^2)$}. 
+\end{equation*}
+Here $\Omega$ denotes the domain which is a subset of $\R^d$ for some
+$d \geq 1$. 
+
+We assume that $\{f(x), x \in
+\Omega\}$ forms a Gaussian process with mean function $\mu(x), x \in
+\Omega$ and covariance 
+function or \textit{kernel} given by $K(x, x')$ i.e.,
+\begin{equation*}
+  \text{Cov}(f(x), f(x')) = K(x, x') ~~\text{for all $x, x' \in
+    \Omega$}. 
+\end{equation*}
+The kernel is positive semi-definite i.e., for every $N \geq 1$,
+distinct points $u_1, \dots, u_N \in \Omega$, the $N \times N$
+matrix with $(i, j)^{th}$ entry $K(u_i, u_j)$ is positive
+semi-definite. Often, this matrix will be positive definite, and hence
+invertible.
+
+The mean function is usually taken to be zero. Here are some standard
+special cases.
+Here are some examples of Gaussian processes and kernels:
+\begin{enumerate}
+\item \textbf{Brownian Motion}: Here $\Omega = [0, \infty)$ and $K(s,
+  t) = \min(s, t)$.
+\item \textbf{(scaled) Brownian Motion plus constant}: Here $\Omega =
+  [0, 
+  \infty)$ and we assume that $f(t) = \beta_0 + \tau W_t$ where $W_t
+  \sim BM$, $\beta_0 \sim N(0, C)$ and $\tau > 0$ (and independence
+  between   $\beta_0$ and $\{W_t\}$). $C$ will be taken to be
+  large. Now  
+  \begin{equation*}
+    K(s, t) = C + \tau^2 \min(s, t). 
+  \end{equation*}
+\item \textbf{Integrated Brownian Motion}: $\Omega = [0,
+  \infty)$ and
+  \begin{equation*}
+    f(t) = \int_0^t W_s ds ~~ \text{where $W_s \sim BM$}. 
+  \end{equation*}
+  The kernel is given by
+  \begin{align*}
+    K(s, t) &= \text{Cov} \left(\int_0^s W_u du, \int_0^t W_v dv
+              \right) \\
+            &= \int_0^s \int_0^t \text{Cov}(W_u, W_v) dv du 
+            = \int_0^s \int_0^t \min(u, v) dv du
+  \end{align*}
+  To simplify further, assume that $s \leq t$ so that
+  \begin{align*}
+K(s, t)            &= \int_0^s \left(\int_0^u v dv + \int_u^t u dv \right) du
+    \\
+            &= \int_0^s \left(\frac{u^2}{2} + u(t - u) \right) du = \int_0^s \left(ut - \frac{u^2}{2} \right) du = t \frac{s^2}{2}
+      - \frac{s^3}{6}. 
+  \end{align*}
+  For general $s$ and $t$, we have
+  \begin{equation*}
+    K(s, t) = \frac{1}{2} \max(s, t) \left(\min(s, t)\right)^2 -
+    \frac{1}{6} \left(\min(s, t) \right)^3. 
+  \end{equation*}
+\item \textbf{(scaled) Integrated Brownian Motion Plus a Linear Term}:
+  In the 
+  IBM model, we have $f(0) = 0$ and $f'(0) = 0$. This might be
+  an unrealistic assumption to make when $f$ is completely
+  unknown. In this case, a better model might be
+  \begin{equation*}
+    f(t) = \beta_0 + \beta_1 t + \tau \int_0^t W_s ds
+  \end{equation*}
+  where $\beta_0, \beta_1, \{W_s\}$ are independent with $W_s$ being
+  Brownian motion and $\beta_0, \beta_1 \overset{\text{i.i.d}}{\sim} N(0,
+  C)$. The kernel now becomes
+  \begin{align*}
+    K(s, t) &= \text{Cov} \left(\beta_0 + \beta_1 s + \tau \int_0^s W_u du,
+      \beta_0 + \beta_1 t + \tau \int_0^t W_v dv \right) \\ &= C (1 +
+                                                              st) +
+                                                              \frac{\tau^2}{2}
+                                                              \max(s,
+                                                              t)
+                                                              \left(\min(s,
+                                                              t)\right)^2
+                                                              - 
+    \frac{\tau^2}{6} \left(\min(s, t) \right)^3. 
+  \end{align*}
+\end{enumerate}
+
+
+%\begin{thebibliography}{99}
+
+%\bibitem[MacKay and Peto(1995)]{MacKay1995HierarchicalDirichlet}
+%D.~J.~C. MacKay and L.~C. Peto,
+%\newblock ``A hierarchical Dirichlet language model,''
+%\newblock \emph{Natural Language Engineering}, vol.~1,
+%no.~3, pp.~289--308, 1995.
+
+%\bibitem[Rubin(1981)]{Rubin1981BayesianBootstrap}
+%D.~B. Rubin,
+%\newblock ``The Bayesian bootstrap,''
+%\newblock \emph{The Annals of Statistics}, vol.~9,
+%no.~1, pp.~130--134, 1981.
+  
+%\bibitem[Fisher(1934)]{Fisher1934}
+%R.~A. Fisher,
+%\newblock ``Probability, likelihood and quantity of information in the logic of
+%uncertain inference,''
+%\newblock \emph{Proceedings of the Royal Society of London. Series~A,
+%Containing Papers of a Mathematical and Physical Character}, vol.~146,
+%no.~856, pp.~1--8, 1934.
+
+%\bibitem[Efron(2010)]{Efron}
+%Efron, B. (2010)
+%\textit{Large-scale inference: empirical Bayes methods for estimation,
+%testing, and prediction}. Cambridge University Press, 2010.
+
+%\bibitem[Shumway and Stoffer(2017)]{ShumwayStoffer}
+%Shumway, R. H. and Stoffer, D. S. (2017)
+%\textit{Time Series Analysis and Its Applications: With R
+%  Examples}. Springer, 4th edition. 
+  
+%     \bibitem[Jaynes(2003)]{Jaynes} Jaynes, E. T, (2003)
+%  \textit{Probability theory: the logic of science}. Cambridge
+%  University Press, 2003.
+ 
+%  \bibitem[Sinai(1992)]{Sinai} Sinai, Y. G, (1992)
+%  \textit{Probability theory: an introductory course}. Springer
+%  Verlag, 1992.  
+
+%\bibitem[{deGroot(1986)}]{DeGrootBlackwell}DeGroot, M. H. (1986)
+%       A conversation with David Blackwell.
+%\newblock \emph{Statistical Science}, \textbf{1}, 40--53.
+
+%         \bibitem[Mosteller(1987)]{Mosteller} Mosteller, F, (1987)
+%  \textit{Fifty challenging problems in probability with
+%    solutions}. Courier Corporation, 1987.
+
+%    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+%  \textit{Information theory, inference, and learning
+%  algorithms}. Cambridge University Press, 2003.
+
+%\bibitem[{Lindley(2013)}]{Lindley}Lindley, D. V. (2013)
+%   \textit{Understanding Uncertainty}. John Wiley and sons, 2013.
+
+
+%\end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

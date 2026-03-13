@@ -316,4 +316,18 @@
           id: "20"
           name: "LectureTwenty238Spring2026.pdf"
           href: "./LectureTwenty238Spring2026.pdf"
+    - date: "Mar 13"
+      items:
+        - type: "Lecture"
+          id: "21"
+          name: "Introduction to Gaussian Process Regression"  
+          href: "./LectureTwentyOne238Spring2026.tex"
+        - type: "Lecture"
+          id: "21 Code"
+          name: "Simulating Brownian Motion"
+          href: "./CodeLectureTwentyOne238Spring2026.ipynb"
+        - type: "PDF"
+          id: "21"
+          name: "LectureTwentyOne238Spring2026.pdf"
+          href: "./LectureTwentyOne238Spring2026.pdf"
 	  
