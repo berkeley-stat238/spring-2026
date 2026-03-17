@@ -330,4 +330,20 @@
           id: "21"
           name: "LectureTwentyOne238Spring2026.pdf"
           href: "./LectureTwentyOne238Spring2026.pdf"
+- week: 9
+  days:
+    - date: "Mar 16"
+      items:
+        - type: "Lecture"
+          id: "22"
+          name: "Interpolation and Integration using Gaussian Processes"  
+          href: "./LectureTwentyTwo238Spring2026.tex"
+        - type: "Lecture"
+          id: "22 Code"
+          name: "Interpolation with Gaussian Processes"
+          href: "./CodeLectureTwentyTwo238Spring2026.ipynb"
+        - type: "PDF"
+          id: "22"
+          name: "LectureTwentyTwo238Spring2026.pdf"
+          href: "./LectureTwentyTwo238Spring2026.pdf"
 	  

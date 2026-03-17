@@ -1,0 +1,410 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry}
+\usepackage{graphicx}
+
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+\newcommand{\relu}{{\text{ReLU}}}
+
+\newcommand{\ridge}{{\hat{\beta}_{\text{ridge}}(\lambda)}}
+\newcommand{\lasso}{{\hat{\beta}_{\text{lasso}}(\lambda)}}
+\newcommand{\ridgemu}{{\hat{\mu}_t^{\text{ridge}}(\lambda)}}
+\newcommand{\lassomu}{{\hat{\mu}_t^{\text{lasso}}(\lambda)}}
+
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Twenty Two} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{16 March 2026}
+
+\maketitle
+
+\section{Gaussian Processes}
+The goal is to infer an unknown function $f : \Omega \rightarrow \R$
+that is defined on a known domain $\Omega \subseteq \R^p$. We assume
+that $\{f(x), x \in \Omega\}$ forms a Gaussian process with mean zero
+and covariance function or \textit{kernel} given by $K(x, x')$ i.e., 
+\begin{equation*}
+  \text{Cov}(f(x), f(x')) = K(x, x') ~~ \text{for all $x, x' \in
+    \Omega$}. 
+\end{equation*}
+The kernel needs to be positive semi-definite i.e., for every $N \geq
+1$, distinct points $u_1, \dots, u_N \in \Omega$, the $N \times N$
+matrix with $(i, j)^{th}$ entry $K(u_i, u_j)$ is positive 
+semi-definite. Sometimes, this matrix will be positive definite, and
+hence invertible.
+
+Here are some examples of Gaussian processes and kernels.
+\begin{enumerate}
+\item \textbf{Brownian Motion}: Here $\Omega = [0, \infty)$ and $K(s,
+  t) = \min(s, t)$.
+\item \textbf{(scaled) Brownian Motion plus constant}: Here again $\Omega =
+  [0, \infty)$. In the Brownian motion model, $f(0) = 0$ which is
+  generally an unrealistic assumption. To fix this, we assume that
+  $f(t) = \beta_0 + \tau W_t$ where $W_t 
+  \sim BM$, $\beta_0 \sim N(0, C)$ and $\tau > 0$ (and independence
+  between   $\beta_0$ and $\{W_t\}$). $C$ will be taken to be
+  large (potentially $C \rightarrow \infty$). Now  
+  \begin{equation*}
+    K(s, t) = C + \tau^2 \min(s, t). 
+  \end{equation*}
+\item \textbf{Integrated Brownian Motion}: $\Omega = [0,
+  \infty)$ and
+  \begin{equation*}
+    f(t) = \int_0^t W_s ds ~~ \text{where $W_s \sim BM$}. 
+  \end{equation*}
+  The kernel is given by
+  \begin{align*}
+    K(s, t) &= \text{Cov} \left(\int_0^s W_u du, \int_0^t W_v dv
+              \right) \\
+            &= \int_0^s \int_0^t \text{Cov}(W_u, W_v) dv du 
+            = \int_0^s \int_0^t \min(u, v) dv du
+  \end{align*}
+  To simplify further, assume that $s \leq t$ so that
+  \begin{align*}
+K(s, t)            &= \int_0^s \left(\int_0^u v dv + \int_u^t u dv \right) du
+    \\
+            &= \int_0^s \left(\frac{u^2}{2} + u(t - u) \right) du = \int_0^s \left(ut - \frac{u^2}{2} \right) du = t \frac{s^2}{2}
+      - \frac{s^3}{6}. 
+  \end{align*}
+  For general $s$ and $t$, we have
+  \begin{equation*}
+    K(s, t) = \frac{1}{2} \max(s, t) \left(\min(s, t)\right)^2 -
+    \frac{1}{6} \left(\min(s, t) \right)^3. 
+  \end{equation*}
+\item \textbf{(scaled) Integrated Brownian Motion Plus a Linear Term}:
+  In the 
+  IBM model, we have $f(0) = 0$ and $f'(0) = 0$. This might be
+  an unrealistic assumption to make when $f$ is completely
+  unknown. In this case, a better model is:
+  \begin{equation*}
+    f(t) = \beta_0 + \beta_1 t + \tau \int_0^t W_s ds
+  \end{equation*}
+  where $\beta_0, \beta_1, \{W_s\}$ are independent with $W_s$ being
+  Brownian motion and $\beta_0, \beta_1 \overset{\text{i.i.d}}{\sim} N(0,
+  C)$. The kernel now becomes
+  \begin{align*}
+    K(s, t) &= \text{Cov} \left(\beta_0 + \beta_1 s + \tau \int_0^s W_u du,
+      \beta_0 + \beta_1 t + \tau \int_0^t W_v dv \right) \\ &= C (1 +
+                                                              st) +
+                                                              \frac{\tau^2}{2}
+                                                              \max(s,
+                                                              t)
+                                                              \left(\min(s,
+                                                              t)\right)^2
+                                                              - 
+    \frac{\tau^2}{6} \left(\min(s, t) \right)^3. 
+  \end{align*}
+\end{enumerate}
+We will see some more examples of kernels later. Next we see some
+basic applications of Gaussian Processes. 
+
+
+\section{Interpolation}
+
+Suppose we are given values of $f$ at $0 \leq x_1 < \dots < x_n \leq
+1$: $f(x_1), 
+\dots, f(x_n)$. Let $x \in [0, 1]$ be a new point (i.e., distinct from $x_1, \dots,
+x_n$). What can we say about $f(x)$?
+
+We will solve this problem assuming a Gaussian process prior for $f$
+with mean zero and covariance kernel $K(\cdot, \cdot)$. The answer
+then will be given by the conditional distribution of $f(x)$ given 
+$f(x_1), \dots, f(x_n)$. To compute this, we note that:
+\begin{align*}
+  (f(x_1), \dots, f(x_n), f(x))^T \sim N \left(0, \begin{pmatrix} (K(x_i, 
+                                             x_j))_{n \times n} 
+                                              & (K(x_i,
+                                                            x))_{n
+                                                            \times 1}
+                                             \\ (K(x, x_i))_{1
+                                             \times n} & K(x,
+                                                         x) \end{pmatrix}
+  \right). 
+\end{align*}
+Using the notation $K = (K(x_i, 
+                                             x_j))_{n \times n}$ and
+                                             $\mathbf{k} = (K(x_i,
+                                                            x))_{n
+                                                            \times
+                                                            1}$, we
+                                                          can write
+                                                          the
+                                                          conditional
+                                                          distribution
+                                                          of
+                                                          $f(x)$
+                                                          given $f(x_1),
+                                                          \dots, 
+f(x_n)$ as
+\begin{align*}
+  f(x) \mid f(x_1), \dots, f(x_n) \sim N\left(\mathbf{k}^TK^{-1} (f(x_1), \dots,
+  f(x_n))^T, K(x, x) -
+  \mathbf{k}^T K^{-1} \mathbf{k} \right).
+\end{align*}
+Thus the posterior mean (or mode) estimate of $f(x)$ is given by
+\begin{align}\label{posmean}
+  \widehat{f(x)} = \mathbf{k}^TK^{-1} (f(x_1), \dots, f(x_n))^T. 
+\end{align}
+For different kernels $K$, the above expression behaves differently on
+$f(x_1), \dots, f(x_n)$. The simplest example is that of Brownian
+Motion. 
+
+\begin{example}[Brownian Motion]
+  Suppose $f(x) = \beta_0 + \tau B(x)$ where $B(x)$ is Brownian
+  Motion, $\beta_0 \sim N(0, C)$ with $C \rightarrow \infty$ and
+  $\tau$ is a fixed positive constant. Then the kernel is:
+  \begin{align}\label{bm_ker}
+    K(x_1, x_2) = C + \tau^2 \min(x_1, x_2). 
+  \end{align}
+  In this case, \eqref{posmean} can be explicitly evaluated (in the
+  limit $C \rightarrow \infty$) as
+\begin{equation}\label{bm_interp}
+\widehat{f(x)}=
+\begin{cases}
+f(x_1), & x \le x_1, \\[6pt]
+\dfrac{x_{i+1}-x}{x_{i+1}-x_i} f(x_i)
++
+\dfrac{x-x_i}{x_{i+1}-x_i} f(x_{i+1}),
+& x_i \le x \le x_{i+1}, \\[10pt]
+f(x_n), & x \ge x_n .
+\end{cases}
+\end{equation}
+The details behind why \eqref{posmean} with the kernel \eqref{bm_ker}
+leads to \eqref{bm_interp} will be seen later. 
+
+The formula \eqref{bm_interp} for $\widehat{f(x)}$  performs linear
+interpolation 
+between the observed points, and constant extrapolation outside the
+observed range.
+
+Also note that $\widehat{f(x)}$ in \eqref{bm_interp} does not depend
+on $\tau$. The 
+hyperparameter $\tau$ only affects the posterior variance of $f(x)$,
+and not the posterior mean. 
+\end{example}
+
+Next example is that of the Integrated Brownian Motion prior. 
+
+\begin{example}[Integrated Brownian Motion]
+  Suppose
+\begin{align}\label{ibmp}
+f(x)=\beta_0+\beta_1 x+\tau I(x),
+\end{align}
+where $I(x)$ is integrated Brownian motion and $\beta_0,\beta_1
+\stackrel{i.i.d.}{\sim}N(0,C)$ with $C\to\infty$. In this case, the
+posterior mean in \eqref{posmean} can be evaluated explicitly and is
+the natural cubic spline interpolant of the observations. We will see
+details behind this later. 
+\end{example}
+
+\section{Integration}
+
+Suppose we are given values of $f$ at $0 \leq x_1 < \dots < x_n \leq$: $f(x_1),
+f\dots, f(x_n)$. What can we say about $\int_0^1f(x)$?
+
+Again we place a Gaussian process prior on $f$. By linearity, we can
+write 
+\begin{align*}
+ & \E \left[ \int_0^1 f(x) dx \mid f(x_1), \dots, f(x_n) \right] \\ &=
+  \int_0^1 \E \left[ f(x) \mid f(x_1), \dots, f(x_n) \right] \\ &=
+                                                                  \int_0^1 \mathbf{k}^T K^{-1} (f(x_1), \dots, f(x_n))^T \\
+  &= \left(\int_0^1 k(x_1, x) dx, \dots,\int_0^1 k(x_n, x) dx \right)^T
+    K^{-1} (f(x_1), \dots, f(x_n))^T.  
+\end{align*}
+
+\begin{example}[Brownian Motion]
+  For the Brownian motion, we already have the formula
+  \eqref{bm_interp} for $\E [f(x) \mid f(x_1), \dots, f(x_n)]$. So the
+  posterior mean for $\int_0^1 f(x) dx$ is obtained by simply
+  integrating the right hand side of \eqref{bm_interp} from 0 to
+  1. This leads to:
+  \begin{align*}
+    & \E \left(\int_0^1 f(x) dx \mid f(x_1), \dots, f(x_n) \right) \\
+    &= x_1 f(x_1) + \sum_{i=1}^{n-1} (x_{i+1} - x_i) \frac{f(x_i) +
+      f(x_{i+1})}{2} + (1 - x_n) f(x_n). 
+  \end{align*}
+  This the trapezoidal integration rule. Therefore, with the Brownian
+  motion prior, the posterior mean estimate of $\int_0^1 f(x) dx$
+  coincides with the trapezoidal rule. 
+\end{example}
+
+\begin{example}[Integrated Brownian Motion]
+  With the prior \eqref{ibmp}, we get a version of the Simpson
+  integration rule.  
+\end{example}
+For more on the relation between classical integration (quadrature)
+rules and Gaussian processes, see the book
+\citet{hennig2022probabilistic} or the paper
+\citet{diaconis1988bayesian}.
+
+In the  next lecture, we shall see how to use Gaussian processes for
+the regression problem. 
+
+
+\begin{thebibliography}{99}
+
+\bibitem[Diaconis(1988)]{diaconis1988bayesian}
+Diaconis, P. (1988)
+\textit{Bayesian numerical analysis}.
+Statistical Decision Theory and Related Topics IV, Vol.~1, 163--175.
+
+%\bibitem[MacKay and Peto(1995)]{MacKay1995HierarchicalDirichlet}
+%D.~J.~C. MacKay and L.~C. Peto,
+%\newblock ``A hierarchical Dirichlet language model,''
+%\newblock \emph{Natural Language Engineering}, vol.~1,
+%no.~3, pp.~289--308, 1995.
+
+%\bibitem[Rubin(1981)]{Rubin1981BayesianBootstrap}
+%D.~B. Rubin,
+%\newblock ``The Bayesian bootstrap,''
+%\newblock \emph{The Annals of Statistics}, vol.~9,
+%no.~1, pp.~130--134, 1981.
+  
+%\bibitem[Fisher(1934)]{Fisher1934}
+%R.~A. Fisher,
+%\newblock ``Probability, likelihood and quantity of information in the logic of
+%uncertain inference,''
+%\newblock \emph{Proceedings of the Royal Society of London. Series~A,
+%Containing Papers of a Mathematical and Physical Character}, vol.~146,
+%no.~856, pp.~1--8, 1934.
+
+%\bibitem[Efron(2010)]{Efron}
+%Efron, B. (2010)
+%\textit{Large-scale inference: empirical Bayes methods for estimation,
+%testing, and prediction}. Cambridge University Press, 2010.
+
+\bibitem[Hennig et~al.(2022)]{hennig2022probabilistic}
+Hennig, P., Osborne, M.~A., and Kersting, H.~P. (2022)
+\textit{Probabilistic Numerics: Computation as Machine Learning}.
+Cambridge University Press.
+
+%\bibitem[Shumway and Stoffer(2017)]{ShumwayStoffer}
+%Shumway, R. H. and Stoffer, D. S. (2017)
+%\textit{Time Series Analysis and Its Applications: With R
+%  Examples}. Springer, 4th edition. 
+  
+%     \bibitem[Jaynes(2003)]{Jaynes} Jaynes, E. T, (2003)
+%  \textit{Probability theory: the logic of science}. Cambridge
+%  University Press, 2003.
+ 
+%  \bibitem[Sinai(1992)]{Sinai} Sinai, Y. G, (1992)
+%  \textit{Probability theory: an introductory course}. Springer
+%  Verlag, 1992.  
+
+%\bibitem[{deGroot(1986)}]{DeGrootBlackwell}DeGroot, M. H. (1986)
+%       A conversation with David Blackwell.
+%\newblock \emph{Statistical Science}, \textbf{1}, 40--53.
+
+%         \bibitem[Mosteller(1987)]{Mosteller} Mosteller, F, (1987)
+%  \textit{Fifty challenging problems in probability with
+%    solutions}. Courier Corporation, 1987.
+
+%    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+%  \textit{Information theory, inference, and learning
+%  algorithms}. Cambridge University Press, 2003.
+
+%\bibitem[{Lindley(2013)}]{Lindley}Lindley, D. V. (2013)
+%   \textit{Understanding Uncertainty}. John Wiley and sons, 2013.
+
+
+\end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
