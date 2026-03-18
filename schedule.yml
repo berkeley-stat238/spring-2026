@@ -346,4 +346,10 @@
           id: "22"
           name: "LectureTwentyTwo238Spring2026.pdf"
           href: "./LectureTwentyTwo238Spring2026.pdf"
+    - date: "Mar 17"
+      items:
+        - type: "Lab"
+          id: "8 Code"
+          name: "Bayesian Regularization"
+          href: "./lab08.ipynb"
 	  
