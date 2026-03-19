@@ -352,4 +352,17 @@
           id: "8 Code"
           name: "Bayesian Regularization"
           href: "./lab08.ipynb"
-	  
+    - date: "Mar 18"
+      items:
+        - type: "Lecture"
+          id: "23"
+          name: "Regression using Gaussian Processes"  
+          href: "./LectureTwentyThree238Spring2026.tex"
+        - type: "Lecture"
+          id: "23 Code"
+          name: "Gaussian Process Regression"
+          href: "./CodeLectureTwentyThree238Spring2026.ipynb"
+        - type: "PDF"
+          id: "23"
+          name: "LectureTwentyThree238Spring2026.pdf"
+          href: "./LectureTwentyThree238Spring2026.pdf"	  

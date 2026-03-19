@@ -1,0 +1,586 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry}
+\usepackage{graphicx}
+
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+\newcommand{\relu}{{\text{ReLU}}}
+
+\newcommand{\ridge}{{\hat{\beta}_{\text{ridge}}(\lambda)}}
+\newcommand{\lasso}{{\hat{\beta}_{\text{lasso}}(\lambda)}}
+\newcommand{\ridgemu}{{\hat{\mu}_t^{\text{ridge}}(\lambda)}}
+\newcommand{\lassomu}{{\hat{\mu}_t^{\text{lasso}}(\lambda)}}
+
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Twenty Three} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{18 March 2026}
+
+\maketitle
+
+\section{Last lecture: interpolation with Gaussian processes}
+The interpolation problem is: Suppose we are given values of $f$ at
+points $x_1, \dots, x_n$ in the domain $\Omega$ of $f$. Let $x \in
+\Omega$ be a new point (i.e., distinct from  
+$x_1, \dots, x_n$). What can we say about $f(x)$?
+
+In the last lecture, we saw how to use Gaussian processes to solve
+this problem. We model $\{f(x), x \in 
+\Omega\}$ as a Gaussian process with mean zero and covariance
+function or \textit{kernel} given by $K(x, x')$ i.e.,
+\begin{equation*}
+  \text{Cov}(f(x), f(x')) = K(x, x') ~~\text{for all $x, x' \in
+    \Omega$}. 
+\end{equation*}
+Under this modeling assumption, the answer to the interpolation
+question is given by the conditional distribution of $f(x)$ given
+$f(x_1), \dots, f(x_n)$ which is calculated as follows.
+Note that:
+\begin{align*}
+  (f(x_1), \dots, f(x_n), f(x)) \sim N \left(0, \begin{pmatrix} (K(x_i, 
+                                             x_j))_{n \times n}  & (K(x_i,
+                                                            x))_{n
+                                                            \times 1}
+                                             \\ (K(x, x_i))_{1
+                                             \times n} & K(x,
+                                                         x) \end{pmatrix}
+  \right). 
+\end{align*}
+Using the notation $K = (K(x_i, 
+                                             x_j))_{n \times n}$ and
+                                             $\mathbf{k} = (K(x_i,
+                                                            x))_{n
+                                                            \times
+                                                            1}$, we
+                                                          can write
+                                                          the
+                                                          conditional
+                                                          distribution
+                                                          of
+                                                          $f(x)$
+                                                          given $f(x_1),
+                                                          \dots, 
+f(x_n)$ as
+\begin{align*}
+  f(x) \mid f(x_1), \dots, f(x_n) \sim N\left(\mathbf{k}^TK^{-1} (f(x_1), \dots,
+  f(x_n))^T, K(x, x) -
+  \mathbf{k}^T K^{-1} \mathbf{k} \right).
+\end{align*}
+Thus the posterior mean (or mode) estimate of $f(x)$ is given by
+\begin{align}\label{posmean_int}
+  \widehat{f(x)} = \mathbf{k}^TK^{-1} (f(x_1), \dots, f(x_n))^T. 
+\end{align}
+
+\section{Regression with Gaussian Processes}
+
+Today, we will see how to perform regression using Gaussian processes.  
+The key difference between \textbf{regression} and \textbf{interpolation} is that, in regression, the values \( f(x_1), \dots, f(x_n) \) are not observed exactly; instead, they are observed with noise.
+
+More precisely, we are given observations \( y_1, \dots, y_n \) modeled as
+\[
+y_i = f(x_i) + \epsilon_i, \qquad \text{where } \epsilon_i \overset{\text{i.i.d.}}{\sim} N(0, \sigma^2).
+\]
+The parameter \( \sigma \) controls the level of noise, i.e., how much each observation \( y_i \) deviates from the true value \( f(x_i) \).
+
+As in the interpolation setting, our goal is to estimate \( f(x) \) at a test point \( x \). This test point may be different from the observed inputs \( x_1, \dots, x_n \), or it may coincide with one of them.
+
+Importantly, because the observations are noisy, it is meaningful to estimate \( f(x_i) \) even at observed points. In fact, by combining information from all observations, we can often obtain a better estimate of \( f(x_i) \) than the raw observation \( y_i \).
+
+Another key difference from interpolation is that the input points \(
+x_1, \dots, x_n \) need not necessarily be distinct. Since each observation
+contains noise, having repeated measurements at the same input can
+help improve the overall estimate.
+
+The solution to the regression problem is very similar to that of the
+interpolation problem with only one difference. The goal is to
+estimate $f(x)$ at the test point $x$ given the data $(x_1, y_1),
+\dots, (x_n, y_n)$. We will use the conditional distribution of $f(x)$
+given $y_1, \dots, y_n$ (we will assume that $x_1, \dots, x_n, x$ are
+deterministic). To calculate this conditional distribution, first note
+that the marginal distribution of $(y_1, \dots, y_n, 
+f(x_*))$ is given by
+\begin{align*}
+  (y_1, \dots, y_n, f(x)) \sim N \left(0, \begin{pmatrix} (K(x_i, 
+                                             x_j))_{n \times n} +
+                                             \sigma^2 I_n & (K(x_i,
+                                                            x))_{n
+                                                            \times 1}
+                                             \\ (K(x, x_i))_{1
+                                             \times n} & K(x,
+                                                         x) \end{pmatrix}
+  \right). 
+\end{align*}
+Using the notation $K = (K(x_i, 
+                                             x_j))_{n \times n}$ and
+                                             $\mathbf{k} = (K(x_i,
+                                                            x))_{n
+                                                            \times
+                                                            1}$, we
+                                                          can write
+                                                          the
+                                                          conditional
+                                                          distribution
+                                                          of
+                                                          $f(x)$
+                                                          given $y_1,
+                                                          \dots, 
+y_n$ as
+\begin{align*}
+  f(x) \mid \text{data} \sim N\left(\mathbf{k}^T \left(K +
+  \sigma^2 I_n \right)^{-1} Y, K(x, x) - \mathbf{k}^T \left(K +
+  \sigma^2 I_n
+  \right)^{-1} \mathbf{k} \right).
+\end{align*}
+Thus the posterior mean (or mode) estimate of $f(x)$ is given by
+\begin{align}\label{posmean}
+  \widehat{f(x)} = \mathbf{k}^T \left(K +
+  \sigma^2 I_n \right)^{-1} y, 
+\end{align}
+where $y$ is the $n \times 1$ vector with entries $y_1, \dots, y_n$.
+
+So the only difference between \eqref{posmean} and \eqref{posmean_int}
+is the presence of the additional $\sigma^2 I_n$ term in case of
+regression.
+
+Often, we would need to estimate $\sigma$ from the observed data (and
+also additional hyperparameters present in the kernel $K$). For these,
+the marginal likelihood of $y_1, \dots, y_n$ is important. This is
+simply the multivariate normal distribution with mean vector 0 and
+covariance $K + \sigma^2 I_n$. 
+
+To illustrate the calculations, let us take the special case of the Integrated
+Brownian Motion prior. 
+
+\section{Calculations for the IBM prior}
+
+We take the prior
+\begin{align*}
+  f(x) = \beta_0 + \beta_1 x + \tau I(x) 
+\end{align*}
+where $\beta_0, \beta_1$ are i.i.d $N(0, C)$ and $I(x)$ is integrated
+Brownian Motion.
+
+This is a Gaussian process prior with mean zero and covariance kernel:
+\begin{align*}
+  K(u, v) = C(1 + uv) + \tau^2 K_I(u, v)
+\end{align*}
+where $K_I(u, v)$ is the kernel corresponding to IBM, which is:
+\begin{align*}
+  K_I(u, v) &= \frac{1}{2} \left(\min(u, v) \right)^2\max(u, v)  -
+              \frac{1}{6} \left(\min(u, v)\right)^3 \\
+&= \frac{1}{6} \left(\min(u, v) \right)^2 \left(3 \max(u, v) - \min(u,
+  v) \right) \\
+&= u v (\min(u, v)) - \frac{u+v}{2} \left(\min(u, v) \right)^2 +
+  \frac{1}{3} \left(\min(u, v) \right)^3. 
+\end{align*}
+Note that the kernel has the unknown parameter $\tau$ (which we write
+as $\tau = \gamma \sigma$). The constant $C$ is assumed to be large
+and it is not to be estimated (ideally we want to take $C =
++\infty$). 
+
+Given data $(x_1, y_1), \dots, (x_n, y_n)$, what is the posterior of
+$f(x)$? First let us assume that $\tau, \sigma$ are given. The
+estimate is simply \eqref{posmean}. We simplify this expression
+below. Let $X$ denote the $n \times 2$ matrix with columns $1$ and
+$x_i$ (this is the usual $X$ matrix in the simple linear regression of
+$y$ on $x$ based on the data $(x_1, y_1), \dots, (x_n, y_n)$). 
+
+Note that
+\begin{align*}
+  \mathbf{k}^T &= (K(x, x_1), \dots, K(x, x_n)) \\
+  &= \left(C(1 + x x_i) + \tau^2 K_I(x, x_i), i = 1, \dots, n \right)
+  \\
+               &= C (1, x) X^T + \tau^2 (K_I(x, x_1), \dots, K_I(x, x_n)) \\
+  &= C (1, x) X^T + \tau^2 \mathbf{k}_I^T. 
+\end{align*}
+where
+\begin{align*}
+  \mathbf{k}_I^T := (K_I(x, x_1), \dots, K_I(x, x_n)),
+\end{align*}
+and $(1, x)$ denotes the row vector with entries $1$ and $x$. 
+
+Further the $n \times n$ matrix $K$ has the $(i, j)$-th entry:
+\begin{align*}
+  C(1 + x_i x_j) + \gamma^2 \sigma^2 K_I(x_i, x_j)
+\end{align*}
+so that
+\begin{align}\label{K_exp}
+  K = C X X^T + \tau^2 K_I
+\end{align}
+where $K_I$ is the $n \times n$ matrix with $(i, j)$-th entry
+$K_I(x_i, x_j)$. 
+
+As a result, 
+\begin{align*}
+  \widehat{f(x)} =
+  \mathbf{k}^T \left(K + \sigma^2 I_n \right)^{-1} y = \left(C (1, x)
+  X^T + \tau^2 \mathbf{k}_I^T \right) \left(C X X^T + \tau^2 K_I +
+  \sigma^2 I_n \right)^{-1} y. 
+\end{align*}
+This expression depends on the large constant $C$. Direct computation
+with a large $C$ might make it unstable. It is therefore natural to
+compute the limit as $C \rightarrow \infty$. Using the
+Sherman-Morrison-Woodbury identity, 
+\begin{align}
+(K + \sigma^2 I_n)^{-1} &= (C X X^T + \tau^2 K_I + \sigma^2 I_n)^{-1}
+                          \nonumber \\ &= \left(C X X^T + \Sigma
+                                         \right)^{-1} \nonumber \\ &=
+                                                           \Sigma^{-1}
+                                                           -
+                                                           \Sigma^{-1}
+                                                           X
+                                                           \left(C^{-1} 
+                            I_2 + X^T \Sigma^{-1} X  \right)^{-1} X^T
+                                                                                                                     \Sigma^{-1} \label{smw}
+\end{align}
+where
+\begin{align}\label{Sigdef}
+  \Sigma = \tau^2 K_I + \sigma^2 I_n. 
+\end{align}
+Further
+\begin{align*}
+  \mathbf{k} = C (1, x) X^T + \tau^2 \mathbf{k}_I^T. 
+\end{align*}
+We thus get
+\begin{align*}
+   \widehat{f(x)} &= \left(C (1, x) X^T + \tau^2 \mathbf{k}_I^T \right) \left(\Sigma^{-1} - \Sigma^{-1} X \left(C^{-1}
+                            I_2 + X^T \Sigma^{-1} X  \right)^{-1} X^T
+                \Sigma^{-1} \right) y. 
+\end{align*}
+Write $\tau = \gamma \sigma$. In Fact \ref{Climit}, it is proved that,
+as $C \rightarrow \infty$ the above converges to:
+\begin{align*}
+   \widehat{f(x)} := (1, x) \left(X^T A_{\gamma}^{-1} X \right)^{-1} X^T
+  A_{\gamma}^{-1} y + \gamma^2 \mathbf{k}_I^T \left(A_{\gamma}^{-1} -
+  A_{\gamma}^{-1} X (X^T A_{\gamma}^{-1} X)^{-1} X^T A_{\gamma}^{-1}
+  \right) y 
+\end{align*}
+where
+\begin{align*}
+    A_{\gamma} = I_{n \times n} + \gamma^2 K_I. 
+\end{align*}
+This expression for $\widehat{f(x)}$, which only depends on $\gamma = \tau/\sigma$
+and not on $\tau$ and $\sigma$ individually, can be used for computation. 
+
+\subsection{Estimation of $\gamma$ and $\sigma$}
+
+The hyperparameters $\gamma$ and $\sigma$ also need to be estimated
+from the observed data $(x_1, y_1), \dots, (x_n, y_n)$ (recall that
+$\tau = \gamma \sigma$). For this, the marginal likelihood of the data
+given $\sigma, \gamma$ is important. This is calculated using: 
+\begin{align*}
+  y \mid \sigma, \gamma \sim N(0, K + \sigma^2 I_n)
+\end{align*}
+where $K$  is given by \eqref{K_exp}. In other words,
+\begin{align*}
+  f_{y \mid \sigma, \gamma}(y) \propto \frac{1}{\sqrt{\det(K +
+  \sigma^2 I_n)}} \exp \left(-\frac{1}{2} y^T (K + \sigma^2 I_n)^{-1}
+  y \right). 
+\end{align*}
+For $(K + \sigma^2 I_n)^{-1}$, we use \eqref{smw} and let $C
+\rightarrow \infty$ to get 
+\begin{align*}
+  (K + \sigma^2 I_n)^{-1} \rightarrow \Sigma^{-1} - \Sigma^{-1} X
+  \left(X^T \Sigma^{-1} X  \right)^{-1} X^T \Sigma^{-1}.  
+\end{align*}
+Further, using the matrix determinant lemma, we get
+\begin{align*}
+  |K + \sigma^2 I_n| &= |\Sigma + C X X^T| \\
+                     &= |\Sigma| |I + C X^T \Sigma^{-1} X| \\
+                     &\approx |\Sigma| |C X^T \Sigma^{-1} X| \text{ when $C$ is large} \\
+  &= |\Sigma| C^2 |X^T \Sigma^{-1} X| \propto |\Sigma| |X^T
+    \Sigma^{-1} X|. 
+\end{align*}
+So the marginal likelihood of $y$ given $\tau, \sigma$ becomes:
+\begin{align*}
+  f_{y \mid \tau, \sigma}(y) \propto |\Sigma|^{-1/2} |X^T \Sigma^{-1}
+  X|^{-1/2} \exp \left(-\frac{1}{2} y^T \left[\Sigma^{-1} -
+  \Sigma^{-1} X \left(X^T \Sigma^{-1} X  \right)^{-1} X^T 
+  \Sigma^{-1}\right] y  \right)
+\end{align*}
+with $\Sigma$ defined in \eqref{Sigdef}. 
+
+We now take $\tau = \gamma \sigma$ so that
+\begin{align*}
+  \Sigma = \sigma^2 \left(I_n + \gamma^2 K_I \right) = \sigma^2
+  A_{\gamma} ~~ \text{ where $A_{\gamma} := I_n + \gamma^2 K_I$}. 
+\end{align*}
+This gives
+\begin{align*}
+  f_{y \mid \gamma, \sigma}(y) \propto \sigma^{-(n-2)}
+  |A_{\gamma}|^{-1/2} |X^T A_{\gamma}^{-1} X|^{-1/2} \exp
+  \left(-\frac{y^T \left[A_{\gamma}^{-1} - A_{\gamma}^{-1} X (X^T
+  A_{\gamma}^{-1} X)^{-1} X^T A_{\gamma}^{-1} \right] y}{2 \sigma^2}
+  \right). 
+\end{align*}
+Combining this with the prior $\log \sigma \mid \gamma \sim
+\text{uniform}(-\infty, \infty)$ gives
+\begin{align*}
+  \frac{1}{\sigma^2} \mid y, \gamma \sim \text{Gamma}
+  \left(\frac{n}{2} - 1, \frac{y^T \left[A_{\gamma}^{-1} - A_{\gamma}^{-1} X (X^T
+  A_{\gamma}^{-1} X)^{-1} X^T A_{\gamma}^{-1} \right] y}{2} \right).  
+\end{align*}
+Finally if we take a prior $p(\gamma)$ for $\gamma$, then the
+posterior of $\gamma$ becomes:
+\begin{align*}
+  p(\gamma \mid y) \propto \frac{p(\gamma) |A_{\gamma}|^{-1/2} |X^T
+  A_{\gamma}^{-1} X|^{-1/2}}{\left(y^T \left[A_{\gamma}^{-1} - A_{\gamma}^{-1} X (X^T
+  A_{\gamma}^{-1} X)^{-1} X^T A_{\gamma}^{-1} \right] y \right)^{(n/2)
+  - 1}}.   
+\end{align*}
+
+\section{Proof of the $C \rightarrow \infty$ fact}
+
+\begin{fact}\label{Climit}
+  The quantity
+\begin{align*}
+   \hat{f}(x) &= \left(C (1, x) X^T + \tau^2 \mathbf{k}_I^T \right)
+                \left(\Sigma^{-1} - \Sigma^{-1} X \left(C^{-1} 
+                            I_2 + X^T \Sigma^{-1} X  \right)^{-1} X^T
+                \Sigma^{-1} \right) y
+\end{align*}
+converges, as $C \rightarrow \infty$, to:
+\begin{align*}
+   \hat{f}(x) := (1, x) \left(X^T A_{\gamma}^{-1} X \right)^{-1} X^T
+  A_{\gamma}^{-1} y + \gamma^2 \mathbf{k}_I^T \left(A_{\gamma}^{-1} -
+  A_{\gamma}^{-1} X (X^T A_{\gamma}^{-1} X)^{-1} X^T A_{\gamma}^{-1}
+  \right) y. 
+\end{align*}
+Here $\tau = \gamma \sigma$ and $\Sigma = \tau^2 K_I + \sigma^2 I_n$.  
+\begin{align*}
+  \Sigma &= \tau^2 K_I + \sigma^2 I_n = \sigma^2 \gamma^2 K_I +
+           \sigma^2 I_n = \sigma^2 A_{\gamma} 
+\end{align*}
+where $A_{\gamma} = I + \gamma^2 K_I$.  
+\end{fact}
+
+\begin{proof}[Proof of Fact \ref{Climit}]
+  First note that
+\begin{align*}
+  \hat{f}(x)  &= \left(C (1, x) X^T + \tau^2 \mathbf{k}_I^T \right)
+                \left(\Sigma^{-1} - \Sigma^{-1} X \left(C^{-1} 
+                            I_2 + X^T \Sigma^{-1} X  \right)^{-1} X^T
+                \Sigma^{-1} \right) y \\
+  &= T_1 + T_2
+\end{align*}
+where
+\begin{align*}
+  T_1 := C (1, x) X^T\left(\Sigma^{-1} - \Sigma^{-1} X \left(C^{-1} 
+                            I_2 + X^T \Sigma^{-1} X  \right)^{-1} X^T
+                \Sigma^{-1} \right) y
+\end{align*}
+and
+\begin{align*}
+  T_2 &:= \tau^2 \mathbf{k}_I^T 
+                \left(\Sigma^{-1} - \Sigma^{-1} X \left(C^{-1} 
+                            I_2 + X^T \Sigma^{-1} X  \right)^{-1} X^T
+        \Sigma^{-1} \right) y \\
+  &\rightarrow \tau^2 \mathbf{k}_I^T 
+                \left(\Sigma^{-1} - \Sigma^{-1} X \left(X^T
+    \Sigma^{-1} X  \right)^{-1} X^T 
+    \Sigma^{-1} \right) y ~~ \text{ as $C \rightarrow \infty$} \\
+  &= \tau^2 \mathbf{k}_I^T \left(\sigma^{-2} A_{\gamma}^{-1} -
+    \sigma^{-2}A_{\gamma}^{-1} X \left(X^T 
+    A_{\gamma}^{-1} X  \right)^{-1} X^T 
+    A_{\gamma}^{-1} \right) y \\
+  &= \gamma^2 \mathbf{k}_I^T \left(A_{\gamma}^{-1} -
+A_{\gamma}^{-1} X \left(X^T 
+    A_{\gamma}^{-1} X  \right)^{-1} X^T 
+    A_{\gamma}^{-1} \right) y. 
+\end{align*}
+The limit of $T_1$ as $C \rightarrow \infty$ is calculated as
+follows. First note that
+\begin{align*}
+  T_1 &= C (1, x) X^T\left(\Sigma^{-1} - \Sigma^{-1} X \left(C^{-1} 
+                            I_2 + X^T \Sigma^{-1} X  \right)^{-1} X^T
+        \Sigma^{-1} \right) y \\
+  &= C(1, x) X^T \Sigma^{-1} y - C (1, x) X^T \Sigma^{-1} X\left(C^{-1} 
+                            I_2 + X^T \Sigma^{-1} X  \right)^{-1} X^T
+    \Sigma^{-1} y \\
+  &= C(1, x) X^T \Sigma^{-1} y - C(1, x) \left[\left(C^{-1} I_2 + X^T
+    \Sigma^{-1} X \right) (X^T \Sigma^{-1} X)^{-1} \right]^{-1}   X^T
+    \Sigma^{-1} y \\
+  &= C(1, x) X^T \Sigma^{-1} y - C(1, x) \left[I_2 + C^{-1} (X^T
+    \Sigma^{-1} X)^{-1}  \right]^{-1} X^T \Sigma^{-1} y
+\end{align*}
+Using the fact:
+\begin{align*}
+  \left(I + A^{-1}/C\right)^{-1} = I - A^{-1}/C + O(1/C^2)
+\end{align*}
+for $A = X^T \Sigma^{-1} X$, we obtain
+\begin{align*}
+  T_1 &= C(1, x) X^T \Sigma^{-1} y - C(1, x) \left(I - (X^T \Sigma^{-1}
+        X)^{-1}/C +
+        O(1/C^2) \right) X^T \Sigma^{-1} y \\
+  &= (1, x) (X^T \Sigma^{-1} X)^{-1} (X^T \Sigma^{-1} y) + (1, x)
+    O(1/C) X^T \Sigma^{-1} y \\
+  &\rightarrow (1, x) (X^T \Sigma^{-1} X)^{-1} (X^T \Sigma^{-1} y)
+    \text{ as $C \rightarrow \infty$} \\
+  &= (1, x) (X^TA_{\gamma}^{-1} X)^{-1} (X^T A_{\gamma}^{-1} y)
+    \text{ because $\Sigma = \sigma^2 A_{\gamma}$}. 
+\end{align*}
+This completes the proof of Fact \ref{Climit}. 
+\end{proof} 
+
+
+
+
+
+
+%\begin{thebibliography}{99}
+
+%\bibitem[MacKay and Peto(1995)]{MacKay1995HierarchicalDirichlet}
+%D.~J.~C. MacKay and L.~C. Peto,
+%\newblock ``A hierarchical Dirichlet language model,''
+%\newblock \emph{Natural Language Engineering}, vol.~1,
+%no.~3, pp.~289--308, 1995.
+
+%\bibitem[Rubin(1981)]{Rubin1981BayesianBootstrap}
+%D.~B. Rubin,
+%\newblock ``The Bayesian bootstrap,''
+%\newblock \emph{The Annals of Statistics}, vol.~9,
+%no.~1, pp.~130--134, 1981.
+  
+%\bibitem[Fisher(1934)]{Fisher1934}
+%R.~A. Fisher,
+%\newblock ``Probability, likelihood and quantity of information in the logic of
+%uncertain inference,''
+%\newblock \emph{Proceedings of the Royal Society of London. Series~A,
+%Containing Papers of a Mathematical and Physical Character}, vol.~146,
+%no.~856, pp.~1--8, 1934.
+
+%\bibitem[Efron(2010)]{Efron}
+%Efron, B. (2010)
+%\textit{Large-scale inference: empirical Bayes methods for estimation,
+%testing, and prediction}. Cambridge University Press, 2010.
+
+%\bibitem[Shumway and Stoffer(2017)]{ShumwayStoffer}
+%Shumway, R. H. and Stoffer, D. S. (2017)
+%\textit{Time Series Analysis and Its Applications: With R
+%  Examples}. Springer, 4th edition. 
+  
+%     \bibitem[Jaynes(2003)]{Jaynes} Jaynes, E. T, (2003)
+%  \textit{Probability theory: the logic of science}. Cambridge
+%  University Press, 2003.
+ 
+%  \bibitem[Sinai(1992)]{Sinai} Sinai, Y. G, (1992)
+%  \textit{Probability theory: an introductory course}. Springer
+%  Verlag, 1992.  
+
+%\bibitem[{deGroot(1986)}]{DeGrootBlackwell}DeGroot, M. H. (1986)
+%       A conversation with David Blackwell.
+%\newblock \emph{Statistical Science}, \textbf{1}, 40--53.
+
+%         \bibitem[Mosteller(1987)]{Mosteller} Mosteller, F, (1987)
+%  \textit{Fifty challenging problems in probability with
+%    solutions}. Courier Corporation, 1987.
+
+%    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+%  \textit{Information theory, inference, and learning
+%  algorithms}. Cambridge University Press, 2003.
+
+%\bibitem[{Lindley(2013)}]{Lindley}Lindley, D. V. (2013)
+%   \textit{Understanding Uncertainty}. John Wiley and sons, 2013.
+
+
+%\end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
