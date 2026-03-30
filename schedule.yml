@@ -365,4 +365,21 @@
         - type: "PDF"
           id: "23"
           name: "LectureTwentyThree238Spring2026.pdf"
-          href: "./LectureTwentyThree238Spring2026.pdf"	  
+          href: "./LectureTwentyThree238Spring2026.pdf"
+- week: 10
+  days:
+    - date: "Mar 30"
+      items:
+        - type: "Lecture"
+          id: "24"
+          name: "MCMC: The Metropolis Algorithm"  
+          href: "./LectureTwentyFour238Spring2026.tex"
+        - type: "Lecture"
+          id: "24 Code"
+          name: "MCMC via the Metropolis Algorithm"
+          href: "./CodeLectureTwentyFour238Spring2026.ipynb"
+        - type: "PDF"
+          id: "24"
+          name: "LectureTwentyFour238Spring2026.pdf"
+          href: "./LectureTwentyFour238Spring2026.pdf"
+	  

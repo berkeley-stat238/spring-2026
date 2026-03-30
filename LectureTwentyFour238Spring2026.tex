@@ -1,0 +1,293 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry}
+\usepackage{graphicx}
+
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+\newcommand{\relu}{{\text{ReLU}}}
+
+\newcommand{\ridge}{{\hat{\beta}_{\text{ridge}}(\lambda)}}
+\newcommand{\lasso}{{\hat{\beta}_{\text{lasso}}(\lambda)}}
+\newcommand{\ridgemu}{{\hat{\mu}_t^{\text{ridge}}(\lambda)}}
+\newcommand{\lassomu}{{\hat{\mu}_t^{\text{lasso}}(\lambda)}}
+
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Twenty Four} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{30 March 2026}
+
+\maketitle
+
+Our next topic is Bayesian computation. The two main classes of
+techniques are Markov Chain Monte Carlo (MCMC) and Variational
+Inference (VI). We will start discussing MCMC today. 
+
+\section{Markov Chain Monte Carlo}
+
+The goal is to obtain samples from a target distribution with density 
+$\pi$ (in our applications, $\pi$ will be the posterior density). We
+assume that $\pi$ is known only upto a normalizing constant. The
+normalizing constant can be determined by integrating the unnormalized
+$\pi$ (over its domain) but this integration is assumed to be
+difficult. 
+
+We
+want to generate $\theta^{(0)}, \theta^{(1)}, \dots, \theta^{(N)}$
+such that  
+\begin{equation}\label{appr}
+  \frac{1}{N} \sum_{t=1}^N g(\theta^{(t)}) \approx \int g(\theta)
+  \pi(\theta) d\theta. 
+\end{equation}
+for all functions $g$.
+
+$\theta^{(t)}$ is generated sequentially or iteratively for $t = 0, 1,
+2, \dots$ with 
+$\theta^{(t)}$ (and some external randomness) used to generate
+$\theta^{(t+1)}$.
+
+The simplest MCMC algorithm is the Random Walk Metropolis Algorithm. 
+
+\section{The Random Walk Metropolis Algorithm}
+
+The random-walk Metropolis algorithm works by
+generating proposals via a random walk-step from the current state and
+then accepting or rejecting them with certain probability. Suppose
+that the current state is $\theta^{(t)}$. It then proposes to move to
+the state $\theta^{(t)} + Z$ where $Z$ is a random vector having a
+symmetric density around 0. Note that the density 
+of the proposal $\theta^{(t)} + Z$ is given by $q(\theta^{(t)},
+\cdot)$ where 
+\begin{equation*}
+  q(x, y) = f_Z(y - x). 
+\end{equation*}
+with $f_Z$ denoting the density of $Z$. Because $f_Z$ is symmetric
+about 0, we have  
+\begin{equation}\label{symm}
+  q(x, y) = q(y, x). 
+\end{equation}
+The function $q(\cdot, \cdot)$ is commonly referred to as the
+candidate-generating density or proposal-generating density. We say
+that $q$ is symmetric if \eqref{symm} holds. Clearly random walk
+Metropolis with a symmetric $f_{Z}$ uses symmetric proposal-generating
+densities. With this notation, the random-walk Metropolis algorithm can be
+rephrased as follows. For $x$ and $y$, let  
+\begin{equation}\label{acc.symm}
+  \alpha(x, y) := \min \left(\frac{\pi(y)}{\pi(x)}, 1\right). 
+\end{equation}
+$\alpha(x, y)$ is referred to as the \textbf{acceptance probability}
+while going from $x$ to $y$. 
+
+\begin{enumerate}
+\item Initialize with an arbitrary value $\theta^{(0)}$.
+\item Repeat the following for $t = 1, \dots, N$:
+  \begin{enumerate}
+  \item Let $x = \theta^{(t)}$. 
+  \item Generate a candidate or proposal $y$ from the
+    \textbf{symmetric} candidate generating density $q(x,
+    \cdot)$ and a uniform random number $u \sim \text{Unif}(0,
+    1)$.
+  \item If $u \geq \alpha(x, y)$, then set
+    $\theta^{(t + 1)} = x$. We say in this case that the
+    proposed move from $x$ to $y$ is rejected and we stay at $x$. 
+  \item If $u < \alpha(x, y)$, then set
+    $\theta^{(t+1)} = y$. We say in this case that the
+    proposed move from $x$ to $y$ is accepted. 
+  \end{enumerate}
+\item Return the values $\theta^{(1)}, \dots, \theta^{(N)}$.   
+\end{enumerate}
+The above algorithm is known as the \textbf{Metropolis Algorithm}. It
+works for any symmetric (i.e., satisfying \eqref{symm})
+proposal-generating density $q(\cdot, \cdot)$. The Random-Walk
+Metropolis algorithm is a special case of this where $q(x,
+y)$ is of the form $f_{Z}(x - y)$ for a symmetric (about 0)
+density $f_{Z}$.
+
+The Metropolis algorithm can be further generalized to deal with
+non-symmetric proposal generating densities. This generalization is
+referred to as the Metropolis-Hastings algorithm. We shall look at
+this algorithm in the next lecture. We will try to answer the
+following questions in the coming lectures: 
+\begin{enumerate}
+\item What is the intuition behind the form of these algorithms?
+\item Why do they actually work and give samples satisfying
+  \eqref{appr}? 
+\end{enumerate}
+
+To answer these questions, we need to know a little bit about Markov
+Chains. The algorithms above output samples $\theta^{(0)}, \dots,
+\theta^{(N)}$. Clearly, $\theta^{(t+1)}$ is generated using only the value
+$\theta^{(t)}$. In other words, the values $\theta^{(0)}, \dots,
+\theta^{(t-1)}$ are not used at all in order to generate
+$\theta^{(t+1)}$. Thus $\theta^{(0)}, \dots, \theta^{(N)}$ can be seen
+as a realization of a sequence of random vectors $\Theta^{(0)}, \dots,
+\Theta^{(N)}$ which form a Markov Chain. Properties of Markov Chains
+are used to justify \eqref{appr}, as we shall see in the coming
+lectures. 
+
+
+
+
+
+%\begin{thebibliography}{99}
+
+%\bibitem[Chib and Greenberg(1995)]{chib1995}
+%Chib, S. and Greenberg, E. (1995).
+%Understanding the Metropolis--Hastings algorithm.
+%\textit{The American Statistician}, \textbf{49}, 327--335.
+
+
+%\bibitem[MacKay and Peto(1995)]{MacKay1995HierarchicalDirichlet}
+%D.~J.~C. MacKay and L.~C. Peto,
+%\newblock ``A hierarchical Dirichlet language model,''
+%\newblock \emph{Natural Language Engineering}, vol.~1,
+%no.~3, pp.~289--308, 1995.
+
+%\bibitem[Rubin(1981)]{Rubin1981BayesianBootstrap}
+%D.~B. Rubin,
+%\newblock ``The Bayesian bootstrap,''
+%\newblock \emph{The Annals of Statistics}, vol.~9,
+%no.~1, pp.~130--134, 1981.
+  
+%\bibitem[Fisher(1934)]{Fisher1934}
+%R.~A. Fisher,
+%\newblock ``Probability, likelihood and quantity of information in the logic of
+%uncertain inference,''
+%\newblock \emph{Proceedings of the Royal Society of London. Series~A,
+%Containing Papers of a Mathematical and Physical Character}, vol.~146,
+%no.~856, pp.~1--8, 1934.
+
+%\bibitem[Efron(2010)]{Efron}
+%Efron, B. (2010)
+%\textit{Large-scale inference: empirical Bayes methods for estimation,
+%testing, and prediction}. Cambridge University Press, 2010.
+
+%\bibitem[Shumway and Stoffer(2017)]{ShumwayStoffer}
+%Shumway, R. H. and Stoffer, D. S. (2017)
+%\textit{Time Series Analysis and Its Applications: With R
+%  Examples}. Springer, 4th edition. 
+  
+%     \bibitem[Jaynes(2003)]{Jaynes} Jaynes, E. T, (2003)
+%  \textit{Probability theory: the logic of science}. Cambridge
+%  University Press, 2003.
+ 
+%  \bibitem[Sinai(1992)]{Sinai} Sinai, Y. G, (1992)
+%  \textit{Probability theory: an introductory course}. Springer
+%  Verlag, 1992.  
+
+%\bibitem[{deGroot(1986)}]{DeGrootBlackwell}DeGroot, M. H. (1986)
+%       A conversation with David Blackwell.
+%\newblock \emph{Statistical Science}, \textbf{1}, 40--53.
+
+%         \bibitem[Mosteller(1987)]{Mosteller} Mosteller, F, (1987)
+%  \textit{Fifty challenging problems in probability with
+%    solutions}. Courier Corporation, 1987.
+
+%    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+%  \textit{Information theory, inference, and learning
+%  algorithms}. Cambridge University Press, 2003.
+
+%\bibitem[{Lindley(2013)}]{Lindley}Lindley, D. V. (2013)
+%   \textit{Understanding Uncertainty}. John Wiley and sons, 2013.
+
+
+%\end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
