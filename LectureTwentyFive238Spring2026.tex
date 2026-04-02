@@ -1,0 +1,433 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry}
+\usepackage{graphicx}
+
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+\newcommand{\relu}{{\text{ReLU}}}
+
+\newcommand{\ridge}{{\hat{\beta}_{\text{ridge}}(\lambda)}}
+\newcommand{\lasso}{{\hat{\beta}_{\text{lasso}}(\lambda)}}
+\newcommand{\ridgemu}{{\hat{\mu}_t^{\text{ridge}}(\lambda)}}
+\newcommand{\lassomu}{{\hat{\mu}_t^{\text{lasso}}(\lambda)}}
+
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Twenty Five} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{01 April 2026}
+
+\maketitle
+
+\section{Markov Chains and Stationary Distributions}
+
+Let $S$ be a state space. A sequence of random variables $\Theta^{(0)},
+\Theta^{(1)}, \dots$ taking values in $S$ is a 
+Markov Chain on $S$ provided the conditional distribution of  
+$\Theta^{(t+1)}$ given $\Theta^{(t)} = \theta^{(t)}, \Theta^{(t-1)} =
+\theta^{(t-1)}, \dots, \Theta^{(0)} = \theta^{(0)}$ only depends on
+$\theta^{(t)}$. Further, if this conditional distribution is the same
+for all  $t$, then the Markov chain is said to be
+time-homogeneous. We will only deal with time-homogeneous Markov
+Chains in this course.
+
+A (time-homogeneous) Markov Chain is described via the conditional
+distribution of $\Theta^{(t+1)}$ given $\Theta^{(t)} = x$. If $S$ is
+finite or countable, then these conditional distributions can be
+described by the probabilities:
+\begin{align*}
+  P(x, y) := \P\{\Theta^{(t+1)} = y \mid \Theta^{(t)} = x\}. 
+\end{align*}
+Clearly $P(x, y) \geq 0$ and $\sum_{y \in S} P(x, y) = 1$ for every $x
+\in S$.
+
+If $S$ is an open subset of $\R^d$, then one usually describes the
+conditional distribution of $\Theta^{(t+1)}$ given $\Theta^{(t)} = x$
+via the conditional density function $P(x, y)$:
+\begin{align*}
+  \P\{\Theta^{(t+1)} \in A \mid \Theta^{(t)} = x\} = \int_A P(x, y)
+  dy. 
+\end{align*}
+Here $P(x, y) \geq 0$ and $\int_S P(x, y) dy = 1$ for all $x \in S$.
+
+\subsection{Stationary Distribution}
+
+A probability distribution $\pi$ on $S$ is said to be the stationary
+or invariant distribution of the Markov chain $\Theta^{(0)}, 
+\Theta^{(1)}, \dots$ if the following holds:
+\begin{align*}
+  \Theta^{(t)} \sim \pi \implies \Theta^{(t+1)} \sim \pi. 
+\end{align*}
+If $S$ is discrete, this can be written as:
+\begin{align}\label{disc_inv}
+  \pi(y) = \sum_{x \in S} \pi(x) P(x, y) ~~ \text{for every $y \in
+  S$}. 
+\end{align}
+In the continuous case, this becomes:
+\begin{align}\label{cont_inv}
+  \pi(y) = \int_S \pi(x) P(x, y) dx ~~ \text{for every $y \in
+  S$}. 
+\end{align}
+
+\subsection{Ergodic Theorem}
+Suppose $\{\Theta^{(t)} \}$ is a time-homogeneous Markov chain that is
+\textbf{irreducible}. Suppose $\pi$ is the stationary distribution of
+the Markov Chain (irreducibility guarantess uniqueness of the
+stationary distribution). Then
+\begin{align*}
+\lim_{N \rightarrow \infty}  \frac{1}{N} \sum_{t=1}^N g(\Theta^{(t)})
+  = \int g(\theta) d\pi(\theta)
+\end{align*}
+almost surely. For a reference to this result, see
+\citet[Theorem 4 and the remark after Corollary
+6]{RobertsRosenthal2004}. For a comprehensive book-length reference,
+see \citet{MeynTweedie2009} (Chapter 17 of this book contains this
+result). 
+
+When the state space is finite, irreducibility means that for every
+pair of points $x$ and $y$ in the state space, there is a positive
+probability that the chain goes from $x$ to $y$. For continuous state
+spaces, irreducibility is somewhat technical to define. If you are
+interested, see again the aforementioned references:
+\citet{RobertsRosenthal2004, MeynTweedie2009}. 
+
+\subsection{Detailed Balance Condition}
+
+Note that \eqref{disc_inv} is equivalent to:
+\begin{align*}
+  \sum_{x \in S} \pi(y) P(y, x) = \sum_{x \in S} \pi(x) P(x, y). 
+\end{align*}
+This is because $\sum_{x \in S} P(y, x) = 1$. Thus a
+\textbf{sufficient} condition for $\pi$ being the stationary
+distribution for the Markov chain given by $P$ is:
+\begin{align}\label{det_bal}
+  \pi(y) P(y, x) = \pi(x) P(x, y) ~~\text{for all $x, y \in S$}. 
+\end{align}
+Note that one gets the same condition by also arguing from
+\eqref{cont_inv} (in this case, $P(x, y)$ and $P(y, x)$ appearing in
+\eqref{det_bal} should be interpreted as conditional pdfs as opposed
+to pmfs). 
+
+Here is a simple example of a Markov Chain satisfying detailed
+balance.
+
+\begin{example}[Discrete Markov Chain]
+  Suppose each $\Theta^{(t)}$ takes values in a finite state space $S
+  = \{1, \dots, N\}$ of cardinality $N$. Consider a graph with
+  vertices $S$ and degrees $d_1, \dots, d_N$. Consider the random walk
+  on the graph. The transition probabilities are then given by:
+  \begin{align*}
+    P(i, j) =  \frac{I\{j ~\text{is a neighbour of}~ i\}}{d_i}
+  \end{align*}
+  The detailed balance condition then becomes:
+  \begin{align*}
+    \pi(i)  \frac{I\{j ~\text{is a neighbour of}~ i\}}{d_i} = \pi(j)
+    \frac{I\{i ~\text{is a neighbour of}~ j\}}{d_j}
+  \end{align*}
+  It is then clear that this Markov chain satisfies detailed balance
+  with $\pi(i) \propto d_i$. So this $\pi(\cdot)$ is stationary. If
+  the graph is connected, then this Markov chain is irreducible and
+  this $\pi(\cdot)$ will be the unique stationary distribution. 
+\end{example}
+
+Our next example of a Markov Chain with detailed balance is the
+Metropolis-Hastings chain.
+
+\subsection{Metropolis-Hastings}
+
+  Suppose $\pi$ is a probability on a state space $S$. If $S$ is
+  discrete, $\pi$ should be interpreted as a pmf and if $S$ is
+  continuous, $\pi$ should be interpreted as a pdf. Let $Q(x, y)$ be
+  some transition probability. Again if $S$ is discrete, interpret
+  $Q(x, y)$ as a pmf over $y$ for each fixed $x$. If $S$ is
+  continuous, interpret $Q(x, y)$ as a pdf over $y$ for each fixed
+  $x$.
+
+  We do not assume that $\pi(\cdot)$ and $Q(\cdot, \cdot)$ are related
+  in any way. For example, there is no reason for $Q$ to satisfy
+  detailed balance with respect to $\pi$. In other words, for $x$ and
+  $y$, it may very well happen that
+  \begin{align*}
+    \pi(x) Q(x, y) \neq \pi(y) Q(y, x). 
+  \end{align*}
+  The Metropolis-Hastings uses $Q(\cdot, \cdot)$ and $\pi(\cdot)$ to
+  construct a new Markov chain $\{\Theta^{(t)}\}$ which moves as
+  follows. Given $\Theta^{(t)} = x$, first use $Q(x, \cdot)$ to
+  generate $y$, then take $\Theta^{(t+1)}$ to be:
+  \[
+\Theta^{(t+1)} =
+\begin{cases}
+y, & \text{with probability } \min\!\left(1, \frac{\pi(y)\,Q(y,x)}{\pi(x)\,Q(x,y)}\right), \\[1em]
+x, & \text{with probability } 1 - \min\!\left(1, \frac{\pi(y)\,Q(y,x)}{\pi(x)\,Q(x,y)}\right).
+\end{cases}
+\]
+The key is to realize that this new Markov chain satisfies detailed
+balance with respect to $\pi$. To see this, we need to verify:
+\begin{align}\label{mhdb}
+  \pi(x) P(x, y) = \pi(y) P(y, x) ~~\text{ for all $x, y \in S$}. 
+\end{align}
+If $y = x$, there is nothing to prove. So let us assume that $y \neq
+x$. In this case, it is easy to see that
+\begin{align*}
+  P(x, y) = Q(x, y) \min\!\left(1,
+  \frac{\pi(y)\,Q(y,x)}{\pi(x)\,Q(x,y)}\right). 
+\end{align*}
+Consequently
+\begin{align*}
+  \pi(x) P(x, y) = \pi(x) Q(x, y) \min\!\left(1,
+  \frac{\pi(y)\,Q(y,x)}{\pi(x)\,Q(x,y)}\right) =
+  \min\!\left(\pi(x)\,Q(x,y), \pi(y) Q(y, x)\right). 
+\end{align*}
+Similarly $\pi(y) P(y, x) =   \min\!\left(\pi(x)\,Q(x,y), \pi(y) Q(y,
+  x)\right)$, which proves \eqref{mhdb}.
+
+The Metropolis-Hastings Algorithm can be interpreted as a device for
+converting any Markov Chain into one which satisfies detailed balance
+with respect to $\pi$. It simply adds an acceptance step to the
+Markov Chain given by $Q(\cdot, \cdot)$ with acceptance probability:
+\begin{align*}
+  \min \left(1, \frac{\pi(y) Q(y, x)}{\pi(x) Q(x, y)} \right). 
+\end{align*}
+A simple special case of the Metropolis-Hastings arises when $Q(\cdot,
+\cdot)$ is symmetric in the sense that $Q(x, y) = Q(y, x)$. In this
+case, the acceptance probability is simply $\min(1,
+\pi(y)/\pi(x))$. For example, when $Q$ is given by a random walk
+Markov chain: $y = x + z$ where $z$ has a symmetric distribution
+around 0 such as $z \sim N(0, \Sigma)$ or $z \sim
+\text{uniform}(\prod_{j=1}^d [-a_j, a_j])$. In this special case, the
+Metropolis-Hastings chain is simply referred to as the Metropolis
+Chain.
+
+\subsection{The Gibbs Sampler}
+
+Our third example of a Markov Chain satisfying detailed balance with
+respect to $\pi$ is the Gibbs sampler. Suppose the state space $S$
+consists of bivariate pairs $(x_1, x_2)$. Suppose $\pi(\cdot)$ is such
+that its conditionals $\pi_{1 \mid 2}(\cdot \mid x_2)$ and $\pi_{2
+  \mid 1} (\cdot \mid x_1)$ are easy to sample from. Here $\pi_{1 \mid
+2}(\cdot \mid x_2)$ is the conditional distribution of $x_1$ given
+$x_2$ when $(x_1, x_2) \sim \pi$. Similarly $\pi_{2 \mid 1}(\cdot \mid
+x_1)$ is the conditional distribution of $x_2$ given $x_1$ when
+$(x_1, x_2) \sim \pi$.
+
+The Gibbs sampler employs the following Markov Chain. Given
+$\Theta^{(t)} = (x_1, x_2)$, first sample one of the indices $1$ and
+$2$ with equal probability $0.5$. If we get $1$, then use the update:
+\begin{align*}
+  (x_1, x_2) \mapsto (x_1', x_2) ~~ \text{ where $x_1' \sim \pi_{1
+  \mid 2}(\cdot
+  \mid x_2)$}. 
+\end{align*}
+If we get $2$, then use the update:
+\begin{align*}
+  (x_1, x_2) \mapsto (x_1, x_2') ~~ \text{ where $x_2' \sim \pi_{2
+  \mid 1}(\cdot
+  \mid x_1)$}. 
+\end{align*}
+It turns out that this chain satisfies detailed balance with respect
+to $\pi$. For this, we need to prove that
+\begin{align*}
+  \pi(x_1, x_2) P((x_1, x_2), (x_1', x_2')) =   \pi(x_1', x_2')
+  P((x_1', x_2'), (x_1, x_2)). 
+\end{align*}
+The transition $(x_1, x_2) \rightarrow (x_1', x_2')$ will only be
+possible if one of $x_1 = x_1'$ or $x_2 = x_2'$ hold true. Let $x_1 =
+x_1'$ so we need to verify: 
+\begin{align}\label{gsv}
+  \pi(x_1, x_2) P((x_1, x_2), (x_1, x_2')) =   \pi(x_1, x_2')
+  P((x_1, x_2'), (x_1, x_2)). 
+\end{align}
+From the description of the Gibbs chain, it is clear that
+\begin{align*}
+  P((x_1, x_2), (x_1, x_2')) = \frac{1}{2} \pi_{2 \mid 1}(x_2' \mid
+  x_1) = \frac{1}{2} \frac{\pi(x_1, x_2')}{\pi_1(x_1)}
+\end{align*}
+where $\pi_1(\cdot)$ is the marginal  distribution of $X_1$ when
+$(X_1, X_2) \sim \pi$. As a result
+\begin{align*}
+  \pi(x_1, x_2) P((x_1, x_2), (x_1, x_2')) = \frac{1}{2}
+  \frac{\pi(x_1, x_2)\pi(x_1, x_2')}{\pi_1(x_1)}.  
+\end{align*}
+Clearly the right hand side above is symmetric in $x_2$ and $x_2'$
+which proves \eqref{gsv}. One can similarly verify detailed balance
+when $x_2 = x_2'$.
+
+
+
+
+
+
+\begin{thebibliography}{99}
+
+\bibitem[Roberts and Rosenthal(2004)]{RobertsRosenthal2004}
+Roberts, G. O. and Rosenthal, J. S. (2004).
+General state space Markov chains and MCMC algorithms.
+\textit{Probability Surveys}, \textbf{1}, 20--71.
+
+\bibitem[Meyn and Tweedie(2009)]{MeynTweedie2009}
+Meyn, S. P. and Tweedie, R. L. (2009).
+\textit{Markov Chains and Stochastic Stability}, 2nd ed.
+Cambridge University Press.
+
+
+  
+%\bibitem[Chib and Greenberg(1995)]{chib1995}
+%Chib, S. and Greenberg, E. (1995).
+%Understanding the Metropolis--Hastings algorithm.
+%\textit{The American Statistician}, \textbf{49}, 327--335.
+
+
+%\bibitem[MacKay and Peto(1995)]{MacKay1995HierarchicalDirichlet}
+%D.~J.~C. MacKay and L.~C. Peto,
+%\newblock ``A hierarchical Dirichlet language model,''
+%\newblock \emph{Natural Language Engineering}, vol.~1,
+%no.~3, pp.~289--308, 1995.
+
+%\bibitem[Rubin(1981)]{Rubin1981BayesianBootstrap}
+%D.~B. Rubin,
+%\newblock ``The Bayesian bootstrap,''
+%\newblock \emph{The Annals of Statistics}, vol.~9,
+%no.~1, pp.~130--134, 1981.
+  
+%\bibitem[Fisher(1934)]{Fisher1934}
+%R.~A. Fisher,
+%\newblock ``Probability, likelihood and quantity of information in the logic of
+%uncertain inference,''
+%\newblock \emph{Proceedings of the Royal Society of London. Series~A,
+%Containing Papers of a Mathematical and Physical Character}, vol.~146,
+%no.~856, pp.~1--8, 1934.
+
+%\bibitem[Efron(2010)]{Efron}
+%Efron, B. (2010)
+%\textit{Large-scale inference: empirical Bayes methods for estimation,
+%testing, and prediction}. Cambridge University Press, 2010.
+
+%\bibitem[Shumway and Stoffer(2017)]{ShumwayStoffer}
+%Shumway, R. H. and Stoffer, D. S. (2017)
+%\textit{Time Series Analysis and Its Applications: With R
+%  Examples}. Springer, 4th edition. 
+  
+%     \bibitem[Jaynes(2003)]{Jaynes} Jaynes, E. T, (2003)
+%  \textit{Probability theory: the logic of science}. Cambridge
+%  University Press, 2003.
+ 
+%  \bibitem[Sinai(1992)]{Sinai} Sinai, Y. G, (1992)
+%  \textit{Probability theory: an introductory course}. Springer
+%  Verlag, 1992.  
+
+%\bibitem[{deGroot(1986)}]{DeGrootBlackwell}DeGroot, M. H. (1986)
+%       A conversation with David Blackwell.
+%\newblock \emph{Statistical Science}, \textbf{1}, 40--53.
+
+%         \bibitem[Mosteller(1987)]{Mosteller} Mosteller, F, (1987)
+%  \textit{Fifty challenging problems in probability with
+%    solutions}. Courier Corporation, 1987.
+
+%    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+%  \textit{Information theory, inference, and learning
+%  algorithms}. Cambridge University Press, 2003.
+
+%\bibitem[{Lindley(2013)}]{Lindley}Lindley, D. V. (2013)
+%   \textit{Understanding Uncertainty}. John Wiley and sons, 2013.
+
+
+\end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

@@ -388,4 +388,14 @@
           id: "9 Code"
           name: "GP Regression with the squared exponential kernel"
           href: "./lab09.ipynb"
+    - date: "Apr 01"
+      items:
+        - type: "Lecture"
+          id: "25"
+          name: "Markov chains, detailed balance, Metropolis-Hastings and Gibbs"  
+          href: "./LectureTwentyFive238Spring2026.tex"
+        - type: "PDF"
+          id: "25"
+          name: "LectureTwentyFive238Spring2026.pdf"
+          href: "./LectureTwentyFive238Spring2026.pdf"
 	  
