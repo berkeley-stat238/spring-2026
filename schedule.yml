@@ -398,4 +398,17 @@
           id: "25"
           name: "LectureTwentyFive238Spring2026.pdf"
           href: "./LectureTwentyFive238Spring2026.pdf"
-	  
+    - date: "Apr 03"
+      items:
+        - type: "Lecture"
+          id: "26"
+          name: "The Gibbs Sampler"  
+          href: "./LectureTwentySix238Spring2026.tex"
+        - type: "Lecture"
+          id: "26 Code"
+          name: "Gibbs sampler -- simple exampls"
+          href: "./CodeLectureTwentySix238Spring2026.ipynb"
+        - type: "PDF"
+          id: "26"
+          name: "LectureTwentySix238Spring2026.pdf"
+          href: "./LectureTwentySix238Spring2026.pdf"
