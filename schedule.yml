@@ -406,9 +406,26 @@
           href: "./LectureTwentySix238Spring2026.tex"
         - type: "Lecture"
           id: "26 Code"
-          name: "Gibbs sampler -- simple exampls"
+          name: "Gibbs sampler -- simple examples"
           href: "./CodeLectureTwentySix238Spring2026.ipynb"
         - type: "PDF"
           id: "26"
           name: "LectureTwentySix238Spring2026.pdf"
           href: "./LectureTwentySix238Spring2026.pdf"
+- week: 11
+  days:
+    - date: "Apr 06"
+      items:
+        - type: "Lecture"
+          id: "27"
+          name: "More on the Gibbs Sampler"  
+          href: "./LectureTwentySeven238Spring2026.tex"
+        - type: "Lecture"
+          id: "27 Code"
+          name: "More on the Gibbs Sampler"
+          href: "./CodeLectureTwentySeven238Spring2026.ipynb"
+        - type: "PDF"
+          id: "27"
+          name: "LectureTwentySeven238Spring2026.pdf"
+          href: "./LectureTwentySeven238Spring2026.pdf"
+	  
