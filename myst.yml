@@ -133,6 +133,8 @@ project:
          title: "8 Code"
        - file: lab09.ipynb
          title: "9 Code"
+       - file: lab10.ipynb
+         title: "10 Code"
   downloads:
     - file: syllabus.pdf
       title: "Syllabus"
@@ -244,6 +246,8 @@ project:
       title: "Lab 8 Code"
     - file: lab09.ipynb
       title: "Lab 9 Code"
+    - file: lab10.ipynb
+      title: "Lab 10 Code"
 
 site:
   template: book-theme
