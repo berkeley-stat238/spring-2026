@@ -1,0 +1,273 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry}
+\usepackage{graphicx}
+
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+\newcommand{\relu}{{\text{ReLU}}}
+
+\newcommand{\ridge}{{\hat{\beta}_{\text{ridge}}(\lambda)}}
+\newcommand{\lasso}{{\hat{\beta}_{\text{lasso}}(\lambda)}}
+\newcommand{\ridgemu}{{\hat{\mu}_t^{\text{ridge}}(\lambda)}}
+\newcommand{\lassomu}{{\hat{\mu}_t^{\text{lasso}}(\lambda)}}
+
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Twenty Eight} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{08 April 2026}
+
+\maketitle
+
+\section{Gibbs Sampler for Mixture Models}
+
+We observe real-valued data $y_1, \dots, y_n$ and consider the model:
+\begin{align}\label{mixmod}
+  y_i \overset{\text{i.i.d}}{\sim} p N(\mu_1, 1) + (1 - p) N(\mu_2, 1)
+\end{align}
+with $p$ known and fixed (e.g., $p = 0.3$ as in the simulations) and
+$\mu_1, \mu_2$ being unknown. The Gibbs sampler formulae can be easily
+generalized to more realistic cases (e.g., when $p$ is unknown,
+variances are different from 1 etc. as we will see later). The
+log-likelihood corresponding to \eqref{mixmod} is:
+\begin{align*}
+  \sum_{i=1}^n \log \left(p \phi(y_i, \mu_1, 1) + (1 - p) \phi(y_i,
+  \mu_2, 1) \right), 
+\end{align*}
+where $\phi(x, \mu, \sigma^2)$ is the normal density with mean $\mu$,
+variance $\sigma^2$ evaluated at $x$.
+
+
+We will take a standard prior for $\mu_1, \mu_2$ e.g., $\mu_1, \mu_2
+\overset{\text{i.i.d}}{\sim} N(0, C)$ for a large $C$. The posterior
+of $\mu_1, \mu_2$ is then:
+\begin{align*}
+\pi(\mu_1, \mu_2 \mid \text{data}) \propto \phi(\mu_1, 0, C) \phi(\mu_2,
+  0, C) \prod_{i=1}^n \left(p \phi(y_i, \mu_1, 1) + (1 - p) \phi(y_i,
+  \mu_2, 1) \right). 
+\end{align*}
+This posterior cannot be evaluated in closed form and numerical
+methods need to be used. The Gibbs sampler is one computational tool
+that is applicable here. The standard approach of using the Gibbs
+sampler in this problem proceeds via augmentation. This is explained
+below.
+
+First observe that the model \eqref{mixmod} can be rewritten in the
+following way:
+\begin{align*}
+  z_i \overset{\text{i.i.d}}{\sim} \text{Bernoulli}(p) ~~ \text{ and }
+  ~~ y_i \mid z_i = 1 \sim N(\mu_1, 1) ~~ \text{ and } ~~ y_i \mid z_i
+  = 0 \sim N(\mu_2, 1). 
+\end{align*}
+It should be clear that, under the above model, the marginal
+distribution of $y_i$ coincides with \eqref{mixmod}. $z_1, \dots, z_n$
+can be thought of as unobserved latent variables which represent which
+of the two populations (corresponding to the distributions $N(\mu_1,
+1)$ and $N(\mu_2, 1)$ respectively) the observation $y_i$ comes from.
+
+Gibbs sampler is implemented for jointly sampling from the posterior
+of $\mu_1, \mu_2, z_1, \dots, z_n$ given the data. This requires being
+able to sample from the full conditionals
+\begin{align*}
+  z \mid \mu_1, \mu_2, y ~~ \text{ and } ~~ (\mu_1, \mu_2) \mid z, y. 
+\end{align*}
+where $y = (y_1, \dots, y_n)$ is the data and $z = (z_1, \dots,
+z_n)$. It is easy to see that these full conditionals can be written
+in closed form as follows. Given $\mu_1, \mu_2, y_1, \dots, y_n$, the
+variables $z_1, \dots, z_n$ are independent with
+\begin{align*}
+  z_i \mid \mu_1, \mu_2, y \sim \text{Bernoulli} \left(\frac{p
+  \phi(y_i, \mu_1, 1)}{p \phi(y_i, \mu_1, 1) + (1 - p) \phi(y_i,
+  \mu_2, 1)}\right). 
+\end{align*}
+In the limit $C \rightarrow \infty$, given $z_1, \dots, z_n, y_1,
+\dots, y_n$, the variables $\mu_1, \mu_2$ are independent with 
+\begin{align*}
+  \mu_1 \mid z, y \sim N \left(\frac{\sum_{i=1}^n y_i
+  z_i}{\sum_{i=1}^n z_i}, \frac{1}{\sum_{i=1}^n z_i} \right) ~~ \text{
+  and } ~~   \mu_2 \mid z, y \sim N \left(\frac{\sum_{i=1}^n y_i
+  (1 - z_i)}{\sum_{i=1}^n (1 -z_i)}, \frac{1}{\sum_{i=1}^n (1 - z_i)} \right)
+\end{align*}
+Based on these full conditional distributions, the Gibbs sampler can
+be easily implemented. We shall give the exact form of the algorithm
+in the next lecture. It also turns out that the EM algorithm for
+computing the MLE is similar to the Gibbs sampler. We shall also look
+at this in the next lecture. 
+
+
+
+
+%\begin{thebibliography}{99}
+
+%\bibitem[Roberts and Rosenthal(2004)]{RobertsRosenthal2004}
+%Roberts, G. O. and Rosenthal, J. S. (2004).
+%General state space Markov chains and MCMC algorithms.
+%\textit{Probability Surveys}, \textbf{1}, 20--71.
+
+%\bibitem[Meyn and Tweedie(2009)]{MeynTweedie2009}
+%Meyn, S. P. and Tweedie, R. L. (2009).
+%\textit{Markov Chains and Stochastic Stability}, 2nd ed.
+%Cambridge University Press.
+
+
+  
+%\bibitem[Chib and Greenberg(1995)]{chib1995}
+%Chib, S. and Greenberg, E. (1995).
+%Understanding the Metropolis--Hastings algorithm.
+%\textit{The American Statistician}, \textbf{49}, 327--335.
+
+
+%\bibitem[MacKay and Peto(1995)]{MacKay1995HierarchicalDirichlet}
+%D.~J.~C. MacKay and L.~C. Peto,
+%\newblock ``A hierarchical Dirichlet language model,''
+%\newblock \emph{Natural Language Engineering}, vol.~1,
+%no.~3, pp.~289--308, 1995.
+
+%\bibitem[Rubin(1981)]{Rubin1981BayesianBootstrap}
+%D.~B. Rubin,
+%\newblock ``The Bayesian bootstrap,''
+%\newblock \emph{The Annals of Statistics}, vol.~9,
+%no.~1, pp.~130--134, 1981.
+  
+%\bibitem[Fisher(1934)]{Fisher1934}
+%R.~A. Fisher,
+%\newblock ``Probability, likelihood and quantity of information in the logic of
+%uncertain inference,''
+%\newblock \emph{Proceedings of the Royal Society of London. Series~A,
+%Containing Papers of a Mathematical and Physical Character}, vol.~146,
+%no.~856, pp.~1--8, 1934.
+
+%\bibitem[Efron(2010)]{Efron}
+%Efron, B. (2010)
+%\textit{Large-scale inference: empirical Bayes methods for estimation,
+%testing, and prediction}. Cambridge University Press, 2010.
+
+%\bibitem[Shumway and Stoffer(2017)]{ShumwayStoffer}
+%Shumway, R. H. and Stoffer, D. S. (2017)
+%\textit{Time Series Analysis and Its Applications: With R
+%  Examples}. Springer, 4th edition. 
+  
+%     \bibitem[Jaynes(2003)]{Jaynes} Jaynes, E. T, (2003)
+%  \textit{Probability theory: the logic of science}. Cambridge
+%  University Press, 2003.
+ 
+%  \bibitem[Sinai(1992)]{Sinai} Sinai, Y. G, (1992)
+%  \textit{Probability theory: an introductory course}. Springer
+%  Verlag, 1992.  
+
+%\bibitem[{deGroot(1986)}]{DeGrootBlackwell}DeGroot, M. H. (1986)
+%       A conversation with David Blackwell.
+%\newblock \emph{Statistical Science}, \textbf{1}, 40--53.
+
+%         \bibitem[Mosteller(1987)]{Mosteller} Mosteller, F, (1987)
+%  \textit{Fifty challenging problems in probability with
+%    solutions}. Courier Corporation, 1987.
+
+%    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+%  \textit{Information theory, inference, and learning
+%  algorithms}. Cambridge University Press, 2003.
+
+%\bibitem[{Lindley(2013)}]{Lindley}Lindley, D. V. (2013)
+%   \textit{Understanding Uncertainty}. John Wiley and sons, 2013.
+
+
+%\end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

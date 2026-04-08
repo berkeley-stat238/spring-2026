@@ -111,6 +111,10 @@ project:
          title: "27"
        - file: CodeLectureTwentySeven238Spring2026.ipynb
          title: "27 Code"
+       - file: LectureTwentyEight238Spring2026.tex
+         title: "28"
+       - file: CodeLectureTwentyEight238Spring2026.ipynb
+         title: "28 Code"
    - title: Labs
      children:
        - file: lab01.tex
@@ -226,6 +230,10 @@ project:
       title: "Lecture 27"      
     - file: CodeLectureTwentySeven238Spring2026.ipynb
       title: "Lecture 27 Code"
+    - file: LectureTwentyEight238Spring2026.pdf
+      title: "Lecture 28"      
+    - file: CodeLectureTwentyEight238Spring2026.ipynb
+      title: "Lecture 28 Code"
     - file: lab01.pdf
       title: "Lab 1"
     - file: lab02.pdf

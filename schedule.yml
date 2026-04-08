@@ -434,4 +434,17 @@
           id: "10 Code"
           name: "Metropolis Hastings applied to Poisson Regression"
           href: "./lab10.ipynb"
-	  
+    - date: "Apr 08"
+      items:
+        - type: "Lecture"
+          id: "28"
+          name: "Gibbs Sampler for Mixture Models"  
+          href: "./LectureTwentyEight238Spring2026.tex"
+        - type: "Lecture"
+          id: "28 Code"
+          name: "Gibbs Sampler and EM for Mixture Models"
+          href: "./CodeLectureTwentyEight238Spring2026.ipynb"
+        - type: "PDF"
+          id: "28"
+          name: "LectureTwentyEight238Spring2026.pdf"
+          href: "./LectureTwentyEight238Spring2026.pdf"	  
