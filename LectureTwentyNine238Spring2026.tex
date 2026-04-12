@@ -1,0 +1,337 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry}
+\usepackage{graphicx}
+
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+\newcommand{\relu}{{\text{ReLU}}}
+
+\newcommand{\ridge}{{\hat{\beta}_{\text{ridge}}(\lambda)}}
+\newcommand{\lasso}{{\hat{\beta}_{\text{lasso}}(\lambda)}}
+\newcommand{\ridgemu}{{\hat{\mu}_t^{\text{ridge}}(\lambda)}}
+\newcommand{\lassomu}{{\hat{\mu}_t^{\text{lasso}}(\lambda)}}
+
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Twenty Eight} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{08 April 2026}
+
+\maketitle
+
+\section{Gibbs Sampler for Mixture Models}
+
+\subsection{Known variances and proportion}
+
+We observe real-valued data $y_1, \dots, y_n$ and consider the model:
+\begin{align}\label{mixmod}
+  y_i \overset{\text{i.i.d}}{\sim} (1 - w) N(\mu_0, 1) + w N(\mu_1, 1)
+\end{align}
+with $w$ known and fixed (e.g., $w = 0.3$ or $0.7$ as in the simulations) and
+$\mu_0, \mu_1$ being unknown. We will describe the Gibbs sampler
+algorithm in this setting first, and then generalize it to the case
+where $w$ is unknown and we have variance parameters $\sigma_0^2$ and
+$\sigma_1^2$. 
+
+The log-likelihood corresponding to \eqref{mixmod} is:
+\begin{align*}
+  \sum_{i=1}^n \log \left(p \phi(y_i, \mu_1, 1) + (1 - p) \phi(y_i,
+  \mu_2, 1) \right), 
+\end{align*}
+where $\phi(x, \mu, \sigma^2)$ is the normal density with mean $\mu$,
+variance $\sigma^2$ evaluated at $x$.
+
+
+We will take a standard prior for $\mu_0, \mu_1$ e.g., $\mu_0, \mu_1
+\overset{\text{i.i.d}}{\sim} N(0, C)$ for a large $C$. The posterior
+of $\mu_0, \mu_1$ is then:
+\begin{align*}
+\pi(\mu_0, \mu_1 \mid \text{data}) \propto \phi(\mu_0, 0, C) \phi(\mu_1,
+  0, C) \prod_{i=1}^n \left((1 - w) \phi(y_i, \mu_0, 1) + w \phi(y_i,
+  \mu_1, 1) \right). 
+\end{align*}
+This posterior cannot be evaluated in closed form and numerical
+methods need to be used. A standard approach is to use the Gibbs
+sampler with augmentation. First observe that the model \eqref{mixmod}
+can be rewritten in the following way: 
+\begin{align*}
+  z_i \overset{\text{i.i.d}}{\sim} \text{Bernoulli}(w) ~~ \text{ and }
+  ~~ y_i \mid z_i = 1 \sim N(\mu_1, 1) ~~ \text{ and } ~~ y_i \mid z_i
+  = 0 \sim N(\mu_0, 1). 
+\end{align*}
+It should be clear that, under the above model, the marginal
+distribution of $y_i$ coincides with \eqref{mixmod}. $z_1, \dots, z_n$
+can be thought of as unobserved latent variables which represent which
+of the two populations (corresponding to the distributions $N(\mu_0,
+1)$ and $N(\mu_1, 1)$ respectively) the observation $y_i$ comes from.
+
+Gibbs sampler is implemented for jointly sampling from the posterior
+of $\mu_0, \mu_1, z_1, \dots, z_n$ given the data. This requires being
+able to sample from the full conditionals
+\begin{align*}
+  z \mid \mu_0, \mu_1, y ~~ \text{ and } ~~ (\mu_0, \mu_1) \mid z, y. 
+\end{align*}
+where $y = (y_1, \dots, y_n)$ is the data and $z = (z_1, \dots,
+z_n)$. It is easy to see that these full conditionals can be written
+in closed form as follows. Given $\mu_0, \mu_1, y_1, \dots, y_n$, the
+variables $z_1, \dots, z_n$ are independent with
+\begin{align*}
+  z_i \mid \mu_0, \mu_1, y \sim \text{Bernoulli} \left(\frac{w
+  \phi(y_i, \mu_1, 1)}{w \phi(y_i, \mu_1, 1) + (1 - w) \phi(y_i,
+  \mu_0, 1)}\right). 
+\end{align*}
+On the other hand, given $z_1, \dots, z_n, y_1, \dots, y_n$, the
+variables $\mu_0, \mu_1$  are independent with
+\begin{align*}
+  \mu_1 \mid z, y \sim N \left(
+  \frac{\sum_{i=1}^n y_i z_i}{n_1 + (1/C)}, \frac{1}{n_1 + (1/C)}
+  \right) \text{ and } \mu_0 \mid z, y \sim N \left(
+  \frac{\sum_{i=1}^n y_i (1-z_i)}{n_0 + (1/C)}, \frac{1}{n_0 + (1/C)}
+  \right) 
+\end{align*}
+where $n_0$ is the number of $z_i$'s that are equal to 0, and $n_1$ is
+the number of $z_i$'s that are equal to 1. Note that in the limit as
+$C \rightarrow \infty$, we can write 
+\begin{align*}
+  \mu_1 \mid z, y \sim N \left(\frac{\sum_{i=1}^n y_i
+  z_i}{\sum_{i=1}^n z_i}, \frac{1}{\sum_{i=1}^n z_i} \right) ~~ \text{
+  and } ~~   \mu_0 \mid z, y \sim N \left(\frac{\sum_{i=1}^n y_i
+  (1 - z_i)}{\sum_{i=1}^n (1 -z_i)}, \frac{1}{\sum_{i=1}^n (1 - z_i)} \right)
+\end{align*}
+Based on these full conditional distributions, the Gibbs sampler
+algorithm takes the following form:
+\begin{enumerate}
+\item Initialize $\mu_0^{(0)}, \mu_1^{(0)}$.
+\item Repeat the following for $t = 0, 1, 2, \dots$:
+  \begin{enumerate}
+  \item Generate $z_1^{(t)}, \dots, z_n^{(t)}$ via:
+    \begin{align*}
+      z_i^{(t)} \sim \text{Bernoulli} \left(\frac{w
+  \phi(y_i, \mu^{(t)}_1, 1)}{w \phi(y_i, \mu^{(t)}_1, 1) + (1 - w) \phi(y_i,
+  \mu^{(t)}_0, 1)}\right). 
+    \end{align*}
+  \item Generate $\mu_0^{(t+1)}, \mu_1^{(t+1)}$ via:
+\begin{align*}
+&  \mu^{(t+1)}_1  \sim N \left(\frac{\sum_{i=1}^n y_i
+  z^{(t)}_i}{\sum_{i=1}^n z^{(t)}_i}, \frac{1}{\sum_{i=1}^n z^{(t)}_i}
+  \right) \\ & \mu^{(t+1)}_0  \sim N \left(\frac{\sum_{i=1}^n y_i
+  (1 - z^{(t)}_i)}{\sum_{i=1}^n (1 -z^{(t)}_i)}, \frac{1}{\sum_{i=1}^n
+  (1 - z^{(t)}_i)} \right).
+\end{align*}    
+  \end{enumerate}
+\end{enumerate}
+As we saw in the simulations in the last couple of lectures,
+initialization is very important. The log-likelihood can have multiple
+modes only one of which is the correct mode (in the sense of having
+large likelihood). If the Gibbs sampler is not properly initialized,
+the algorithm would sample from a spurious peak.
+
+\subsection{Unknown variances and proportion}
+
+Now consider the model:  
+\begin{align*}
+  y_i \overset{\text{i.i.d}}{\sim} (1 - w) N(\mu_0, \sigma_0^2) + w
+  N(\mu_1, \sigma_1^2). 
+\end{align*}
+The unknown parameters are now $w, \mu_0, \mu_1, \sigma^2_0,
+\sigma_1^2$. We place the following independent priors on these
+variables: 
+\begin{align}\label{priors}
+  w \sim \text{Beta}(a, b)~~ \text{ and } ~~ \mu_0, \mu_1 \sim N(m,
+  s^2) ~~ \text{ and } ~~
+  \sigma_0^2, \sigma_1^2 \sim IG(\alpha, \beta). 
+\end{align}
+The proportion parameter $w$ is constrained to lie in $[0, 1]$ so it
+is natural to take the Beta prior for it. A standard choice here is $a
+= b = 1$ (which corresponds to the uniform prior). For $\mu_0, \mu_1$,
+we are using the $N(m, s^2)$ prior. Standard choice is $m = 0$ and $s$
+very large. The Inverse Gamma prior $IG(\alpha, \beta)$ corresponds to
+the density:
+\begin{align*}
+  \propto x^{-\alpha - 1} \exp(-\beta/x) I\{x > 0\}. 
+\end{align*}
+The standard uninformative prior for $\sigma$ is $\propto \sigma^{-1}
+I\{\sigma > 0\}$. The corresponding prior density for $\sigma^2$
+is also $\propto x^{-1} I\{x > 0\}$. This is a special case of
+$IG(\alpha, \beta)$ corresponding to $\alpha = \beta = 0$.
+
+The prior \eqref{priors} is therefore uses conjugate families while
+including the standard uninformative choices as special cases. The
+reason for conjugacy is that the full conditional distributions
+corresponding to the posterior distribution can be written in closed
+form. We shall look at the formulae in the next lecture. 
+
+%\begin{thebibliography}{99}
+
+%\bibitem[Roberts and Rosenthal(2004)]{RobertsRosenthal2004}
+%Roberts, G. O. and Rosenthal, J. S. (2004).
+%General state space Markov chains and MCMC algorithms.
+%\textit{Probability Surveys}, \textbf{1}, 20--71.
+
+%\bibitem[Meyn and Tweedie(2009)]{MeynTweedie2009}
+%Meyn, S. P. and Tweedie, R. L. (2009).
+%\textit{Markov Chains and Stochastic Stability}, 2nd ed.
+%Cambridge University Press.
+
+
+  
+%\bibitem[Chib and Greenberg(1995)]{chib1995}
+%Chib, S. and Greenberg, E. (1995).
+%Understanding the Metropolis--Hastings algorithm.
+%\textit{The American Statistician}, \textbf{49}, 327--335.
+
+
+%\bibitem[MacKay and Peto(1995)]{MacKay1995HierarchicalDirichlet}
+%D.~J.~C. MacKay and L.~C. Peto,
+%\newblock ``A hierarchical Dirichlet language model,''
+%\newblock \emph{Natural Language Engineering}, vol.~1,
+%no.~3, pp.~289--308, 1995.
+
+%\bibitem[Rubin(1981)]{Rubin1981BayesianBootstrap}
+%D.~B. Rubin,
+%\newblock ``The Bayesian bootstrap,''
+%\newblock \emph{The Annals of Statistics}, vol.~9,
+%no.~1, pp.~130--134, 1981.
+  
+%\bibitem[Fisher(1934)]{Fisher1934}
+%R.~A. Fisher,
+%\newblock ``Probability, likelihood and quantity of information in the logic of
+%uncertain inference,''
+%\newblock \emph{Proceedings of the Royal Society of London. Series~A,
+%Containing Papers of a Mathematical and Physical Character}, vol.~146,
+%no.~856, pp.~1--8, 1934.
+
+%\bibitem[Efron(2010)]{Efron}
+%Efron, B. (2010)
+%\textit{Large-scale inference: empirical Bayes methods for estimation,
+%testing, and prediction}. Cambridge University Press, 2010.
+
+%\bibitem[Shumway and Stoffer(2017)]{ShumwayStoffer}
+%Shumway, R. H. and Stoffer, D. S. (2017)
+%\textit{Time Series Analysis and Its Applications: With R
+%  Examples}. Springer, 4th edition. 
+  
+%     \bibitem[Jaynes(2003)]{Jaynes} Jaynes, E. T, (2003)
+%  \textit{Probability theory: the logic of science}. Cambridge
+%  University Press, 2003.
+ 
+%  \bibitem[Sinai(1992)]{Sinai} Sinai, Y. G, (1992)
+%  \textit{Probability theory: an introductory course}. Springer
+%  Verlag, 1992.  
+
+%\bibitem[{deGroot(1986)}]{DeGrootBlackwell}DeGroot, M. H. (1986)
+%       A conversation with David Blackwell.
+%\newblock \emph{Statistical Science}, \textbf{1}, 40--53.
+
+%         \bibitem[Mosteller(1987)]{Mosteller} Mosteller, F, (1987)
+%  \textit{Fifty challenging problems in probability with
+%    solutions}. Courier Corporation, 1987.
+
+%    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+%  \textit{Information theory, inference, and learning
+%  algorithms}. Cambridge University Press, 2003.
+
+%\bibitem[{Lindley(2013)}]{Lindley}Lindley, D. V. (2013)
+%   \textit{Understanding Uncertainty}. John Wiley and sons, 2013.
+
+
+%\end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
