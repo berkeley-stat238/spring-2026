@@ -461,4 +461,25 @@
         - type: "PDF"
           id: "29"
           name: "LectureTwentyNine238Spring2026.pdf"
-          href: "./LectureTwentyNine238Spring2026.pdf"	  	  
+          href: "./LectureTwentyNine238Spring2026.pdf"
+        - type: 'Dataset'
+          id: '4'
+          name: The Exoplanet Dataset
+          href: "./exoplanet_data.csv"	  
+- week: 12
+  days:
+    - date: "Apr 13"
+      items:
+        - type: "Lecture"
+          id: "30"
+          name: "Gibbs Sampler for Normal Mixtures"  
+          href: "./LectureThirty238Spring2026.tex"
+        - type: "Lecture"
+          id: "30 Code"
+          name: "Gibbs Sampler for Normal Mixtures"
+          href: "./CodeLectureThirty238Spring2026.ipynb"
+        - type: "PDF"
+          id: "30"
+          name: "LectureThirty238Spring2026.pdf"
+          href: "./LectureThirty238Spring2026.pdf"
+	  

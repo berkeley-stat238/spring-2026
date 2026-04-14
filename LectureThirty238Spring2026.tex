@@ -1,0 +1,396 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry}
+\usepackage{graphicx}
+
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+\newcommand{\relu}{{\text{ReLU}}}
+
+\newcommand{\ridge}{{\hat{\beta}_{\text{ridge}}(\lambda)}}
+\newcommand{\lasso}{{\hat{\beta}_{\text{lasso}}(\lambda)}}
+\newcommand{\ridgemu}{{\hat{\mu}_t^{\text{ridge}}(\lambda)}}
+\newcommand{\lassomu}{{\hat{\mu}_t^{\text{lasso}}(\lambda)}}
+
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Thirty} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{13 April 2026}
+
+\maketitle
+
+\section{The Gibbs Sampler for Gaussian Mixture Models}
+
+We observe real-valued data $y_1, \dots, y_n$ and we consider the model:
+\begin{align*}
+  y_i \overset{\text{i.i.d}}{\sim} \sum_{j=1}^k w_j N(\mu_j, \sigma_j^2)
+\end{align*}
+with unknown parameters $(w_1, \dots, w_k)$ and $(\mu_j, \sigma_j^2)$
+for $j = 1, \dots, k$.  $(w_1, \dots, w_k)$ is a probablity vector
+(i.e., $w_j \geq 0$ and $\sum_j w_j = 1$).
+
+We use the following priors:
+\begin{align*}
+  & (w_1, \dots, w_k) \sim \text{Dirichlet}(a_1, \dots, a_k) \\
+  & \mu_1, \dots, \mu_k \overset{\text{i.i.d}}{\sim} N(m, s^2) \\
+  & \sigma_1^2, \dots, \sigma_k^2 \overset{\text{i.i.d}}{\sim}
+    IG(\alpha, \beta). 
+\end{align*}
+The default choices are $a_j = 1$ for all $j$, $m = 0$ and $s^2$ to be
+large, and $\alpha, \beta$ to be near zero. Note that the density of
+the Inverse Gamma distribution $IG(\alpha, \beta)$ is given by
+$x^{-\alpha - 1} \exp(-\beta/x) I\{x > 0\}$. It is easy to check that
+this is simply the density of $X^{-1}$ where $X \sim
+\text{Gamma}(\alpha, \beta)$.  
+
+To use the Gibbs sampler, we introduce latent variables $z_1, \dots,
+z_n$ 
+which represent group memberships. Specifically, $z_i$ represents
+which of the $k$ Gaussians the observation $y_i$ is coming from. More
+precisely, $z_i$ takes the values $1, \dots, k$ with probabilities
+$w_1, \dots, w_k$ (i.e., $z_i \sim \text{Categorical}(w)$), and 
+\begin{align*}
+  y_i \mid z_i = j \sim N(\mu_j, \sigma_j^2). 
+\end{align*}
+The Gibbs sampler will then jointly sample from all the unknown
+variables:
+\begin{align*}
+  w_1, \dots, w_k, \mu_1, \sigma_1^2, \dots, \mu_k, \sigma_k^2, z_1,
+  \dots, z_n \mid y_1, \dots, y_n
+\end{align*}
+The full conditionals corresponding to all the variables can be
+written in closed form as described below. We will use the notation $w
+= (w_1, \dots, w_k)$, $\mu = (\mu_1, \dots, \mu_k)$ and $\sigma =
+(\sigma_1, \dots, \sigma_k)$, also $y = (y_1, \dots, y_n)$ and $z =
+(z_1, \dots, z_n)$. 
+
+For the full conditional corresponding to $z_1, \dots, z_n$ (i.e., the
+conditional distribution of $z_1, \dots, z_n$ given $y_1, \dots, y_n$
+as well as $w_1, \dots, w_k, \mu_1, \sigma_1^2, \dots, \mu_k,
+\sigma_k^2$) is given by:
+\begin{align*}
+  \P \left\{z_i = j \mid y_i, w, \mu, \sigma \right\} = r_{ij} := \frac{w_j
+  \phi(y_i, \mu_j, \sigma_j^2)}{\sum_{j=1}^k w_j
+  \phi(y_i, \mu_j, \sigma_j^2)}. 
+\end{align*}
+In other words,
+\begin{align*}
+  z_i \mid y_i, w, \mu, \sigma \sim \text{Categorical}(r_i) ~~
+  \text{where $r_i = (r_{i1}, \dots, r_{ik})$}. 
+\end{align*}
+The full conditional of $w = (w_1, \dots, w_k)$ (i.e., the conditional
+distribution of $w$ given $z, y, \mu, \sigma$) is:
+\begin{align*}
+  w \mid z, y, \mu, \sigma \sim \text{Dirichlet}(a_1 + n_1, \dots, a_k
+  + n_k) ~~ \text{where $n_j := \sum_{i=1}^n I\{z_i = j\}$}. 
+\end{align*}
+The full conditional of $\mu_j$ (i.e., the conditional distribution of
+$\mu_j$ given $z, y, \sigma$) is:
+\begin{align*}
+  \mu_j \mid z, y, \sigma \sim N \left(\frac{m/s^2 + \sum_{i : z_i =
+  j} y_i/\sigma_j^2}{1/s^2 + n_j/\sigma_j^2}, \frac{1}{1/s^2 +
+  n_j/\sigma_j^2} \right). 
+\end{align*}
+Note that we are also conditioning on $\sigma_j$ above. If we do not
+condition on $\sigma_j$, then the conditional distribution of
+$\mu_j$ will be $t$-distributed and not normal distributed. 
+
+The full conditional of $\sigma_j^2$  (i.e., the conditional
+distribution of $\sigma_j^2$ given $z, y, \mu$) is:
+\begin{align*}
+  \sigma_j^2 \mid z, y, \sigma \sim IG \left(\alpha + \frac{n_j}{2},
+  \beta + \frac{1}{2} \sum_{i : z_i = j} (y_i - \mu_j)^2 \right), 
+\end{align*}
+where again $n_j = \sum_{i=1}^n I\{z_i = j\}$.
+
+So the Gibbs sampler algorithm is given by:
+\begin{enumerate}
+\item Initialize the parameters $w^{(0)}, \mu^{(0)}, \sigma^{(0)}$.
+\item Repeat the following for $t = 0, 1, 2, \dots$:
+  \begin{enumerate}
+  \item Generate $z_1^{(t)}, \dots, z_n^{(t)}$ via:
+    \begin{align*}
+      z_i^{(t)} \sim \text{Categorical} \left(\frac{w_j^{(t)}
+  \phi \left(y_i, \mu^{(t)}_j, (\sigma_j^{(t)})^2 \right)}{\sum_{j=1}^k w_j^{(t)}
+  \phi \left(y_i, \mu^{(t)}_j, (\sigma_j^{(t)})^2 \right)}, j = 1, \dots, k \right)
+    \end{align*}
+  \item Calculate
+    \begin{align*}
+      n_j^{(t)} := \sum_{i=1}^n I\{z_i^{(t)} = j\}  ~~ \text{ for $j =
+      1, \dots, k$}.
+    \end{align*}
+  \item Generate $w^{(t+1)} = (w_1^{(t+1)}, \dots, w_k^{(t+1)})$ via
+    \begin{align*}
+      w^{(t+1)} \sim \text{Dirichlet}(a_1 + n_1^{(t)}, \dots, a_k +
+      n_k^{(t)}). 
+    \end{align*}
+  \item Generate $\mu_1^{(t+1)}, \dots, \mu_k^{(t+1)}$ via
+    \begin{align*}
+      \mu_j^{(t+1)} \sim N \left(\frac{m/s^2 + \sum_{i : z^{(t)}_i =
+  j} y_i/(\sigma_j^{(t)})^2}{1/s^2 + n_j^{(t)}/(\sigma_j^{(t)})^2},
+      \frac{1}{1/s^2 + 
+  n^{(t)}_j/(\sigma_j^{(t)})^2} \right). 
+    \end{align*}
+  \item Generate $\sigma_1^{(t+1)}, \dots, \sigma_k^{(t+1)}$ via
+    \begin{align*}
+   (\sigma_j^2)^{(t+1)} \sim IG \left(\alpha + \frac{n^{(t)}_j}{2},
+  \beta + \frac{1}{2} \sum_{i : z^{(t)}_i = j} (y_i - \mu^{(t+1)}_j)^2 \right), 
+    \end{align*}
+  \end{enumerate}
+\end{enumerate}
+
+\section{The EM Algorithm}
+
+The EM algorithm can be seen as a deterministic variant of the Gibbs
+sampler. We shall look at the EM in more generality later. In the case
+of fitting finite normal mixtures, the EM algorithm is given by the
+following: 
+\begin{enumerate}
+\item Initialize the parameters $w^{(0)}, \mu^{(0)}, \sigma^{(0)}$.
+\item Repeat the following for $t = 0, 1, 2, \dots$ until convergence:
+  \begin{enumerate}
+  \item \textbf{E-step.} Compute the responsibility of component $j$ for
+  observation $i$:
+    \begin{align*}
+      r_{ij}^{(t)} := \frac{w_j^{(t)}
+      \phi\left(y_i, \mu_j^{(t)}, (\sigma_j^{(t)})^2\right)}
+      {\sum_{l=1}^k w_l^{(t)}
+      \phi\left(y_i, \mu_l^{(t)}, (\sigma_l^{(t)})^2\right)},
+      \quad j = 1, \dots, k.
+    \end{align*}
+  \item Compute the effective counts
+    \begin{align*}
+      n_j^{(t)} := \sum_{i=1}^n r_{ij}^{(t)}, \quad j = 1, \dots, k.
+    \end{align*}
+  \item \textbf{M-step.} Update the weights:
+    \begin{align*}
+      w_j^{(t+1)} := \frac{n_j^{(t)}}{n}, \quad j = 1, \dots, k.
+    \end{align*}
+  \item Update the means:
+    \begin{align*}
+      \mu_j^{(t+1)} := \frac{\sum_{i=1}^n r_{ij}^{(t)}\, y_i}{n_j^{(t)}},
+      \quad j = 1, \dots, k.
+    \end{align*}
+  \item Update the variances:
+    \begin{align*}
+      (\sigma_j^2)^{(t+1)} := \frac{\sum_{i=1}^n r_{ij}^{(t)}
+      \left(y_i - \mu_j^{(t+1)}\right)^2}{n_j^{(t)}},
+      \quad j = 1, \dots, k.
+    \end{align*}
+  \end{enumerate}
+\end{enumerate}
+
+There are the following close connections between the EM algorithm and
+the Gibbs sampler: 
+\begin{itemize}
+  \item The \textbf{E-step} replaces sampling $z_i \sim \text{Categorical}(\ldots)$
+  with computing its expectation
+  \begin{align*}
+    r_{ij}^{(t)} = \mathbb{E}\left[I\{z_i = j\} \mid y_i, w^{(t)}, \mu^{(t)},
+    \sigma^{(t)}\right],
+  \end{align*}
+  which are the same normalised weights used in the Categorical draw.
+
+  \item The \textbf{effective count} $n_j^{(t)} = \sum_{i=1}^n r_{ij}^{(t)}$
+  replaces the integer count $\sum_{i=1}^n I\{z_i^{(t)} = j\}$.
+
+  \item The \textbf{weight update} replaces the Dirichlet draw and takes the
+  maximum likelihood estimate
+  \begin{align*}
+    w_j^{(t+1)} = \frac{n_j^{(t)}}{n},
+  \end{align*}
+  which is equivalent to the posterior mean of the Dirichlet as the prior
+  becomes uninformative.
+
+  \item The \textbf{mean update} replaces the Gaussian conjugate draw and is
+  the responsibility-weighted sample mean
+  \begin{align*}
+    \mu_j^{(t+1)} = \frac{\sum_{i=1}^n r_{ij}^{(t)}\, y_i}{n_j^{(t)}},
+  \end{align*}
+  the maximum likelihood estimate with no prior shrinkage toward $m$.
+
+  \item The \textbf{variance update} replaces the inverse-Gamma draw and is
+  the responsibility-weighted sample variance
+  \begin{align*}
+    (\sigma_j^2)^{(t+1)} = \frac{\sum_{i=1}^n r_{ij}^{(t)}
+    \left(y_i - \mu_j^{(t+1)}\right)^2}{n_j^{(t)}},
+  \end{align*}
+  the maximum likelihood estimate with no $\alpha, \beta$ regularisation terms.
+\end{itemize}
+
+
+
+%\begin{thebibliography}{99}
+
+%\bibitem[Roberts and Rosenthal(2004)]{RobertsRosenthal2004}
+%Roberts, G. O. and Rosenthal, J. S. (2004).
+%General state space Markov chains and MCMC algorithms.
+%\textit{Probability Surveys}, \textbf{1}, 20--71.
+
+%\bibitem[Meyn and Tweedie(2009)]{MeynTweedie2009}
+%Meyn, S. P. and Tweedie, R. L. (2009).
+%\textit{Markov Chains and Stochastic Stability}, 2nd ed.
+%Cambridge University Press.
+
+
+  
+%\bibitem[Chib and Greenberg(1995)]{chib1995}
+%Chib, S. and Greenberg, E. (1995).
+%Understanding the Metropolis--Hastings algorithm.
+%\textit{The American Statistician}, \textbf{49}, 327--335.
+
+
+%\bibitem[MacKay and Peto(1995)]{MacKay1995HierarchicalDirichlet}
+%D.~J.~C. MacKay and L.~C. Peto,
+%\newblock ``A hierarchical Dirichlet language model,''
+%\newblock \emph{Natural Language Engineering}, vol.~1,
+%no.~3, pp.~289--308, 1995.
+
+%\bibitem[Rubin(1981)]{Rubin1981BayesianBootstrap}
+%D.~B. Rubin,
+%\newblock ``The Bayesian bootstrap,''
+%\newblock \emph{The Annals of Statistics}, vol.~9,
+%no.~1, pp.~130--134, 1981.
+  
+%\bibitem[Fisher(1934)]{Fisher1934}
+%R.~A. Fisher,
+%\newblock ``Probability, likelihood and quantity of information in the logic of
+%uncertain inference,''
+%\newblock \emph{Proceedings of the Royal Society of London. Series~A,
+%Containing Papers of a Mathematical and Physical Character}, vol.~146,
+%no.~856, pp.~1--8, 1934.
+
+%\bibitem[Efron(2010)]{Efron}
+%Efron, B. (2010)
+%\textit{Large-scale inference: empirical Bayes methods for estimation,
+%testing, and prediction}. Cambridge University Press, 2010.
+
+%\bibitem[Shumway and Stoffer(2017)]{ShumwayStoffer}
+%Shumway, R. H. and Stoffer, D. S. (2017)
+%\textit{Time Series Analysis and Its Applications: With R
+%  Examples}. Springer, 4th edition. 
+  
+%     \bibitem[Jaynes(2003)]{Jaynes} Jaynes, E. T, (2003)
+%  \textit{Probability theory: the logic of science}. Cambridge
+%  University Press, 2003.
+ 
+%  \bibitem[Sinai(1992)]{Sinai} Sinai, Y. G, (1992)
+%  \textit{Probability theory: an introductory course}. Springer
+%  Verlag, 1992.  
+
+%\bibitem[{deGroot(1986)}]{DeGrootBlackwell}DeGroot, M. H. (1986)
+%       A conversation with David Blackwell.
+%\newblock \emph{Statistical Science}, \textbf{1}, 40--53.
+
+%         \bibitem[Mosteller(1987)]{Mosteller} Mosteller, F, (1987)
+%  \textit{Fifty challenging problems in probability with
+%    solutions}. Courier Corporation, 1987.
+
+%    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+%  \textit{Information theory, inference, and learning
+%  algorithms}. Cambridge University Press, 2003.
+
+%\bibitem[{Lindley(2013)}]{Lindley}Lindley, D. V. (2013)
+%   \textit{Understanding Uncertainty}. John Wiley and sons, 2013.
+
+
+%\end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
