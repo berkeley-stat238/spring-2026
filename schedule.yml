@@ -482,4 +482,9 @@
           id: "30"
           name: "LectureThirty238Spring2026.pdf"
           href: "./LectureThirty238Spring2026.pdf"
-	  
+    - date: "Apr 14"
+      items:
+        - type: "Lab"
+          id: "11 Code"
+          name: "Gibbs Sampler applied to Mixture of Regressions"
+          href: "./lab11.ipynb"
