@@ -1,0 +1,439 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry}
+\usepackage{graphicx}
+
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+\newcommand{\relu}{{\text{ReLU}}}
+
+\newcommand{\ridge}{{\hat{\beta}_{\text{ridge}}(\lambda)}}
+\newcommand{\lasso}{{\hat{\beta}_{\text{lasso}}(\lambda)}}
+\newcommand{\ridgemu}{{\hat{\mu}_t^{\text{ridge}}(\lambda)}}
+\newcommand{\lassomu}{{\hat{\mu}_t^{\text{lasso}}(\lambda)}}
+
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Thirty One} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{15 April 2026}
+
+\maketitle
+
+We will study the MALA and HMC algorithms. MALA stands for Metropolis
+Adjusted Langevin Algorithm. HMC stands for Hamiltonian Monte
+Carlo. Before we discuss MALA, let us first recall the basics of
+markov chains. 
+
+\section{Recap: Markov Chains, detailed balance and the
+  Metropolis-Hastings Algorithm}
+
+Let $S$ be a state space. A sequence of random variables $\Theta^{(0)},
+\Theta^{(1)}, \dots$ taking values in $S$ is a 
+Markov Chain on $S$ provided the conditional distribution of  
+$\Theta^{(t+1)}$ given $\Theta^{(t)} = \theta^{(t)}, \Theta^{(t-1)} =
+\theta^{(t-1)}, \dots, \Theta^{(0)} = \theta^{(0)}$ only depends on
+$\theta^{(t)}$. Further, if this conditional distribution is the same
+for all  $t$, then the Markov chain is said to be
+time-homogeneous. We will only deal with time-homogeneous Markov
+Chains in this course.
+
+A (time-homogeneous) Markov Chain is described via the conditional
+distribution of $\Theta^{(t+1)}$ given $\Theta^{(t)} = x$, which is
+described by a probability transition kernel $P(x, y)$. If $S$ is
+discrete, $P(x, y)$ is the conditional probability of $\Theta^{(t+1)}
+= y$ given $\Theta^{(t)} = x$. If $S$ is an open subset of $\R^d$,
+$P(x, y)$ represents the conditional density of $\Theta^{(t+1)}$ given
+$\Theta^{(t)} = x$.
+
+The Markov chain given by $P(x, y)$ satisfies \textbf{detailed
+  balance} with respect to a probability $\pi(x)$ on $S$ if the
+following condition is satisfied:
+\begin{align}\label{det_bal}
+  \pi(y) P(y, x) = \pi(x) P(x, y) ~~\text{for all $x, y \in S$}. 
+\end{align}
+This detailed balance condition implies that $\pi$ is stationary for
+the chain $P$ in the sense that $\Theta^{(t)} \sim \pi$ implies
+$\Theta^{(t+1)} \sim \pi$.
+
+Stationarity along with the additional condition of irreducibility
+(which means that for every pair of points $x$ and $y$ in the state
+space, there is a positive probability that the chain goes from $x$ to
+$y$ in finite time) imply ergodicity which means:
+\begin{align*}
+  \lim_{N \rightarrow \infty} \frac{1}{N} \sum_{t=1}^N g(\Theta^{(t)})
+  = \int g(\theta) d\pi(\theta)
+\end{align*}
+almost surely.
+
+Metropolis-Hastings is the most widely used method for constructing
+markov chains satisfying detailed balance with respect to $\pi$. This
+method starts with an arbitrary transition kernel $Q(x, y)$ that may
+not even have anything to do with $\pi$ (in particular, it is not at
+all necessary that $Q$ satisfies detailed balance with respect to
+$\pi$). Metropolis-Hastings uses $Q(\cdot, \cdot)$ and $\pi(\cdot)$ to
+  construct a new Markov chain $\{\Theta^{(t)}\}$ which moves as
+  follows. Given $\Theta^{(t)} = x$, first use $Q(x, \cdot)$ to
+  generate $y$, then take $\Theta^{(t+1)}$ to be:
+  \[
+\Theta^{(t+1)} =
+\begin{cases}
+y, & \text{with probability } \min\!\left(1, \frac{\pi(y)\,Q(y,x)}{\pi(x)\,Q(x,y)}\right), \\[1em]
+x, & \text{with probability } 1 - \min\!\left(1, \frac{\pi(y)\,Q(y,x)}{\pi(x)\,Q(x,y)}\right).
+\end{cases}
+\]
+The resulting Metropolis-Hastings chain  satisfies detailed
+balance with respect to $\pi$, as we saw previously in Lecture 25.
+
+\section{Random Walk Metropolis (RWM)}
+
+The Random Walk Metropolis (RWM) algorithm is arguably the simplest
+example of a markov chain which satisfies detailed balance with
+respect to $\pi$. It uses the transition kernel $Q(x, y)$ which
+generates proposals via:
+\begin{align}\label{rwm_y}
+  y = x + \sigma z ~~ \text{where $z \sim N(0, I_d)$}. 
+\end{align}
+In other words, the proposal transition kernel is given by
+\begin{align}\label{rwm_prop}
+  Q(x, y) = \left(\frac{1}{\sqrt{2 \pi} \sigma} \right)^d \exp
+  \left(-\frac{\|x - y\|^2}{2\sigma^2} \right) . 
+\end{align}
+Clearly $Q(x, y) = Q(y, x)$ so the resulting acceptance probability
+(in the Metropolis-Hastings algorithm) is simply
+\begin{align*}
+    \min \left(1, \frac{\pi(y)}{\pi(x)} \right). 
+\end{align*}
+The choice of $\sigma$ (in \eqref{rwm_prop}) is crucial to the
+practical performance of the algorithm. If $\sigma$ is not small, then
+$Q(x, \cdot)$ may result in proposals $y$ that are far from $x$. If
+$\pi(\cdot)$ is highly concentrated (as is 
+typically the case with posteriors), then $\pi(y)$ might be much
+smaller than $\pi(x)$ leading to the chain rejecting often and getting
+stuck. On the other hand if $\sigma$ is too small, then the chain
+might take a long time to explore the full distribution $\pi(\cdot)$.
+
+\section{Metropolis Adjusted Langevin Algorithm (MALA)}
+
+In MALA, the rwm proposal \eqref{rwm_y} is modified with an expression
+that depends on $\pi$. To find this formula, let us first consider the
+following proposal: 
+\begin{align}\label{rwm_g}
+  y = x + g(x) + \sigma z ~~\text{with $z \sim N(0, I_d)$}
+\end{align}
+for some function $g(x)$ depending on $\pi(x)$. Clearly \eqref{rwm_y}
+can be seen as a special case of \eqref{rwm_g} corresponding to $g(x)
+= 0$. The proposal transition kernel corresponding to \eqref{rwm_g} is
+given by: 
+\begin{align*}
+  Q(x, y) = \left(\frac{1}{\sqrt{2 \pi} \sigma} \right)^d
+ \exp \left(-\frac{1}{2 \sigma^2} \|y - x - g(x)
+  \|^2 \right).
+\end{align*}
+Note that $Q(x, y)$ is no longer equal to $Q(y, x)$. The key question
+is how to choose $g(x)$. It is natural to choose $g(x)$ so that the
+detailed balance condition holds with respect to $\pi$: 
+\begin{align*}
+  \pi(x) Q(x, y) \approx \pi(y) Q(y, x) 
+\end{align*}
+at least approximately when $y$ is close to $x$. Check that
+\begin{align*}
+  \frac{Q(y, x)}{Q(x, y)} &= \exp \left(-
+                                              \frac{1}{\sigma^2}\left<y
+                                              - 
+                                              x, g(x) + g(y) \right> +
+                                              \frac{1}{2 \sigma^2}  
+  \left(\|g(x)\|^2 - \|g(y)\|^2 \right) \right). 
+\end{align*}
+As a result:
+\begin{align*}
+&  \frac{\pi(y)Q(y, x)}{\pi(x) Q(x, y)} \\ &= \exp
+                                                           \left(\log
+                                                           \pi(y) -
+                                                           \log \pi(x)
+                                                           \right) \exp \left(-
+                                              \frac{1}{\sigma^2}\left<y
+                                              - 
+                                              x, g(x) + g(y) \right> +
+                                              \frac{1}{2 \sigma^2}  
+  \left(\|g(x)\|^2 - \|g(y)\|^2 \right) \right). 
+\end{align*}
+For $y$ close to $x$, we use the approximations: 
+\begin{align*}
+&  \log \pi(y) - \log \pi(x) \approx \left<y - x, \nabla \log \pi(x)
+  \right> \\
+&   \frac{1}{\sigma^2}\left<y
+                                              - 
+                                              x, g(x) + g(y) \right>
+  \approx \frac{2}{\sigma^2} \left<y - x, g(x) \right> \\
+& \frac{1}{2 \sigma^2} \left(\|g(x)\|^2 - \|g(y)\|^2 \right) \approx
+  0. 
+\end{align*}
+This leads to
+\begin{align*}
+  \frac{\pi(y)Q(y, x)}{\pi(x) Q(x, y)} \approx \exp \left(\left<y - x, \nabla \log \pi(x) -
+    \frac{2g(x)}{\sigma^2} \right> \right) 
+\end{align*}
+when $y$ is close to $x$. This clearly suggests taking 
+\begin{align*}
+  g(x) = \frac{\sigma^2}{2} \nabla \log \pi(x). 
+\end{align*}
+This leads to the MALA proposal:
+\begin{align}\label{lang_prop}
+  y = x + \frac{1}{2} \sigma^2 \nabla \log \pi(x) + \sigma z ~~ \text{
+  where $z \sim N(0, I_d)$}. 
+\end{align}
+When $\sigma$ is small, $y$ is automatically close to $x$, so the
+above argument can be used to show that the Metropolis-Hastings
+acceptance ratio for this proposal is nearly equal to 1. 
+
+\section{Mechanics Interpretation}
+
+We can interpret the RWM proposal \eqref{rwm_y} in physical terms
+as follows: 
+\begin{equation}\label{rwm_phy}
+  \begin{split}
+  &  x(0) = x, ~~ \dot{x}(0) = z \sim N(0, I_d) \\
+  & \text{and, motion with constant velocity $z$ for time $[0, \sigma]$} \\
+  & \implies x(\sigma) = \text{RWM proposal}
+  \end{split}  
+\end{equation}
+Similarly, we can interpret the MALA proposal \eqref{lang_prop} in
+physical terms as follows: 
+\begin{equation}\label{mala_phy}
+  \begin{split}
+  &  x(0) = x, ~~ \dot{x}(0) = z \sim N(0, I_d) \\
+  & \text{and, motion with constant acceleration $\nabla \log \pi(x)$
+    for time $[0, \sigma]$} \\ 
+  & \implies x(\sigma) = \text{MALA proposal}
+  \end{split}  
+\end{equation}
+The physical analogy makes the difference between RWM and MALA transparent.
+In both cases the particle starts at $x$ with a random velocity $z \sim
+N(0, I_d)$, and the proposal $y = x(\sigma)$ is the position after time
+$\sigma$. The distinction lies in the \emph{dynamics}:
+\begin{itemize}
+  \item \textbf{RWM} is a free particle: no force acts, so the particle
+    travels in a straight line at constant velocity. The proposal is
+    purely isotropic and \emph{blind} to the target $\pi$ --- it has no
+    tendency to move toward regions of high probability.
+
+  \item \textbf{MALA} subjects the particle to a constant acceleration
+    $\nabla \log \pi(x)$, i.e.\ a force pointing in the direction of
+    steepest ascent of $\log\pi$. By Newton's second law,
+    \[
+      x(\sigma) = x + \sigma z + \frac{\sigma^2}{2}\nabla\log\pi(x),
+    \]
+    which is precisely the Langevin proposal \eqref{lang_prop}. The
+    drift term $\frac{\sigma^2}{2}\nabla\log\pi(x)$ biases every
+    proposal \emph{uphill} in $\log\pi$, so the chain is steered toward
+    high-probability regions before the Metropolis correction is even
+    applied.
+\end{itemize}
+As a consequence, MALA proposals are systematically better aligned with
+$\pi$ than RWM proposals. In
+practice this allows MALA to take much larger steps $\sigma$ while
+maintaining a reasonable acceptance rate, leading to faster exploration
+of the target distribution.
+
+In the coming lectures, we shall look at HMC, which is a further
+modification of \eqref{mala_phy}. Specifically, the HMC proposal is
+obtained via:
+\begin{equation}\label{hmc_phy}
+  \begin{split}
+  &  x(0) = x, ~~ \dot{x}(0) = z \sim N(0, I_d) \\
+  & \ddot{x}(t) = \nabla \log \pi(x(t)) \\
+  & \implies x(\sigma) = \text{HMC proposal}
+  \end{split}  
+\end{equation}
+The step from MALA to HMC is precisely the step from \emph{constant}
+acceleration to \emph{position-dependent} acceleration. In MALA the
+acceleration $\nabla\log\pi(x)$ is evaluated once at the current position $x$
+and held fixed for the entire flight time $[0,\sigma]$. In HMC the
+acceleration is updated continuously along the trajectory: at every time $t$
+the particle feels $\nabla\log\pi(x(t))$. One downside to this
+time-dependent acceleration is that $x(\sigma)$ usually cannot be
+written in closed form as a function of $x$ and $z$ (unlike RWM and
+MALA), and some numerical integration scheme has to be used to figure
+out $x(\sigma)$. 
+
+
+
+
+
+
+
+
+%\begin{thebibliography}{99}
+
+%\bibitem[Roberts and Rosenthal(2004)]{RobertsRosenthal2004}
+%Roberts, G. O. and Rosenthal, J. S. (2004).
+%General state space Markov chains and MCMC algorithms.
+%\textit{Probability Surveys}, \textbf{1}, 20--71.
+
+%\bibitem[Meyn and Tweedie(2009)]{MeynTweedie2009}
+%Meyn, S. P. and Tweedie, R. L. (2009).
+%\textit{Markov Chains and Stochastic Stability}, 2nd ed.
+%Cambridge University Press.
+
+
+  
+%\bibitem[Chib and Greenberg(1995)]{chib1995}
+%Chib, S. and Greenberg, E. (1995).
+%Understanding the Metropolis--Hastings algorithm.
+%\textit{The American Statistician}, \textbf{49}, 327--335.
+
+
+%\bibitem[MacKay and Peto(1995)]{MacKay1995HierarchicalDirichlet}
+%D.~J.~C. MacKay and L.~C. Peto,
+%\newblock ``A hierarchical Dirichlet language model,''
+%\newblock \emph{Natural Language Engineering}, vol.~1,
+%no.~3, pp.~289--308, 1995.
+
+%\bibitem[Rubin(1981)]{Rubin1981BayesianBootstrap}
+%D.~B. Rubin,
+%\newblock ``The Bayesian bootstrap,''
+%\newblock \emph{The Annals of Statistics}, vol.~9,
+%no.~1, pp.~130--134, 1981.
+  
+%\bibitem[Fisher(1934)]{Fisher1934}
+%R.~A. Fisher,
+%\newblock ``Probability, likelihood and quantity of information in the logic of
+%uncertain inference,''
+%\newblock \emph{Proceedings of the Royal Society of London. Series~A,
+%Containing Papers of a Mathematical and Physical Character}, vol.~146,
+%no.~856, pp.~1--8, 1934.
+
+%\bibitem[Efron(2010)]{Efron}
+%Efron, B. (2010)
+%\textit{Large-scale inference: empirical Bayes methods for estimation,
+%testing, and prediction}. Cambridge University Press, 2010.
+
+%\bibitem[Shumway and Stoffer(2017)]{ShumwayStoffer}
+%Shumway, R. H. and Stoffer, D. S. (2017)
+%\textit{Time Series Analysis and Its Applications: With R
+%  Examples}. Springer, 4th edition. 
+  
+%     \bibitem[Jaynes(2003)]{Jaynes} Jaynes, E. T, (2003)
+%  \textit{Probability theory: the logic of science}. Cambridge
+%  University Press, 2003.
+ 
+%  \bibitem[Sinai(1992)]{Sinai} Sinai, Y. G, (1992)
+%  \textit{Probability theory: an introductory course}. Springer
+%  Verlag, 1992.  
+
+%\bibitem[{deGroot(1986)}]{DeGrootBlackwell}DeGroot, M. H. (1986)
+%       A conversation with David Blackwell.
+%\newblock \emph{Statistical Science}, \textbf{1}, 40--53.
+
+%         \bibitem[Mosteller(1987)]{Mosteller} Mosteller, F, (1987)
+%  \textit{Fifty challenging problems in probability with
+%    solutions}. Courier Corporation, 1987.
+
+%    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+%  \textit{Information theory, inference, and learning
+%  algorithms}. Cambridge University Press, 2003.
+
+%\bibitem[{Lindley(2013)}]{Lindley}Lindley, D. V. (2013)
+%   \textit{Understanding Uncertainty}. John Wiley and sons, 2013.
+
+
+%\end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
