@@ -1,0 +1,496 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry}
+\usepackage{graphicx}
+
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+\newcommand{\relu}{{\text{ReLU}}}
+
+\newcommand{\ridge}{{\hat{\beta}_{\text{ridge}}(\lambda)}}
+\newcommand{\lasso}{{\hat{\beta}_{\text{lasso}}(\lambda)}}
+\newcommand{\ridgemu}{{\hat{\mu}_t^{\text{ridge}}(\lambda)}}
+\newcommand{\lassomu}{{\hat{\mu}_t^{\text{lasso}}(\lambda)}}
+
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Thirty Two} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{17 April 2026}
+
+\maketitle
+
+We are discussing standard MCMC techniques to obtain samples from a
+probability $\pi$. All these techniques are based on the
+Metropolis-Hastings scheme, where, given the current value $x$ of the
+chain, a proposal $y$ is first generated according to some transition
+kernel $Q(x, y)$, and then the proposal is accepted with probability:
+\begin{align}\label{acc_prob}
+  \min \left(1, \frac{\pi(y) Q(y, x)}{\pi(x) Q(x, y)} \right). 
+\end{align}
+Different MCMC methods differ on how the proposal kernel $Q(x, y)$ is
+chosen. We shall look at three main techniques for choosing $Q(x, y)$:
+Random Walk Metropolis (RWM), Metropolis Adjusted Langevin Algorithm
+(MALA) and Hamiltonian Monte Carlo (HMC). 
+
+\section{RWM}
+
+Here $y$ is generated from $x$ via:
+\begin{align*}
+  y = x + \sigma z ~~ \text{ where $z \sim N(0, I_d)$}. 
+\end{align*}
+In other words, the proposal kernel $Q(x, y)$ is given by:
+\begin{align*}
+  Q(x, y) = \left(\frac{1}{\sqrt{2 \pi} \sigma} \right)^{d} \exp
+  \left(-\frac{\|y - x\|^2}{2 \sigma^2} \right). 
+\end{align*}
+Clearly this proposal is symmetric in the sense that $Q(x, y) = Q(y,
+x)$. As a result the acceptance probability \eqref{acc_prob} becomes
+simply
+\begin{align*}
+  \min \left(1, \frac{\pi(y)}{\pi(x)} \right). 
+\end{align*}
+When the dimension $d$ is small, this method works reasonably
+well. When $d$ is large, it will work only if $\sigma$ is
+chosen very small. However, with such small $\sigma$, one would need
+to run the chain for a very large amount of time to ensure adequate
+mixing. The consequence is that RWM does not work well when $d$ is
+large.
+
+\subsection{Example: $\pi$ is $N(0, I_d)$}
+As an illustrative example, consider the case where:
+\begin{align*}
+  \pi(x) \propto \exp(-\|x\|^2/2). 
+\end{align*}
+In this case, we have
+\begin{align*}
+  \frac{\pi(y)}{\pi(x)} = \exp \left[\frac{1}{2} \left(\|x\|^2 -
+  \|y\|^2 \right) \right]. 
+\end{align*}
+Because the proposed value $y$ will be $x + \sigma z$ for $z \sim N(0,
+I_d)$, we have
+\begin{align*}
+  \frac{\pi(y)}{\pi(x)} = \exp \left[\frac{1}{2} \left(\|x\|^2 - \|x +
+  \sigma z\|^2\right) \right] = \exp(-A)
+\end{align*}
+where
+\begin{align*}
+  A := \sigma  \left<z, x \right> + \frac{\sigma^2}{2} \|z\|^2. 
+\end{align*}
+Because $z \sim N(0, I_d)$, it is easy to check that the mean and
+variance of $A$ satisfy:
+\begin{align*}
+  \E A = \frac{d \sigma^2}{2}
+\end{align*}
+and
+\begin{align*}
+  \text{var}(A) &= \E \left( \sigma  \left<z, x \right> +
+  \frac{\sigma^2}{2} (\|z\|^2 - d)  \right)^2 \\ &\leq 2 \sigma^2
+  \text{var}(\left<z, x \right>) + \frac{\sigma^4}{2}
+  \text{var}(\|z\|^2) \leq 2 \sigma^2\|x\|^2 + 2 d \sigma^4
+\end{align*}
+which means that the standard deviation of $A$ is $O(\sigma \|x\| +
+\sigma^2 \sqrt{d})$. Suppose now that $\|x\| = O(\sqrt{d})$ and
+$\sigma \leq 1$, then the standard deviation of $A$ is:
+\begin{align*}
+  \text{std}(A) = O \left(\sigma \|x\| + \sigma^2 \sqrt{d} \right) = O
+  \left(\sigma \sqrt{d} + \sigma^2 \sqrt{d} \right) = O(\sigma
+  \sqrt{d}). 
+\end{align*}
+We thus have:
+\begin{align*}
+  \E A = \frac{d\sigma^2}{2} ~~ \text{ and } ~~ \text{std}(A) =
+  O(\sigma \sqrt{d}). 
+\end{align*}
+We can now consider two regimes of $\sigma$.
+\begin{enumerate}
+\item \textbf{Case 1}: $\sigma \gg d^{-1/2}$. Then $\sigma \sqrt{d}
+  \rightarrow \infty$ so that $\E A \gg \text{std}(A)$. Then (by
+  standard concentration), $A$ is tightly concentrated around its mean
+  $d\sigma^2/2 \rightarrow \infty$. Therefore the acceptance
+  probability satisfies
+  \begin{align*}
+    \alpha(x, y) = \min \left(1, \frac{\pi(y)}{\pi(x)} \right) = \min
+    \left(1, e^{-A} \right) \approx e^{-d\sigma^2/2} \rightarrow 0, 
+  \end{align*}
+  which means that proposals are almost always rejected and the chain
+  cannot mix.
+\item \textbf{Case 2}: $\sigma = O(d^{-1/2})$. Writing $\sigma =
+  c/\sqrt{d}$ for a constant $c > 0$, we get
+  \begin{align*}
+    \E A = \frac{c^2}{2} = O(1), ~~ \text{std}(A) = O(c) = O(1). 
+  \end{align*}
+  Now $A$ is an $O(1)$ random variable fluctuating around an $O(1)$
+  mean so $e^{-A}$ is a positive $O(1)$ quantity. The acceptance
+  probability is then bounded away from zero so that chain can
+  actually move. 
+\end{enumerate}
+The conclusion is that the acceptance probability of RWM is
+non-degenerate if and only if $\sigma = O(d^{-1/2})$. Equivalently,
+the proposal step must shrink as the dimension grows, with $\sigma
+\sim c/\sqrt{d}$ being the critical scaling. This is the fundamental
+tuning constraint for RWM in high-dimensions. When $d$ is large,
+$O(d^{-1/2})$ tends to be too small with the consequence that the
+chain takes a very large amount to samples to sample from the whole of
+$\pi$. This makes RWM very inefficient in high-dimensions.
+
+
+\section{MALA}
+
+Here $y$ is generated from $x$ via:
+\begin{align}\label{mala_p}
+  y = x + \frac{\sigma^2}{2} \nabla \log \pi(x) + \sigma z ~~ \text{ where $z \sim N(0, I_d)$}. 
+\end{align}
+In other words, the proposal kernel $Q(x, y)$ is given by:
+\begin{align*}
+  Q(x, y) = \left(\frac{1}{\sqrt{2 \pi} \sigma} \right)^{d} \exp
+  \left(-\frac{\|y - x - (\sigma^2/2) \nabla \log \pi(x)\|^2}{2 \sigma^2} \right). 
+\end{align*}
+Clearly this proposal is non-symmetric in the sense that $Q(x, y) \neq Q(y,
+x)$ so the acceptance probability is now: 
+\begin{align*}
+  \min \left(1, \frac{\pi(y) Q(y, x)}{\pi(x) Q(x, y)} \right). 
+\end{align*}
+As in RWM, it is important to tune $\sigma$ appropriately. When $d$ is
+large, one still needs to choose $\sigma$ small. However, $\sigma$
+does not have to be as small as in the case of RWM for MALA to
+work well. This can be easily illustrated in the $N(0, I_d)$ example.
+
+\subsection{Example: $\pi = N(0, I_d)$}
+Here $\pi(x) \propto \exp(-\|x\|^2/2)$ so that $\nabla \log \pi(x) =
+-x$. Then (below $a = 1 -(\sigma^2/2)$): 
+\begin{align*}
+  \frac{\pi(y) Q(y, x)}{\pi(x) Q(x, y)} &= \exp \left(\frac{\|x\|^2 -
+                                          \|y\|^2}{2} \right) \exp
+                                          \left(\frac{\|y - a x\|^2 -
+                                          \|x - a y\|^2}{2 \sigma^2}
+                                          \right) \\
+  &= \exp \left(\frac{\|x\|^2 -
+                                          \|y\|^2}{2}  \right) \exp
+    \left(\frac{1 - a^2}{2 \sigma^2} \left(\|y\|^2 - \|x\|^2 \right)
+    \right) \\
+  &= \exp \left(\frac{\sigma^2}{8} \left(\|x\|^2 - \|y\|^2 \right) \right).
+\end{align*}
+Plugging in
+\begin{align*}
+  y = x + \frac{1}{2} \sigma^2 \nabla \log \pi(x) + \sigma z = a x +
+  \sigma z, 
+\end{align*}
+we obtain
+\begin{align*}
+  \frac{\pi(y) Q(y, x)}{\pi(x) Q(x, y)} &= \exp
+  \left(\frac{\sigma^2}{8} \left(\|x\|^2 - \|a x + \sigma z\|^2
+                                          \right) \right) \\
+  &= \exp \left(\frac{\sigma^2}{8} \left[\sigma^2 (1 -
+    (\sigma^2/4)) \|x\|^2 - \sigma^2 \|z\|^2 - 2 a \sigma
+    \left< x, z \right>\right] \right) = \exp(-B)
+\end{align*}
+where
+\begin{align*}
+  B := \frac{\sigma^2}{8} \left[ \sigma^2 \|z\|^2 + 2 a \sigma
+    \left< x, z \right> - \sigma^2 (1 -
+    (\sigma^2/4)) \|x\|^2 \right]. 
+\end{align*}
+Below we use $C$ for a generic positive constant whose value might
+change from specific occurrence to occurrence. Clearly
+\begin{align*}
+  \E B =  \frac{\sigma^4}{8} \left[d -  (1 -
+    (\sigma^2/4)) \|x\|^2 \right] = \frac{\sigma^4}{8} \left((d -
+  \|x\|^2) + \frac{\sigma^2}{4} \|x\|^2 \right).  
+\end{align*}
+Also
+\begin{align*}
+  \text{var}(B) \leq \frac{\sigma^4}{32} \left(\text{var}(\sigma^2
+  \|z\|^2) + \text{var}(2 a \sigma \left<x, z \right>) \right) =
+  \frac{\sigma^4}{32} \left(2 \sigma^4 d + 4 a^2 \sigma^2 \|x\|^2 \right). 
+\end{align*}
+Because $a = 1 - \sigma^2/2 \leq 1$, we can write
+\begin{align*}
+  \text{var}(B) \leq C \sigma^6 \left(d \sigma^2 + \|x\|^2 \right)
+\end{align*}
+so that
+\begin{align*}
+  \text{std}(B) \leq C \sigma^3 (\sigma \sqrt{d} + \|x\|). 
+\end{align*}
+Suppose now that $x$ is such that:
+\begin{align}\label{x_ass_mala}
+  d - d^{2/3} \leq \|x\|^2 \leq C d
+\end{align}
+for some constant $C$. Now let
+\begin{align}
+  \label{sig_mala}
+  \sigma = \ell d^{-1/6}
+\end{align}
+for a constant $\ell$. Note that this  value of $\sigma$ is much
+larger than $d^{-1/2}$ so that RWM 
+proposals will always be rejected with this $\sigma$. But for the
+random variable $B$, we have
+\begin{align*}
+  \E B = \frac{\sigma^4}{8} \left((d -
+  \|x\|^2) + \frac{\sigma^2}{4} \|x\|^2 \right) \leq
+  \frac{\sigma^4}{8} \left(d^{2/3} + \frac{\sigma^2}{4} C d \right)
+  \leq \frac{\ell^4}{8} + \frac{C \ell^6}{32}
+\end{align*}
+which is a constant. Also
+\begin{align*}
+  \text{std}(B) \leq C \sigma^4 \sqrt{d} + C \sigma^3 \|x\| \leq C
+  \ell^4 d^{-2/3} \sqrt{d} + C \ell^3 C 
+\end{align*}
+whic his also bounded by a constant. Thus for \eqref{sig_mala} (and
+under the assumption \eqref{x_ass_mala} on $x$), the random variable
+$B$ will be bounded above by a constant with high probability, which
+means that the acceptance probability will remain constant. This is in
+sharp contrast to the case of RWM where the acceptance probability
+will be extremely small for \eqref{sig_mala}. This argument indicates
+that MALA will be more effective than RWM when $d$ is
+large. Specifically, MALA can be expected to work for much higher
+values of $\sigma$ which will lead to faster mixing.
+
+\section{HMC}
+
+In HMC, the proposal $y$ is generated by solving the following ODE:
+\begin{align}\label{hmc_ode}
+  x(0) = x ~~~~ \dot{x}(0) = z ~~~~ \ddot{x}(t) = \nabla \log
+  \pi(x(t)) ~~~~ y = x(\sigma). 
+\end{align}
+Note that if $\nabla \log \pi(x(t))$ is replaced by $\nabla \log
+\pi(x)$, then it is easy to check that $y$ equals the MALA proposal
+\eqref{mala_p}.
+
+The ODE \eqref{hmc_ode} is, in most cases, impossible to solve
+exactly. But in the Gaussian case, it is easy to write a formula for
+$y = x(\sigma)$. This is illustrated next.
+
+\subsection{$\pi = N(0, I_d)$}
+Here the ODE \eqref{hmc_ode} becomes
+\begin{align*}
+  x(0) = x~~~~ \dot{x}(0) = z ~~~~ \ddot{x}(t) = -x(t) ~~~~ y = x(\sigma). 
+\end{align*}
+The general solution to $\ddot{x}(t) = -x(t)$ is given by $\alpha \cos
+t + \beta \sin t$. The initial conditions $x(0) = x$ and $\dot{x}(0) =
+z$ then give
+\begin{align*}
+  x(t) = x \cos t + z \sin t
+\end{align*}
+which implies that
+\begin{align*}
+  y = x(\sigma) = x \cos \sigma + z \sin \sigma. 
+\end{align*}
+The proposal transition kernel $Q(x, y)$ is therefore
+\begin{align*}
+  Q(x, y) = \left(\frac{1}{\sqrt{2 \pi} |\sin \sigma|} \right)^d \exp
+  \left(- \frac{\|y - x \cos \sigma\|^2}{2 \sin^2 \sigma} \right).
+\end{align*}
+Note now that
+\begin{align*}
+  \frac{\pi(y) Q(y, x)}{\pi(x) Q(x, y)} &= \exp \left(\frac{1}{2}
+                                          (\|x\|^2 - \|y\|^2) \right)
+                                          \exp \left(\frac{\|y - x \cos
+                                          \sigma\|^2- \|x - y \cos
+                                          \sigma\|^2}{2 \sin^2 \sigma}
+                                          \right) \\
+  &= \exp \left(\frac{1}{2}
+                                          (\|x\|^2 - \|y\|^2) \right)\exp \left(\frac{1}{2}
+                                          (\|y\|^2 - \|x\|^2) \right)
+    = 1. 
+\end{align*}
+So the acceptance probability of this chain equals 1
+\textbf{regardless of the value of $\sigma$}. This means that the HMC
+chain can be evolved to a large value of $\sigma$ without affecting
+the acceptance probability at all. This is quite unlike the case for
+RWM and MALA where $\sigma$ has to be small otherwise the acceptance
+probability will be very small. The possibility of taking large steps
+(in terms of $\sigma$) is one of the main advantages of HMC.
+
+We shall, in the next lecture, that, for general $\pi$ (not just
+Gaussian), the HMC proposal \eqref{hmc_ode} satisfies detailed balance
+with respect to $\pi$ for every $\sigma$ (so that the subsequent
+M-H acceptance probability equals 1). In practice, however, the
+HMC proposal \eqref{hmc_ode} cannot be directly used because this ODE
+cannot be solved exactly. One uses a numerical approximate solution to
+the ODE \eqref{hmc_ode}. This approximation spoils the detailed
+balance property however, so subsequent Metropolization is
+necessary. However, the acceptance probability (while not exactly
+equal to 1) will still be usually high for HMC even for not too small
+$\sigma$. More details will be provided next week. 
+
+
+
+
+
+
+
+
+%\begin{thebibliography}{99}
+
+%\bibitem[Roberts and Rosenthal(2004)]{RobertsRosenthal2004}
+%Roberts, G. O. and Rosenthal, J. S. (2004).
+%General state space Markov chains and MCMC algorithms.
+%\textit{Probability Surveys}, \textbf{1}, 20--71.
+
+%\bibitem[Meyn and Tweedie(2009)]{MeynTweedie2009}
+%Meyn, S. P. and Tweedie, R. L. (2009).
+%\textit{Markov Chains and Stochastic Stability}, 2nd ed.
+%Cambridge University Press.
+
+
+  
+%\bibitem[Chib and Greenberg(1995)]{chib1995}
+%Chib, S. and Greenberg, E. (1995).
+%Understanding the Metropolis--Hastings algorithm.
+%\textit{The American Statistician}, \textbf{49}, 327--335.
+
+
+%\bibitem[MacKay and Peto(1995)]{MacKay1995HierarchicalDirichlet}
+%D.~J.~C. MacKay and L.~C. Peto,
+%\newblock ``A hierarchical Dirichlet language model,''
+%\newblock \emph{Natural Language Engineering}, vol.~1,
+%no.~3, pp.~289--308, 1995.
+
+%\bibitem[Rubin(1981)]{Rubin1981BayesianBootstrap}
+%D.~B. Rubin,
+%\newblock ``The Bayesian bootstrap,''
+%\newblock \emph{The Annals of Statistics}, vol.~9,
+%no.~1, pp.~130--134, 1981.
+  
+%\bibitem[Fisher(1934)]{Fisher1934}
+%R.~A. Fisher,
+%\newblock ``Probability, likelihood and quantity of information in the logic of
+%uncertain inference,''
+%\newblock \emph{Proceedings of the Royal Society of London. Series~A,
+%Containing Papers of a Mathematical and Physical Character}, vol.~146,
+%no.~856, pp.~1--8, 1934.
+
+%\bibitem[Efron(2010)]{Efron}
+%Efron, B. (2010)
+%\textit{Large-scale inference: empirical Bayes methods for estimation,
+%testing, and prediction}. Cambridge University Press, 2010.
+
+%\bibitem[Shumway and Stoffer(2017)]{ShumwayStoffer}
+%Shumway, R. H. and Stoffer, D. S. (2017)
+%\textit{Time Series Analysis and Its Applications: With R
+%  Examples}. Springer, 4th edition. 
+  
+%     \bibitem[Jaynes(2003)]{Jaynes} Jaynes, E. T, (2003)
+%  \textit{Probability theory: the logic of science}. Cambridge
+%  University Press, 2003.
+ 
+%  \bibitem[Sinai(1992)]{Sinai} Sinai, Y. G, (1992)
+%  \textit{Probability theory: an introductory course}. Springer
+%  Verlag, 1992.  
+
+%\bibitem[{deGroot(1986)}]{DeGrootBlackwell}DeGroot, M. H. (1986)
+%       A conversation with David Blackwell.
+%\newblock \emph{Statistical Science}, \textbf{1}, 40--53.
+
+%         \bibitem[Mosteller(1987)]{Mosteller} Mosteller, F, (1987)
+%  \textit{Fifty challenging problems in probability with
+%    solutions}. Courier Corporation, 1987.
+
+%    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+%  \textit{Information theory, inference, and learning
+%  algorithms}. Cambridge University Press, 2003.
+
+%\bibitem[{Lindley(2013)}]{Lindley}Lindley, D. V. (2013)
+%   \textit{Understanding Uncertainty}. John Wiley and sons, 2013.
+
+
+%\end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

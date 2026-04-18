@@ -127,6 +127,10 @@ project:
          title: "31"
        - file: CodeLectureThirtyOne238Spring2026.ipynb
          title: "31 Code"
+       - file: LectureThirtyTwo238Spring2026.tex
+         title: "32"
+       - file: CodeLectureThirtyTwo238Spring2026.ipynb
+         title: "32 Code"
    - title: Labs
      children:
        - file: lab01.tex
@@ -260,6 +264,10 @@ project:
       title: "Lecture 31"      
     - file: CodeLectureThirtyOne238Spring2026.ipynb
       title: "Lecture 31 Code"
+    - file: LectureThirty238TwoSpring2026.pdf
+      title: "Lecture 32"      
+    - file: CodeLectureThirtyTwo238Spring2026.ipynb
+      title: "Lecture 32 Code"
     - file: lab01.pdf
       title: "Lab 1"
     - file: lab02.pdf
