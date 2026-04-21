@@ -515,4 +515,17 @@
         - type: "PDF"
           id: "32"
           name: "LectureThirtyTwo238Spring2026.pdf"
-          href: "./LectureThirtyTwo238Spring2026.pdf"	  	  
+          href: "./LectureThirtyTwo238Spring2026.pdf"
+- week: 13
+  days:
+    - date: "Apr 20"
+      items:
+        - type: "Lecture"
+          id: "33"
+          name: "Hamiltonian Monte Carlo"  
+          href: "./LectureThirtyThree238Spring2026.tex"
+        - type: "PDF"
+          id: "33"
+          name: "LectureThirtyThree238Spring2026.pdf"
+          href: "./LectureThirtyThree238Spring2026.pdf"
+	  
