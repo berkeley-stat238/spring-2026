@@ -528,4 +528,9 @@
           id: "33"
           name: "LectureThirtyThree238Spring2026.pdf"
           href: "./LectureThirtyThree238Spring2026.pdf"
-	  
+    - date: "Apr 21"
+      items:
+        - type: "Lab"
+          id: "12 Code"
+          name: "RWM, MALA and HMC for the standard Gaussian"
+          href: "./lab12.ipynb"
