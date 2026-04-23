@@ -534,3 +534,13 @@
           id: "12 Code"
           name: "RWM, MALA and HMC for the standard Gaussian"
           href: "./lab12.ipynb"
+    - date: "Apr 22"
+      items:
+        - type: "Lecture"
+          id: "34"
+          name: "Hamiltonian Dynamics and Leapfrog Discretization"  
+          href: "./LectureThirtyFour238Spring2026.tex"
+        - type: "PDF"
+          id: "34"
+          name: "LectureThirtyFour238Spring2026.pdf"
+          href: "./LectureThirtyFour238Spring2026.pdf"	  

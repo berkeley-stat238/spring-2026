@@ -133,6 +133,8 @@ project:
          title: "32 Code"
        - file: LectureThirtyThree238Spring2026.tex
          title: "33"
+       - file: LectureThirtyFour238Spring2026.tex
+         title: "34"
    - title: Labs
      children:
        - file: lab01.tex
@@ -274,6 +276,8 @@ project:
       title: "Lecture 32 Code"
     - file: LectureThirtyThree238Spring2026.pdf
       title: "Lecture 33"      
+    - file: LectureThirtyFour238Spring2026.pdf
+      title: "Lecture 34"      
     - file: lab01.pdf
       title: "Lab 1"
     - file: lab02.pdf
