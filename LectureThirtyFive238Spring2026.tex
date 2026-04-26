@@ -1,0 +1,529 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry}
+\usepackage{graphicx}
+
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+\newcommand{\relu}{{\text{ReLU}}}
+
+\newcommand{\ridge}{{\hat{\beta}_{\text{ridge}}(\lambda)}}
+\newcommand{\lasso}{{\hat{\beta}_{\text{lasso}}(\lambda)}}
+\newcommand{\ridgemu}{{\hat{\mu}_t^{\text{ridge}}(\lambda)}}
+\newcommand{\lassomu}{{\hat{\mu}_t^{\text{lasso}}(\lambda)}}
+
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Thirty Five} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{24 April 2026}
+
+\maketitle
+
+\section{HMC and Leapfrog Discretization}
+
+There is a given target probability density $\pi$ that we need to
+sample from. In HMC, given a current state $x$, one attempts to solve the
+dynamics:
+\begin{align}\label{hmc_form}
+    \begin{pmatrix}
+    \dot{x}(t) \\ \dot{v}(t)
+  \end{pmatrix} =
+  \begin{pmatrix}
+    \frac{\partial H}{\partial v}(x(t), v(t)) \\ -\frac{\partial
+    H}{\partial x}(x(t), v(t))
+  \end{pmatrix} ~\text{with initialization}~
+  \begin{pmatrix}
+    x(0) \\ v(0)
+  \end{pmatrix} =
+  \begin{pmatrix}
+    x \\ v
+  \end{pmatrix}
+\end{align}
+with $v \sim N(0, I_d)$. Here $H(\cdot, \cdot)$ denotes the
+Hamiltonian:
+\begin{align}\label{hamiltonian}
+  H(x, v) = H(x_1, \dots, x_d, v_1, \dots, v_d) := -\log \pi(x) +
+  \frac{1}{2}\|v\|^2. 
+\end{align}
+Let $T_{\sigma}$ denote the function which maps $(x, v)$ to
+$(x(\sigma), v(\sigma))$ obtained by solving \eqref{hmc_form} for $t
+\in [0, \sigma]$. We saw in the last lecture that $T_{\sigma}$ is
+invertible (specifically, $T_{\sigma} S = (T_{\sigma} S)^{-1}$ where
+$S$ is the velocity sign-flip operator), Hamiltonian preserving (i.e.,
+$H(T_{\sigma}(x, v)) = H(x, v)$) and Volume preserving (i.e., the
+determinant of the Jacobian of $T_{\sigma}$ always equals 1).
+
+The HMC ODE \eqref{hmc_form} cannot be solved exactly in practice, so
+one attempts to solve it approximately via discretization by fixing a
+step size $\epsilon$ and solving \eqref{hmc_form} approximately for $t
+= 0, \epsilon, 2 \epsilon, \dots$. To go from $(x(t), v(t))$ to
+$(x(t+\epsilon), v(t + \epsilon))$, one uses the leapfrog
+discretization:
+\begin{equation}
+  \label{leapfrog}
+  \begin{split}
+&    v\left(t + \frac{\epsilon}{2}\right) = v(t) + \frac{\epsilon}{2}
+  \nabla \log \pi(x(t)) \\
+& x(t + \epsilon) = x(t) + \epsilon v\left(t + \frac{\epsilon}{2}
+  \right) \\
+& v(t + \epsilon) = v \left(t + \frac{\epsilon}{2} \right) +
+  \frac{\epsilon}{2} \nabla \log \pi(x(t + \epsilon))
+  \end{split}
+\end{equation}
+If we denote this map from $(x(t), y(t))$ to $(x(t + \epsilon), y(t +
+\epsilon))$ by $T^{\text{disc}}_{\epsilon}(x, v)$ and then apply this
+mapping $N$ times in succession starting from $(x, v)$, then the
+overall mapping is given by
+\begin{align*}
+  T^{\text{disc}, N}_{\epsilon} = T_{\epsilon}^{\text{disc}} \circ \dots \circ
+  T_{\epsilon}^{\text{disc}}. 
+\end{align*}
+The above mapping is an approximation to the continuous ODE flow
+$T_{\sigma}$:
+\begin{align*}
+  T_{\epsilon}^{\text{disc}, N}(x, v) \approx T_{\sigma}(x, v) ~~
+  \text{ provided $\epsilon = \frac{\sigma}{N}$}. 
+\end{align*}
+In the last lecture, we observed that $T_{\epsilon}^{\text{disc}, N}$
+is also invertible (with $S T_{\epsilon}^{\text{disc}, N} =
+(S T_{\epsilon}^{\text{disc}, N})^{-1}$) and volume preserving. But it
+does not preserve the Hamiltonian i.e., $H(T_{\epsilon}^{\text{disc},
+  N}(x, v))$ can be different from $H(x, v)$.
+
+While implementing leapfrog discretization to compute $x(N\epsilon),
+v(N \epsilon)$, it can be checked that the following iterations can be
+used which combine the two velocity updates into one:
+\begin{align*}
+ & x(j \epsilon) = x((j-1)\epsilon) + \epsilon v \left((j - 1/2)
+   \epsilon \right) \\
+ & v((j+ 1/2) \epsilon) = v((j-1/2) \epsilon) + \epsilon x(j \epsilon)
+\end{align*}
+for $j = 1, \dots, N-1$. This iteration needs to be initialized using
+$x(0) = x$ and $v(\epsilon/2) = v(0) + (\epsilon/2) \nabla \log
+\pi(x(0))$. At iteration $N-1$, we obtain $x((N-1)\epsilon)$ and
+$v((N-1/2) \epsilon)$. From here $x(N \epsilon)$ and $v(N \epsilon)$
+can be computed by:
+\begin{align*}
+  &  x(N \epsilon) = x((N-1) \epsilon) + \epsilon v((N-1/2) \epsilon) \\
+  & v(N \epsilon) = v((N-1/2)\epsilon) + (\epsilon/2) \nabla \log
+    \pi(x(N \epsilon)). 
+\end{align*}
+
+\section{The HMC Algorithm}
+
+We are now ready to formally describe the HMC algorithm. The algorithm
+starts with an arbitrary initialization $x^{(0)}$ and then repeats the
+following for $t = 0, 1, 2, \dots$:
+\begin{enumerate}
+\item Generate $v^{(t)} \sim N(0, I_d)$.
+\item Run discretized Leapfrog Hamiltonian dynamics starting at
+  $(x^{(t)}, v^{(t)})$ for some fixed step size $\epsilon$ and
+  trajectory length $\sigma$. This gives $(y, w) =
+  T_{\epsilon}^{\text{disc}, N}(x, v)$ (here $N = \sigma/\epsilon$ is
+  the number of leapfrog steps).
+\item Compute the acceptance probability: 
+  \begin{align*}
+    \min \left(1, \exp(H(x^{(t)}, v^{(t)}) - H(y, w)) \right)
+  \end{align*}
+  and update $x^{(t+1)}$ as:
+  \[
+x^{(t+1)} =
+\begin{cases}
+y & \text{with probability }     \min \left(1, \exp(H(x^{(t)},
+     v^{(t)}) - H(y, w)) \right), \\[1em] 
+x^{(t)} & \text{with probability } 1 - \min \left(1, \exp(H(x^{(t)},
+     v^{(t)}) - H(y, w)) \right). 
+\end{cases}
+\]
+\end{enumerate}
+We need to verify that the Markov Chain given by the above algorithm
+maintains detailed balance with respect to $\pi$. This is difficult to
+verify directly for the chain with transitions to $x^{(t+1)}$ from
+$x^{(t)}$. Instead, we shall verify detailed balance for the chain
+which transitions to $(x^{(t+1)}, v^{(t+1)})$ from $(x^{(t)},
+v^{(t)})$. Note that $v^{(t+1)}$ does not appear in the above
+description of the HMC algorithm. We rewrite the algorithm below using
+$v^{(t+1)}$ explicitly.
+
+In addition to using $v^{(t+1)}$ explicitly, another change in the
+following algorithm is that the equation $(y, w) =
+T_{\epsilon}^{\text{disc}, N}(x, v)$ is now changed to $(y, w) = S
+T_{\epsilon}^{\text{disc}, N}(x, v)$. In other words, we do a velocity
+flip after running the discretized Hamiltonian dynamics. This velocity
+flip makes the deterministic transition from $(x, v)$ to $(y, w)$ an
+involution (i.e., its inverse is itself: $(S
+T_{\epsilon}^{\text{disc}, N})^{-1} = S T_{\epsilon}^{\text{disc},
+  N}$) which makes the argument for detailed balance very clean. Note
+also that the velocity flip does not change the Hamiltonian (because
+$H(y, w) = H(y, -w)$ as the dependence on $w$ is through $\|w\|^2$) so
+the acceptance probability does not change. Algorithmically, both the
+versions of the algorithm lead to identical output.
+
+\begin{enumerate}
+\item Generate $v^{(t)} \sim N(0, I_d)$.
+\item Run discretized Leapfrog Hamiltonian dynamics (followed  by a
+  velocity flip) starting at
+  $(x^{(t)}, v^{(t)})$ for some fixed step size $\epsilon$ and
+  trajectory length $\sigma$. This gives $(y, w) =
+  S T_{\epsilon}^{\text{disc}, N}(x, v)$ (here $N = \sigma/\epsilon$ is
+  the number of leapfrog steps).
+\item Compute the acceptance probability: 
+  \begin{align*}
+    \min \left(1, \exp(H(x^{(t)}, v^{(t)}) - H(y, w)) \right)
+  \end{align*}
+  and update $(x^{(t+1)}, v^{(t+1)})$ as:
+  \[
+(x^{(t+1)}, v^{(t+1)}) =
+\begin{cases}
+(y, w) & \text{with probability }     \min \left(1, \exp(H(x^{(t)},
+     v^{(t)}) - H(y, w)) \right), \\[1em] 
+(x^{(t)} v^{(t)}), & \text{with probability } 1 - \min \left(1, \exp(H(x^{(t)},
+     v^{(t)}) - H(y, w)) \right). 
+\end{cases}
+\] 
+\end{enumerate}
+Next we will verify detailed balance of the above Markov Chain with
+respect to the joint density:
+\begin{align*}
+  \tilde{\pi}(x, v) \propto \exp \left(-H(x, v) \right).  
+\end{align*}
+Note that, under $\tilde{\pi}$, the variables $x \sim \pi$ and $v \sim
+N(0, I_d)$ are independent (because $H(x, v) = -\log \pi(x) +
+\|v\|^2/2$.
+
+The transitions of the HMC Markov Chain from $(x, v)$ to $(y, w)$ are
+deterministic (given by the involutive map $S
+T_{\epsilon}^{\text{disc}, N}$) so we need to be careful about the
+form of detailed balance.
+
+\section{Recap: detailed balance}
+So far in this course (e.g., see Lectures 25 and 31), we have used the
+following definition of detailed balance. The Markov Chain with
+transition densities given by $Q(x, y)$ satisfies detailed balance
+with respect to the density $\pi(x)$ provided:
+\begin{align}\label{detbal_cont}
+  \pi(x) Q(x, y) = \pi(y) Q(y, x). 
+\end{align}
+This formulation is only true if the transitions have a density given
+by $Q(x, \cdot)$. For HMC (viewed as a chain over $(x^{(t)},
+v^{(t)})$), the transitions are deterministic so we cannot use the
+detailed balance characterization in \eqref{detbal_cont}. The more
+general way of writing the detailed balance condition is:
+\begin{align}\label{gendetbal}
+  \P\{\Theta^{(t)} \in A, \Theta^{(t+1)} \in B\} =   \P\{\Theta^{(t)}
+  \in B, \Theta^{(t+1)} \in A\}
+\end{align}
+assuming that $\Theta^{(t)} \in A$ and the conditional distribution of
+$\Theta^{(t+1)}$ given $\Theta^{(t)}$ is given by the Markov
+chain. Also \eqref{gendetbal} is required to hold for all subsets $A$
+and $B$ of the state space.
+
+In the case when the Markov chain transitions are given by densities
+$Q(x, \cdot)$, then it is easy to show that \eqref{gendetbal} is
+equivalent to \eqref{detbal_cont}. For example, if we restrict $A$ to
+be a small region around a point $x$, and $B$ to be a small region
+around a point $y$, then the left hand side of \eqref{gendetbal} is
+approximately $\pi(x) Q(x, y) \text{vol}(A) \text{vol}(B)$ and the
+right hand side is $\pi(y) Q(y, x) \text{vol}(A) \text{vol}(B)$. One
+can then cancel the product of the volume terms to obtain
+\eqref{detbal_cont} from \eqref{gendetbal}.
+
+On the other hand, when the Markov chain transitions do not have a
+density, we need to work with the general condition
+\eqref{gendetbal}. 
+
+\section{Detailed Balance for HMC}
+We shall now derive the detailed balance condition \eqref{gendetbal}
+for HMC. We need to prove that:
+\begin{align}\label{hmc_detbal}
+  \P \left\{(x^{(t)}, v^{(t)}) \in A, (x^{(t+1)}, v^{(t+1)}) \in B
+  \right\} =   \P \left\{(x^{(t)}, v^{(t)}) \in B, (x^{(t+1)},
+  v^{(t+1)}) \in A 
+  \right\}
+\end{align}
+where $(x^{(t)}, v^{(t)})$ has density proportional to $\exp(-H(x,
+v))$. We compute the left hand side as
+\begin{align*}
+ & \P \left\{(x^{(t)}, v^{(t)}) \in A, (x^{(t+1)}, v^{(t+1)}) \in B
+  \right\} \\ &= \int_A \exp(-H(x, v)) \P \left\{(x^{(t+1)}, v^{(t+1)})
+             \in B \mid x^{(t)} = x, v^{(t)} = v \right\} dx dv
+\end{align*}
+To write the conditional probability $\P \left\{(x^{(t+1)}, v^{(t+1)})
+             \in B \mid x^{(t)} = x, v^{(t)} = v \right\}$, note that
+           $(x^{(t+1)}, v^{(t+1)})$ either equals $S
+           T_{\epsilon}^{\text{disc}, N}(x, v)$ with probability
+             $\min(1, \exp(H(x^{(t)}, v^{(t)}) - H(S
+           T_{\epsilon}^{\text{disc}, N}(x, v)))$ or it equals $(x,
+             v)$ with the opposite probability. For simplicity of
+             notation, let us denote the function $S
+             T_{\epsilon}^{\text{disc}, N}$ by $\Upsilon$. Thus
+\begin{align*}
+&  \P \left\{(x^{(t+1)}, v^{(t+1)})
+  \in B \mid x^{(t)} = x, v^{(t)} = v \right\} \\
+&= \min \left(1,\frac{\exp(-H(\Upsilon(x, v)))}{\exp(-H(x, v))}
+  \right)  I\{\Upsilon(x, v) \in B\} + \left[1 - \min
+  \left(1,\frac{\exp(-H(\Upsilon(x, v)))}{\exp(-H(x, v))} 
+  \right) \right] I\{(x, v) \in B\}. 
+\end{align*}
+
+             We then get
+\begin{align*}
+ & \P \left\{(x^{(t)}, v^{(t)}) \in A, (x^{(t+1)}, v^{(t+1)}) \in B
+  \right\} \\ &= \int_A \exp(-H(x, v)) \P \left\{(x^{(t+1)}, v^{(t+1)})
+                \in B \mid x^{(t)} = x, v^{(t)} = v \right\} dx dv \\
+  &= \int_A \exp(-H(x, v)) \min \left(1,\frac{\exp(-H(\Upsilon(x, v)))}{\exp(-H(x, v))}
+    \right)  I\{\Upsilon(x, v) \in B\} dx dv \\
+  &+ \int_A \exp(-H(x, v)) \left[1 - \min
+  \left(1,\frac{\exp(-H(\Upsilon(x, v)))}{\exp(-H(x, v))} 
+    \right) \right] I\{(x, v) \in B\} dx dv \\
+  &= \int_A \min \left(\exp(-H(x, v)), \exp(-H(\Upsilon(x, v)))
+    \right) I\{\Upsilon(x, v) \in B\} dx dv \\
+  &+ \int_{A \cap B} \left[\exp(-H(x, v)) - \min \left(\exp(-H(x, v)), \exp(-H(\Upsilon(x, v)))
+    \right)  \right] dx dv.
+\end{align*}
+By the same argument (but with $A$ and $B$ switched), the right hand
+side of \eqref{hmc_detbal} satisfies: 
+\begin{align*}
+  &\P \left\{(x^{(t)}, v^{(t)}) \in B, (x^{(t+1)},
+    v^{(t+1)}) \in A  \right\} \\
+  &= \int_B \min \left(\exp(-H(x, v)), \exp(-H(\Upsilon(x, v)))
+    \right) I\{\Upsilon(x, v) \in A\} dx dv \\
+  &+ \int_{B \cap A} \left[\exp(-H(x, v)) - \min \left(\exp(-H(x, v)), \exp(-H(\Upsilon(x, v)))
+    \right)  \right] dx dv.
+\end{align*}
+It is easy to see that the second terms in the expressions for $\P \left\{(x^{(t)}, v^{(t)}) \in A, (x^{(t+1)}, v^{(t+1)}) \in B
+  \right\}$ and $\P \left\{(x^{(t)}, v^{(t)}) \in B, (x^{(t+1)},
+    v^{(t+1)}) \in A  \right\}$ above are identical. So we only need to
+  prove that the first terms also coincide i.e., we need to show
+  \begin{equation}\label{hmc_tp}
+    \begin{split}
+   &\int_A \min \left(\exp(-H(x, v)), \exp(-H(\Upsilon(x, v)))
+    \right) I\{\Upsilon(x, v) \in B\} dx dv \\ &=  \int_B \min \left(\exp(-H(x, v)), \exp(-H(\Upsilon(x, v)))
+                                                 \right) I\{\Upsilon(x, v) \in A\} dx dv
+   \end{split}                                              
+\end{equation}
+for all $A$ and $B$. For this, let us take the right hand side
+integral and use the change of variable $(y, w) = \Upsilon(x, v)$, or
+equivalently $(x, v) = \Upsilon^{-1}(y, w)$. Because $\Upsilon =
+ST_{\epsilon}^{\text{disc}, N}$ is an involution, we have
+$\Upsilon^{-1} = \Upsilon$. Thus
+\begin{align*}
+&  \int_B \min \left(\exp(-H(x, v)), \exp(-H(\Upsilon(x, v)))
+  \right) I\{\Upsilon(x, v) \in A\} dx dv \\
+&= \int \min \left(\exp(-H(x, v)), \exp(-H(\Upsilon(x, v)))
+  \right) I\{\Upsilon(x, v) \in A, (x, v) \in B\} dx dv \\
+&= \int \min \left(\exp(-H(y, w)), \exp(-H(\Upsilon(y, w)))
+  \right) I\{\Upsilon(y, w) \in A, (y, w) \in B\} dy dw |\det J
+  \Upsilon(y, w)|. 
+\end{align*}
+Because $\Upsilon$ is volume-preserving (we proved, in the last
+lecture, that leapfrog discretization preserves volumes), the
+determinant term above equals one. We thus have
+\begin{align*}
+&  \int_B \min \left(\exp(-H(x, v)), \exp(-H(\Upsilon(x, v)))
+  \right) I\{\Upsilon(x, v) \in A\} dx dv \\
+&= \int \min \left(\exp(-H(y, w)), \exp(-H(\Upsilon(y, w)))
+  \right) I\{\Upsilon(y, w) \in A, (y, w) \in B\} dy dw  
+\end{align*}
+Similarly, one can also prove that the left hand side of
+\eqref{hmc_tp} also equals the above. This completes the proof of
+\eqref{hmc_tp} establishing detailed balance of the HMC markov chain.
+
+For more details behind HMC, the paper \citet{neal2011mcmc} is highly
+recommended. 
+
+\begin{thebibliography}{99}
+
+  \bibitem[Neal(2011)]{neal2011mcmc}
+Radford M. Neal.
+\newblock MCMC using Hamiltonian dynamics.
+\newblock In \emph{Handbook of Markov Chain Monte Carlo}, pages 47--95.
+\newblock Chapman and Hall/CRC, 2011.
+
+%\bibitem[Girolami and Calderhead(2011)]{girolami2011riemann}
+%Mark Girolami and Ben Calderhead.
+%\newblock Riemann manifold Langevin and Hamiltonian Monte Carlo methods.
+%\newblock \emph{Journal of the Royal Statistical Society: Series B (Statistical Methodology)}, 73(2):123--214, 2011.
+
+%  \bibitem[Lai et~al.(2025)Lai, Song, Kim, Mitsufuji, and Ermon]{lai2025principles}
+%Lai, C.-H., Song, Y., Kim, D., Mitsufuji, Y., and Ermon, S. (2025).
+%\newblock The principles of diffusion models.
+%\newblock \emph{arXiv preprint arXiv:2510.21890}.
+
+%\bibitem[Glatt-Holtz et~al.(2024)]{glatt2024sacred}
+%Nathan E. Glatt-Holtz, Andrew J. Holbrook, Justin A. Krometis, Cecilia F. Mondaini, and Ami Sheth.
+%\newblock Sacred and Profane: from the Involutive Theory of MCMC to Helpful Hamiltonian Hacks.
+%\newblock \emph{arXiv preprint arXiv:2410.17398}, 2024.
+
+%\bibitem[Roberts and Rosenthal(2004)]{RobertsRosenthal2004}
+%Roberts, G. O. and Rosenthal, J. S. (2004).
+%General state space Markov chains and MCMC algorithms.
+%\textit{Probability Surveys}, \textbf{1}, 20--71.
+
+%\bibitem[Meyn and Tweedie(2009)]{MeynTweedie2009}
+%Meyn, S. P. and Tweedie, R. L. (2009).
+%\textit{Markov Chains and Stochastic Stability}, 2nd ed.
+%Cambridge University Press.
+
+
+  
+%\bibitem[Chib and Greenberg(1995)]{chib1995}
+%Chib, S. and Greenberg, E. (1995).
+%Understanding the Metropolis--Hastings algorithm.
+%\textit{The American Statistician}, \textbf{49}, 327--335.
+
+
+%\bibitem[MacKay and Peto(1995)]{MacKay1995HierarchicalDirichlet}
+%D.~J.~C. MacKay and L.~C. Peto,
+%\newblock ``A hierarchical Dirichlet language model,''
+%\newblock \emph{Natural Language Engineering}, vol.~1,
+%no.~3, pp.~289--308, 1995.
+
+%\bibitem[Rubin(1981)]{Rubin1981BayesianBootstrap}
+%D.~B. Rubin,
+%\newblock ``The Bayesian bootstrap,''
+%\newblock \emph{The Annals of Statistics}, vol.~9,
+%no.~1, pp.~130--134, 1981.
+  
+%\bibitem[Fisher(1934)]{Fisher1934}
+%R.~A. Fisher,
+%\newblock ``Probability, likelihood and quantity of information in the logic of
+%uncertain inference,''
+%\newblock \emph{Proceedings of the Royal Society of London. Series~A,
+%Containing Papers of a Mathematical and Physical Character}, vol.~146,
+%no.~856, pp.~1--8, 1934.
+
+%\bibitem[Efron(2010)]{Efron}
+%Efron, B. (2010)
+%\textit{Large-scale inference: empirical Bayes methods for estimation,
+%testing, and prediction}. Cambridge University Press, 2010.
+
+%\bibitem[Shumway and Stoffer(2017)]{ShumwayStoffer}
+%Shumway, R. H. and Stoffer, D. S. (2017)
+%\textit{Time Series Analysis and Its Applications: With R
+%  Examples}. Springer, 4th edition. 
+  
+%     \bibitem[Jaynes(2003)]{Jaynes} Jaynes, E. T, (2003)
+%  \textit{Probability theory: the logic of science}. Cambridge
+%  University Press, 2003.
+ 
+%  \bibitem[Sinai(1992)]{Sinai} Sinai, Y. G, (1992)
+%  \textit{Probability theory: an introductory course}. Springer
+%  Verlag, 1992.  
+
+%\bibitem[{deGroot(1986)}]{DeGrootBlackwell}DeGroot, M. H. (1986)
+%       A conversation with David Blackwell.
+%\newblock \emph{Statistical Science}, \textbf{1}, 40--53.
+
+%         \bibitem[Mosteller(1987)]{Mosteller} Mosteller, F, (1987)
+%  \textit{Fifty challenging problems in probability with
+%    solutions}. Courier Corporation, 1987.
+
+%    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+%  \textit{Information theory, inference, and learning
+%  algorithms}. Cambridge University Press, 2003.
+
+%\bibitem[{Lindley(2013)}]{Lindley}Lindley, D. V. (2013)
+%   \textit{Understanding Uncertainty}. John Wiley and sons, 2013.
+
+
+\end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
