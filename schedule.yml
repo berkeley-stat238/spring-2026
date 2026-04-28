@@ -558,6 +558,8 @@
           id: "35"
           name: "LectureThirtyFive238Spring2026.pdf"
           href: "./LectureThirtyFive238Spring2026.pdf"
+- week: 14
+  days:
     - date: "Apr 27"
       items:
         - type: "Lecture"
