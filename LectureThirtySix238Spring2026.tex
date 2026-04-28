@@ -1,0 +1,445 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry}
+\usepackage{graphicx}
+
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\Qcal}{{\mathcal{Q}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+\newcommand{\relu}{{\text{ReLU}}}
+
+\newcommand{\ridge}{{\hat{\beta}_{\text{ridge}}(\lambda)}}
+\newcommand{\lasso}{{\hat{\beta}_{\text{lasso}}(\lambda)}}
+\newcommand{\ridgemu}{{\hat{\mu}_t^{\text{ridge}}(\lambda)}}
+\newcommand{\lassomu}{{\hat{\mu}_t^{\text{lasso}}(\lambda)}}
+
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Thirty Six} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{27 April 2026}
+
+\maketitle
+
+\section{Variational Inference}
+
+Variational Inference is a method for approximating a posterior
+distribution by a simpler tractable family of distributions. It uses
+optimization to select a distribution $q$ that is closest to the true
+posterior in some metric. In practice, variational inference can be
+much faster than MCMC, though sometimes less accurate in representing
+posterior uncertainty.
+
+The basic idea behind variational inference is very simple. Consider
+the standard Bayesian setup with data given by $y$ and parameters
+given by $\theta$. The prior is $f_{\theta}(\theta)$ and the
+likelihood is $f_{y \mid \theta}(y)$. The posterior is then:
+\begin{align*}
+  f_{\theta \mid y}(\theta) = \frac{f_{\theta}(\theta) f_{y \mid
+  \theta}(y)}{\int f_{\theta}(\theta) f_{y \mid \theta}(y) d\theta}. 
+\end{align*}
+The denominator is the marginal density $f_{y}(y)$ of $y$. The
+marginal density $f_{y}(y)$is also known as the
+\textbf{Evidence}. Using the marginal density for the denominator, we
+get
+\begin{align*}
+    f_{\theta \mid y}(\theta) = \frac{f_{\theta}(\theta) f_{y \mid
+  \theta}(y)}{f_{y}(y)}. 
+\end{align*}
+The posterior is usually intractable because of the integration
+involved in the computation of the Evidence (denominator). In
+variational inference, one chooses a simpler family of distributions
+$\Qcal$ and then employs optimization techniques to choose a
+distribution in $\Qcal$ that is as close as possible to the 
+posterior $f_{\theta \mid y}(\theta)$. The distance-measure used to
+measure closeness here is most commonly the following Kullback-Leibler
+divergence:
+\begin{align*}
+  KL(q \| f_{\theta \mid y}) = \int q(\theta) \log
+  \frac{q(\theta)}{f_{\theta \mid y}(\theta)} d\theta. 
+\end{align*}
+Recall that the KL divergence between two densities $q$ and $p$ is
+given by $\int q \log (q/p)$. It is always nonnegative and it equals
+zero if and only if $q = p$. It is not symmetric in general (i.e.,
+$KL(q \| p) \neq KL(p \| q)$).
+
+The optimization that we need to solve therefore is:
+\begin{align}\label{viopt}
+  \underset{q \in \Qcal}{\text{argmin}}~ KL(q \| f_{\theta \mid y}). 
+\end{align}
+The choice of this specific KL divergence is mostly for technical
+convenience as it makes the resulting optimization tractable. Observe
+that
+\begin{align}\label{klobj}
+  KL(q \| f_{\theta \mid y}) = \int q(\theta) \log
+                               \frac{q(\theta)}{f_{\theta \mid
+  y}(\theta)} d\theta = \int q(\theta) \log \frac{q(\theta)}{f_{y,
+  \theta}(y, \theta)} 
+    d\theta + \log f_{y}(y). 
+\end{align}
+The second term above (which involves the usually intractable
+$f_y(y)$) does not depend on $q$ so the optimization \eqref{viopt} is
+equivalent to: 
+\begin{align*}
+  \underset{q \in \Qcal}{\text{argmin}}~ \int q(\theta) \log \frac{q(\theta)}{f_{y,
+  \theta}(y, \theta)} 
+    d\theta. 
+\end{align*}
+The above objective function is called the Variational Free Energy, or
+simply, Free Energy $F(q)$:
+\begin{align}\label{fe}
+  F(q) = \int q(\theta) \log \frac{q(\theta)}{f_{y,
+  \theta}(y, \theta)} 
+    d\theta = -\int q(\theta) \log \frac{f_{y, \theta}(y,
+  \theta)}{q(\theta)} d\theta. 
+\end{align}
+So the main goal in Variational Inference is to minimize the Free
+Energy. The negative of the Free Energy is called the Evidence Lower
+Bound (ELBO):
+\begin{align}\label{elbo}
+  \text{ELBO}(q) = -F(q) = \int q(\theta) \log \frac{f_{y, \theta}(y,
+  \theta)}{q(\theta)} d\theta. 
+\end{align}
+So the main goal in Variational Inference can also be said to be the
+maximization of the ELBO. The name ELBO comes from the fact that
+$\text{ELBO}(q)$ always satisfies:
+\begin{align}\label{ev_lb}
+  \text{ELBO}(q) = \int q(\theta) \log \frac{f_{y, \theta}(y,
+  \theta)}{q(\theta)} d\theta \leq \log f_y(y). 
+\end{align}
+This is because of the expression \eqref{klobj} which says that the
+difference between $\log f_{y}(y)$ and $\text{ELBO}(q)$ equals the
+Kullback Leibler divergence $KL(q \| f_{\theta \mid y})$ which is
+nonnegative. Because $f_y(y)$ is called the evidence and
+$\text{ELBO}(q)$ gives a lower bound for the logarithm of the
+evidence, it is given the name Evidence Lower Bound. It is also easy
+to see that if we maximize $\text{ELBO}(q)$ over \textit{all}
+probability densities $q$, then we obtain equality in \eqref{ev_lb}:
+\begin{align}\label{sup_elbo}
+  \sup_q \text{ELBO}(q) = \log f_{y}(y). 
+\end{align}
+The above follows from \eqref{klobj} because
+\begin{align*}
+  \text{ELBO}(q) = \log f_{y}(y) - KL(q \| f_{\theta \mid y}). 
+\end{align*}
+
+Because $f_{y, \theta}(y, \theta) = f_{\theta}(\theta) f_{y \mid
+  \theta}(y)$, the ELBO has the following alternative expression:
+\begin{align}
+  \text{ELBO}(q) &= -F(q) \nonumber \\ &= \int q(\theta) \log \frac{f_{y, \theta}(y,
+  \theta)}{q(\theta)} d\theta \nonumber \\ &= \int q(\theta) \log \frac{f_{y\mid
+                                   \theta}(y)
+                                   f_{\theta}(\theta)}{q(\theta)}
+                                   d\theta \nonumber \\
+  &= \int q(\theta) \log f_{y \mid \theta}(y) d\theta - \int q(\theta)
+    \log \frac{q(\theta)}{f_{\theta}(\theta)} d\theta \nonumber \\
+  &= \int q(\theta) \log f_{y \mid \theta}(y) d\theta - KL(q \|
+    f_{\theta}) \label{elbo_alt}
+\end{align}
+In other words, $\text{ELBO}(q)$ represents the average likelihood
+(with respect to $q$) minus the KL divergence between $q$ and the
+prior.
+
+Usually, the main tasks in Variational Inference are (a) to choose a
+class of distributions $\Qcal$, and (b) to maximize $\text{ELBO}(q)$
+(or, equivalently, to minimize $F(q)$) over $q \in \Qcal$. We will see
+how to do this via some examples.
+
+\section{Bayesian Logistic Regression}
+Consider again the logistic regression setting where we observe data
+$(x_i, y_i), i = 1, \dots, n$ with $x_i \in \R^d$ and $y_i \in \{0,
+1\}$. The likelihood model is:
+\begin{align*}
+  y_i \mid x_i, \beta \sim \text{Bernoulli}\left(\frac{e^{x_i^T
+  \beta}}{1 + e^{x_i^T \beta}} \right)
+\end{align*}
+and we take the improper uniform prior for $\beta$. We then have:
+\begin{align*}
+  f_{y, \beta}(y, \beta) &= \prod_{i=1}^n \left(\frac{e^{x_i^T
+  \beta}}{1 + e^{x_i^T \beta}} \right)^{y_i} \left(1 - \frac{e^{x_i^T
+                           \beta}}{1 + e^{x_i^T \beta}} \right)^{1-y_i} \\
+  &= \prod_{i=1}^n \frac{\exp(y_i x_i^T \beta)}{1 + \exp(x_i^T
+    \beta)} = \exp(\ell(\beta))
+\end{align*}
+where $\ell(\beta)$ is the log-likelihood is
+\begin{align}\label{loglik}
+  \ell(\beta) = \sum_{i=1}^n \left(y_i x_i^T \beta - \log \left(1 +
+  \exp(x_i^T \beta) \right) \right).
+\end{align}
+Note that, because the prior is one, $f_{y, \beta}(y, \beta)$ equals
+the likelihood $f_{y \mid \beta}(y)$. We can thus calculate the ELBO as:
+\begin{align*}
+  \text{ELBO}(q) &= \int q(\beta) \log \frac{f_{y, \beta}(y, \beta)}{q(\beta)} d\beta \\
+  &= \int q(\beta) \ell(\beta) d\beta - \int q(\beta) \log q(\beta) d\beta.
+\end{align*}
+The quantity $-\int q \log q$ is known as the entropy $H(q)$ of
+$q$. We thus have
+\begin{align*}
+  \text{ELBO}(q) = \int q(\beta) \ell(\beta) d\beta - H(q). 
+\end{align*}
+Let us now take $\Qcal$ to be the class of all normal distributions $N(m,
+\Sigma)$ as $m \in \R^p$ and $\Sigma$ varies over the class of all $p
+\times p$ positive definite matrices $\Sigma$. The entropy of the
+multivariate normal distribution (see
+\url{https://en.wikipedia.org/wiki/Multivariate_normal_distribution})
+is:
+\begin{align*}
+  H(N(m, \Sigma)) = \frac{p}{2} \left(1 + \log (2 \pi) \right) +
+  \frac{1}{2} \log |\Sigma|
+\end{align*}
+where $|\Sigma|$ is the determinant of $\Sigma$. We thus have:
+\begin{align*}
+  \text{ELBO}(m, \Sigma) = \E_{\beta \sim N(m, \Sigma)} \ell(\beta) +
+  \frac{1}{2} \log |\Sigma| + \frac{p}{2} \left(1 + \log(2 \pi)
+  \right). 
+\end{align*}
+This can be maximized over $m$ and $\Sigma$ to obtain the posterior
+approximation $N(\hat{m}, \hat{\Sigma})$. Here $m$ can be any vector
+over $\R^p$ but $\Sigma$ is constrained to be positive
+definite. Constrained optimization is usually difficult (for
+gradient-based methods) so we convert this to unconstrained
+optimization by taking
+\begin{align*}
+  \Sigma = L L^T
+\end{align*}
+where $L$ is a $p \times p$ lower-triangular matrix with non-zero
+diagonal entries. We can also, without loss of generality, assume that
+$L$ has strictly positive diagonal entries (given any $L$, we can
+replace it by $L D$ where $D$ is a diagonal matrix with entries $+1$
+if the corresponding entry of $L$ is positive and $-1$
+otherwise). In code, we can represent the diagonal entries of $L$ by
+$\exp(a_1), \dots, \exp(a_p)$. With this parametrization, we have
+\begin{align*}
+|\Sigma| = |L L^T| = |L|^2 = \prod_{j=1}^p L_{jj}^2, 
+\end{align*}
+and thus
+\begin{align*}
+  \text{ELBO}(m, L) = \E_{\beta \sim N(m, L L^T)} \ell(\beta) +
+  \sum_{j=1}^p \log L_{jj} + \frac{p}{2} \left(1 + \log(2 \pi)
+  \right). 
+\end{align*}
+In order to maximize the above function, we need to make the term
+$\E_{\beta \sim N(m, L L^T)} \ell(\beta)$ more explicit. For this, we
+use the \textit{reparametrization} trick (see
+\url{https://en.wikipedia.org/wiki/Reparameterization_trick}) and
+write
+\begin{align*}
+  \beta = m + L z ~~ \text{ where $z \sim N(0, I_p)$}. 
+\end{align*}
+This gives
+\begin{align*}
+  \text{ELBO}(m, L) = \E_{z \sim N(0, I_p)} \ell(m + L z) +
+  \sum_{j=1}^p \log L_{jj} + \frac{p}{2} \left(1 + \log(2 \pi)
+  \right).  
+\end{align*}
+The expectation above can be approximated by Monte Carlo. Specifically
+generate
+\begin{align*}
+  z^{(1)}, \dots, z^{(S)} \overset{\text{i.i.d}}{\sim} N(0, I_p)
+\end{align*}
+and use the approximation:
+\begin{align*}
+  \text{ELBO}(m, L) \approx \frac{1}{S} \sum_{s=1}^S \ell(m + L
+  z^{(s)}) +
+  \sum_{j=1}^p \log L_{jj} + \frac{p}{2} \left(1 + \log(2 \pi)
+  \right).  
+\end{align*}
+This can be maximized using standard gradient-based optimization
+software such as PyTorch. 
+
+
+
+%\begin{thebibliography}{99}
+
+%  \bibitem[Neal(2011)]{neal2011mcmc}
+%Radford M. Neal.
+%\newblock MCMC using Hamiltonian dynamics.
+%\newblock In \emph{Handbook of Markov Chain Monte Carlo}, pages 47--95.
+%\newblock Chapman and Hall/CRC, 2011.
+
+%\bibitem[Girolami and Calderhead(2011)]{girolami2011riemann}
+%Mark Girolami and Ben Calderhead.
+%\newblock Riemann manifold Langevin and Hamiltonian Monte Carlo methods.
+%\newblock \emph{Journal of the Royal Statistical Society: Series B (Statistical Methodology)}, 73(2):123--214, 2011.
+
+%  \bibitem[Lai et~al.(2025)Lai, Song, Kim, Mitsufuji, and Ermon]{lai2025principles}
+%Lai, C.-H., Song, Y., Kim, D., Mitsufuji, Y., and Ermon, S. (2025).
+%\newblock The principles of diffusion models.
+%\newblock \emph{arXiv preprint arXiv:2510.21890}.
+
+%\bibitem[Glatt-Holtz et~al.(2024)]{glatt2024sacred}
+%Nathan E. Glatt-Holtz, Andrew J. Holbrook, Justin A. Krometis, Cecilia F. Mondaini, and Ami Sheth.
+%\newblock Sacred and Profane: from the Involutive Theory of MCMC to Helpful Hamiltonian Hacks.
+%\newblock \emph{arXiv preprint arXiv:2410.17398}, 2024.
+
+%\bibitem[Roberts and Rosenthal(2004)]{RobertsRosenthal2004}
+%Roberts, G. O. and Rosenthal, J. S. (2004).
+%General state space Markov chains and MCMC algorithms.
+%\textit{Probability Surveys}, \textbf{1}, 20--71.
+
+%\bibitem[Meyn and Tweedie(2009)]{MeynTweedie2009}
+%Meyn, S. P. and Tweedie, R. L. (2009).
+%\textit{Markov Chains and Stochastic Stability}, 2nd ed.
+%Cambridge University Press.
+
+
+  
+%\bibitem[Chib and Greenberg(1995)]{chib1995}
+%Chib, S. and Greenberg, E. (1995).
+%Understanding the Metropolis--Hastings algorithm.
+%\textit{The American Statistician}, \textbf{49}, 327--335.
+
+
+%\bibitem[MacKay and Peto(1995)]{MacKay1995HierarchicalDirichlet}
+%D.~J.~C. MacKay and L.~C. Peto,
+%\newblock ``A hierarchical Dirichlet language model,''
+%\newblock \emph{Natural Language Engineering}, vol.~1,
+%no.~3, pp.~289--308, 1995.
+
+%\bibitem[Rubin(1981)]{Rubin1981BayesianBootstrap}
+%D.~B. Rubin,
+%\newblock ``The Bayesian bootstrap,''
+%\newblock \emph{The Annals of Statistics}, vol.~9,
+%no.~1, pp.~130--134, 1981.
+  
+%\bibitem[Fisher(1934)]{Fisher1934}
+%R.~A. Fisher,
+%\newblock ``Probability, likelihood and quantity of information in the logic of
+%uncertain inference,''
+%\newblock \emph{Proceedings of the Royal Society of London. Series~A,
+%Containing Papers of a Mathematical and Physical Character}, vol.~146,
+%no.~856, pp.~1--8, 1934.
+
+%\bibitem[Efron(2010)]{Efron}
+%Efron, B. (2010)
+%\textit{Large-scale inference: empirical Bayes methods for estimation,
+%testing, and prediction}. Cambridge University Press, 2010.
+
+%\bibitem[Shumway and Stoffer(2017)]{ShumwayStoffer}
+%Shumway, R. H. and Stoffer, D. S. (2017)
+%\textit{Time Series Analysis and Its Applications: With R
+%  Examples}. Springer, 4th edition. 
+  
+%     \bibitem[Jaynes(2003)]{Jaynes} Jaynes, E. T, (2003)
+%  \textit{Probability theory: the logic of science}. Cambridge
+%  University Press, 2003.
+ 
+%  \bibitem[Sinai(1992)]{Sinai} Sinai, Y. G, (1992)
+%  \textit{Probability theory: an introductory course}. Springer
+%  Verlag, 1992.  
+
+%\bibitem[{deGroot(1986)}]{DeGrootBlackwell}DeGroot, M. H. (1986)
+%       A conversation with David Blackwell.
+%\newblock \emph{Statistical Science}, \textbf{1}, 40--53.
+
+%         \bibitem[Mosteller(1987)]{Mosteller} Mosteller, F, (1987)
+%  \textit{Fifty challenging problems in probability with
+%    solutions}. Courier Corporation, 1987.
+
+%    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+%  \textit{Information theory, inference, and learning
+%  algorithms}. Cambridge University Press, 2003.
+
+%\bibitem[{Lindley(2013)}]{Lindley}Lindley, D. V. (2013)
+%   \textit{Understanding Uncertainty}. John Wiley and sons, 2013.
+
+
+%\end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
