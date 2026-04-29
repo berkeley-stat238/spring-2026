@@ -171,6 +171,8 @@ project:
          title: "11 Code"
        - file: lab12.ipynb
          title: "12 Code"
+       - file: lab13.ipynb
+         title: "13 Code"
   downloads:
     - file: syllabus.pdf
       title: "Syllabus"
@@ -320,6 +322,8 @@ project:
       title: "Lab 11 Code"
     - file: lab12.ipynb
       title: "Lab 12 Code"
+    - file: lab13.ipynb
+      title: "Lab 13 Code"
 
 site:
   template: book-theme
