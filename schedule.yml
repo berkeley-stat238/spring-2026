@@ -580,3 +580,14 @@
           id: "13 Code"
           name: "Bayesian Neural Networks using HMC"
           href: "./lab13.ipynb"
+    - date: "Apr 29"
+      items:
+        - type: "Lecture"
+          id: "37"
+          name: "EM and Coordinatewise Variational Inference"  
+          href: "./LectureThirtySeven238Spring2026.tex"
+        - type: "PDF"
+          id: "37"
+          name: "LectureThirtySeven238Spring2026.pdf"
+          href: "./LectureThirtySeven238Spring2026.pdf"
+	  

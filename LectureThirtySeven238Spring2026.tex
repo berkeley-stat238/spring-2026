@@ -1,0 +1,478 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry}
+\usepackage{graphicx}
+
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\Qcal}{{\mathcal{Q}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+\newcommand{\relu}{{\text{ReLU}}}
+
+\newcommand{\ridge}{{\hat{\beta}_{\text{ridge}}(\lambda)}}
+\newcommand{\lasso}{{\hat{\beta}_{\text{lasso}}(\lambda)}}
+\newcommand{\ridgemu}{{\hat{\mu}_t^{\text{ridge}}(\lambda)}}
+\newcommand{\lassomu}{{\hat{\mu}_t^{\text{lasso}}(\lambda)}}
+
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Thirty Seven} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{29 April 2026}
+
+\maketitle
+
+\section{Variational Inference}
+We looked at the basics of variational inference in the last lecture. 
+Consider
+the standard Bayesian setup with data given by $y$ and parameters
+given by $\theta$. The prior is $f_{\theta}(\theta)$ and the
+likelihood is $f_{y \mid \theta}(y)$. The posterior is then:
+\begin{align*}
+  f_{\theta \mid y}(\theta) = \frac{f_{\theta}(\theta) f_{y \mid
+  \theta}(y)}{f_y(y)}
+\end{align*}
+where the denominator is the evidence $f_{y}(y) = \int f_{y \mid
+  \theta}(y) f_{\theta}(\theta) d\theta$.
+
+The most important quantity in variational inference is the ELBO
+defined as:
+\begin{align}\label{elbo}
+  \text{ELBO}(q) := \int q(\theta) \log \frac{f_{y, \theta}(y,
+  \theta)}{q(\theta)} d\theta
+\end{align}
+where $q$ is an arbitrary probability density. The key facts about the
+ELBO are:
+\begin{align}\label{elbo_1}
+\text{ELBO}(q) \leq \log f_{y}(y) ~~ \text{ for every } q.  
+\end{align}
+and
+\begin{align}\label{elbo_2}
+\max_{q} \text{ELBO}(q) = \log f_y(y) ~~ \text{  with the maximum
+achieved at } q(\theta) = f_{\theta \mid y}(\theta).  
+\end{align}
+Both these facts are consequences of:
+\begin{align*}
+  \text{ELBO}(q) = \log f_{y}(y) - KL\left(q \| f_{\theta \mid y}
+  \right). 
+\end{align*}
+Another useful fact about the ELBO (which follows directly from the
+definition \eqref{elbo} when $f_{y, \theta}(y, \theta)$ is replaced by
+$f_{y \mid \theta}(y) f_{\theta}(\theta)$) is:
+\begin{align*}
+  \text{ELBO}(q) = \int q(\theta) \log f_{y \mid \theta}(y) d\theta -
+  KL(q \| f_{\theta}). 
+\end{align*}
+
+\section{Connection to the EM Algorithm}
+
+The relation $\max_q \text{ELBO}(q) = \log f_{y}(y)$ (with the maximum
+being achieved at the posterior $q(\theta) = f_{\theta \mid
+  y}(\theta)$) can be used to understand the EM algorithm.
+
+Consider the same Bayesian setting as in the previous section, but
+suppose now that there is an additional hyperparameter $\alpha$, and
+that both the likelihood $f_{y \mid \theta, \alpha}(y)$ as well as the
+prior $f_{\theta \mid \alpha}(\theta)$ depend on $\alpha$.
+
+The ELBO now becomes:
+\begin{align*}
+  \text{ELBO}(q, \alpha) = \int q(\theta) \log \frac{f_{y, \theta \mid
+  \alpha}(y, \theta)}{q(\theta)} d\theta = \int q(\theta) \log
+  \frac{f_{y \mid \theta, \alpha}(y) f_{\theta \mid
+  \alpha}(\theta)}{q(\theta)} d\theta 
+\end{align*}
+and equation \eqref{elbo_2} now becomes:
+\begin{align}\label{elbo_2_alpha}
+  \max_{q} \text{ELBO}(q, \alpha) = \log f_{y\mid \alpha}(y) ~~ \text{  with the maximum
+achieved at } q(\theta) = f_{\theta \mid y, \alpha}(\theta).  
+\end{align}
+Suppose now that we want to obtain the MLE $\hat{\alpha}$ of $\alpha$
+i.e., we want to solve the optimization: 
+\begin{align*}
+\underset{\alpha}{\text{Maximize}}~ \log f_{y \mid \alpha}(y). 
+\end{align*}
+Using \eqref{elbo_2_alpha}, we can rewrite the optimization above as:
+\begin{align*}
+  \underset{\alpha}{\text{Maximize}}~ \max_{q} \text{ELBO}(q, \alpha), 
+\end{align*}
+which can be viewed as the two parameter maximization problem:
+\begin{align*}
+  \underset{q, \alpha}{\text{Maximize}} ~ \text{ELBO}(q, \alpha). 
+\end{align*}
+It is natural to solve this two-parameter optimization
+alternatively. Fix $\alpha$ and optimize over $q$, and then fix $q$
+and optimize over $\alpha$. This leads to the following algorithm.
+\begin{enumerate}
+\item Initialize $\alpha = \alpha^{(0)}$.
+\item Repeat the following for $t = 0, 1, 2, \dots$ (until some  kind
+  of convergence): 
+  \begin{enumerate}
+  \item Take $q^{(t)}$ to be the maximizer of $\text{ELBO}(q, \alpha^{(t)})$
+    over all $q$ (for fixed $\alpha^{(t)}$)
+  \item Take $\alpha^{(t+1)}$ to be the maximizer of $\text{ELBO}(q^{(t)},
+    \alpha)$ over all $\alpha$. 
+  \end{enumerate}
+\end{enumerate}
+By \eqref{elbo_2_alpha}, it is clear that $q^{(t)}$ which maximizes
+$\text{ELBO}(q, \alpha^{(t)})$ is simply equal to:
+\begin{equation*}
+  q^{(t)} = f_{\theta \mid y, \alpha^{(t)}}. 
+\end{equation*}
+Thus the alternating minimization algorithm above is equivalent to:
+\begin{enumerate}
+\item Initialize $\alpha = \alpha^{(0)}$.
+\item Repeat the following for $t = 0, 1, 2, \dots$ (until some  kind
+  of convergence): 
+  \begin{enumerate}
+  \item Take $\alpha^{(t+1)}$ to be the maximizer of
+    $\text{ELBO}(f_{\theta, \mid y, \alpha^{(t)}}, 
+    \alpha)$ over all $\alpha$. 
+  \end{enumerate}
+\end{enumerate}
+The quantity $\text{ELBO}(f_{\theta, \mid y, \alpha^{(t)}},
+\alpha)$ equals:
+\begin{align*}
+  \text{ELBO}(f_{\theta, \mid y, \alpha^{(t)}},
+\alpha) &= \int f_{\theta \mid y, \alpha^{(t)}}(\theta) \log
+          \frac{f_{y, \theta \mid \alpha}(y, \theta)}{f_{\theta \mid
+          y, \alpha^{(t)}}(\theta)} d\theta  \\
+  &= \int f_{\theta \mid y, \alpha^{(t)}}(\theta) \log f_{y, \theta
+    \mid \alpha}(\theta) d\theta - \int f_{\theta \mid y,
+    \alpha^{(t)}}(\theta) \log f_{\theta \mid y, \alpha^{(t)}}(\theta)
+    d\theta. 
+\end{align*}
+The second term actually does not depend on $\alpha$, so maximizing
+$\text{ELBO}(f_{\theta, \mid y, \alpha^{(t)}}, \alpha)$  over $\alpha$
+is equivalent to maximizing the first term above:
+\begin{align}\label{Et}
+  E(t, \alpha) := \int f_{\theta \mid y, \alpha^{(t)}}(\theta) \log f_{y, \theta
+    \mid \alpha}(\theta) d\theta. 
+\end{align}
+The alternating maximization algorithm above then becomes:
+\begin{enumerate}
+\item Initialize $\alpha = \alpha^{(0)}$.
+\item Repeat the following for $t = 0, 1, 2, \dots$ (until some  kind
+  of convergence): 
+  \begin{enumerate}
+  \item Calculate $E(t, \alpha)$ given in \eqref{Et}
+  \item Take $\alpha^{(t+1)}$ to be the maximizer of
+    $E(t, \alpha)$ over all $\alpha$. 
+  \end{enumerate}
+\end{enumerate}
+This is the EM algorithm. The calculation of $E(t, \alpha)$ is called
+the $E$-step and the maximization of $E(t, \alpha)$ over $\alpha$ is
+called the $M$-step. For more on this connection between Variational
+Inference (VI) and EM,
+see \citet{neal1998view}. 
+
+\section{Coordinatewise Variational Inference}
+
+The key problem that we need to solve in VI is that of maximizing
+$\text{ELBO}(q)$. The full maximizer of $\text{ELBO}(q)$ over $q$is, 
+as already mentioned, $f_{\theta \mid y}$. But this posterior
+is intractable in general and the very reason for using variational
+inerference is this intractability. The strategy is to restrict the class
+of $q$ over which we look for minimizers. This hopefully will lead to
+a \textit{tractable} minimizer which is close to the actual posterior
+$f_{\theta \mid y}$.
+
+Suppose $\theta$ can be decomposed into $k$ separate classes of
+parameters as $\theta = (\theta_1, \dots, \theta_k)$. We look for
+variational approximations of the form $q(\theta) = q_1(\theta_1)
+\dots q_k(\theta_k)$. The ELBO maximization problem is:
+\begin{equation}\label{kfe}
+  \underset{q_1, \dots, q_k}{\text{maximize}}~ \text{ELBO}(q_1, \dots,
+  q_k) = \int \dots \int 
+  q_1(\theta_1) \dots q_k(\theta_k) \log \frac{f_{y, \theta}(y, \theta)}{q_1(\theta_1) \dots
+    q_k(\theta_k)} d\theta.    
+\end{equation}
+Alternating minimization leads to the following result. 
+
+\begin{proposition}[CAVI]\label{cavi}
+  Consider the maximization problem \eqref{kfe}. Fix $j = 1,
+  \dots, k$ and fix $q_i, i \neq j$. Then the minimizing density $q_j
+  = q_j^*$ is given by
+  \begin{equation}
+    \label{cavi_j}
+    q_j^*(\theta_j) \propto \exp \left[\int q_{-j}(\theta_{-j}) \log
+      f_{\theta_j \mid y, \theta_{-j}, \alpha}(\theta_j) d\theta_{-j}
+    \right]. 
+  \end{equation}
+  where $q_{-j}(\theta_j)$ denotes the product of $q_{l}(\theta_l)$
+  over all $l \neq j$ and $d\theta_j$ is the product of $d\theta_l$
+  over all $l \neq j$. 
+\end{proposition}
+The above result is a consequence of the following simple fact.
+
+\begin{lemma}\label{klfacts}
+  \begin{enumerate}
+  \item Suppose $g$ is a nonnegative function that is not necessarily
+    a density function. Then the minimizer of 
+    \begin{equation*}
+ L(f) := \int f \log \frac{f}{g}
+\end{equation*}
+over all densities $f$ is given  by
+\begin{equation}\label{klfact1}
+  f^*(x) \propto g(x) 
+\end{equation}
+which of course means that $f^* = g/(\int g)$. 
+  \item Suppose $f_2(\cdot)$ below is a fixed probability density
+    function, and $g(x_1, x_2)$ is a fixed nonnegative function that
+    is not 
+    necessarily a density. Then the minimizer of 
+    \begin{equation*}
+\Gamma(f_1) := \int \int f_1(x_1) f_2(x_2) \log
+\frac{f_1(x_1)f_2(x_2)}{g(x_1, x_2)} dx_1 dx_2 
+    \end{equation*}
+    over all densities $f_1$ is given by
+    \begin{equation}\label{klfact2}
+      f_1^*(x_1) \propto \exp \left( \int f_2(x_2) \log g(x_1, x_2)
+        dx_2 
+      \right). 
+    \end{equation}
+  \end{enumerate}
+\end{lemma}
+
+\begin{proof}[Proof of Lemma \ref{klfacts}]
+  The first fact is easy because we can write
+  \begin{align*}
+    L(f) &= \int f \log \frac{f}{g} \\ &= \int f \log \frac{f}{(\int
+      g)^{-1} g} - \log (\int g) \int f \\ &= \int f \log \frac{f}{(\int
+      g)^{-1} g} - \log \int g = KL(f \| (\int g)^{-1} g) - \log \int
+                                         g, 
+  \end{align*}
+  so it is clear that the minimizing $f$ equals $(\int g)^{-1} g$.
+
+  For the second fact, write
+  \begin{align*}
+    \Gamma(f_1) &= \int \int f_1(x_1) f_2(x_2) \log
+                  \frac{f_1(x_1)f_2(x_2)}{g(x_1, x_2)} dx_1 dx_2  \\
+    &= \int \int f_1(x_1) f_2(x_2) \left[\log
+      \frac{f_1(x_1)}{g(x_1, x_2)} + \log f_2(x_2) \right] dx_1 dx_2 \\
+    &= \int \int f_1(x_1) f_2(x_2) \log
+      \frac{f_1(x_1)}{g(x_1, x_2)} + \int f_2(x_2) \log f_2(x_2)
+      dx_2. 
+  \end{align*}
+  We can ignore the second term as it does not depend on $f_1$. So
+  minimizing $\Gamma(f_1)$ is the same as minimizing the first term: 
+  \begin{align*}
+    &  \int \int f_1(x_1) f_2(x_2) \log \frac{f_1(x_1)}{g(x_1, x_2)}
+      dx_1 d_2 \\
+    &= \int f_1(x_1) \int f_2(x_2) \left[\log f_1(x_1) - \log g(x_1,
+      x_2) \right] dx_2 dx_1 \\
+    &= \int f_1(x_1) \left[\log f_1(x_1) - \int f(x_2) \log g(x_1,
+      x_2) dx_2 \right] dx_1 \\
+    &= \int f_1(x_1) \log \frac{f_1(x_1)}{\exp \left[\int f(x_2) \log
+      g(x_1, x_2) dx_2 \right]} dx_1. 
+  \end{align*}
+  We can thus use the first fact with $g(x_1) = \exp \left[ \int f(x_2) \log
+      g(x_1, x_2) dx_2\right]$ to claim that the minimizer $f_1^*$ of
+    $\Gamma(f_1)$ satisfies \eqref{klfact2}. 
+\end{proof}
+
+
+
+
+
+
+
+\begin{thebibliography}{99}
+
+\bibitem[Neal and Hinton(1998)]{neal1998view}
+Neal, R.~M. and Hinton, G.~E. (1998).
+\newblock A view of the EM algorithm that justifies incremental, sparse, and other variants.
+\newblock In M.~I. Jordan (ed.), \emph{Learning in Graphical Models},
+pages 355--368. Springer Netherlands.  
+
+%  \bibitem[Neal(2011)]{neal2011mcmc}
+%Radford M. Neal.
+%\newblock MCMC using Hamiltonian dynamics.
+%\newblock In \emph{Handbook of Markov Chain Monte Carlo}, pages 47--95.
+%\newblock Chapman and Hall/CRC, 2011.
+
+%\bibitem[Girolami and Calderhead(2011)]{girolami2011riemann}
+%Mark Girolami and Ben Calderhead.
+%\newblock Riemann manifold Langevin and Hamiltonian Monte Carlo methods.
+%\newblock \emph{Journal of the Royal Statistical Society: Series B (Statistical Methodology)}, 73(2):123--214, 2011.
+
+%  \bibitem[Lai et~al.(2025)Lai, Song, Kim, Mitsufuji, and Ermon]{lai2025principles}
+%Lai, C.-H., Song, Y., Kim, D., Mitsufuji, Y., and Ermon, S. (2025).
+%\newblock The principles of diffusion models.
+%\newblock \emph{arXiv preprint arXiv:2510.21890}.
+
+%\bibitem[Glatt-Holtz et~al.(2024)]{glatt2024sacred}
+%Nathan E. Glatt-Holtz, Andrew J. Holbrook, Justin A. Krometis, Cecilia F. Mondaini, and Ami Sheth.
+%\newblock Sacred and Profane: from the Involutive Theory of MCMC to Helpful Hamiltonian Hacks.
+%\newblock \emph{arXiv preprint arXiv:2410.17398}, 2024.
+
+%\bibitem[Roberts and Rosenthal(2004)]{RobertsRosenthal2004}
+%Roberts, G. O. and Rosenthal, J. S. (2004).
+%General state space Markov chains and MCMC algorithms.
+%\textit{Probability Surveys}, \textbf{1}, 20--71.
+
+%\bibitem[Meyn and Tweedie(2009)]{MeynTweedie2009}
+%Meyn, S. P. and Tweedie, R. L. (2009).
+%\textit{Markov Chains and Stochastic Stability}, 2nd ed.
+%Cambridge University Press.
+
+
+  
+%\bibitem[Chib and Greenberg(1995)]{chib1995}
+%Chib, S. and Greenberg, E. (1995).
+%Understanding the Metropolis--Hastings algorithm.
+%\textit{The American Statistician}, \textbf{49}, 327--335.
+
+
+%\bibitem[MacKay and Peto(1995)]{MacKay1995HierarchicalDirichlet}
+%D.~J.~C. MacKay and L.~C. Peto,
+%\newblock ``A hierarchical Dirichlet language model,''
+%\newblock \emph{Natural Language Engineering}, vol.~1,
+%no.~3, pp.~289--308, 1995.
+
+%\bibitem[Rubin(1981)]{Rubin1981BayesianBootstrap}
+%D.~B. Rubin,
+%\newblock ``The Bayesian bootstrap,''
+%\newblock \emph{The Annals of Statistics}, vol.~9,
+%no.~1, pp.~130--134, 1981.
+  
+%\bibitem[Fisher(1934)]{Fisher1934}
+%R.~A. Fisher,
+%\newblock ``Probability, likelihood and quantity of information in the logic of
+%uncertain inference,''
+%\newblock \emph{Proceedings of the Royal Society of London. Series~A,
+%Containing Papers of a Mathematical and Physical Character}, vol.~146,
+%no.~856, pp.~1--8, 1934.
+
+%\bibitem[Efron(2010)]{Efron}
+%Efron, B. (2010)
+%\textit{Large-scale inference: empirical Bayes methods for estimation,
+%testing, and prediction}. Cambridge University Press, 2010.
+
+%\bibitem[Shumway and Stoffer(2017)]{ShumwayStoffer}
+%Shumway, R. H. and Stoffer, D. S. (2017)
+%\textit{Time Series Analysis and Its Applications: With R
+%  Examples}. Springer, 4th edition. 
+  
+%     \bibitem[Jaynes(2003)]{Jaynes} Jaynes, E. T, (2003)
+%  \textit{Probability theory: the logic of science}. Cambridge
+%  University Press, 2003.
+ 
+%  \bibitem[Sinai(1992)]{Sinai} Sinai, Y. G, (1992)
+%  \textit{Probability theory: an introductory course}. Springer
+%  Verlag, 1992.  
+
+%\bibitem[{deGroot(1986)}]{DeGrootBlackwell}DeGroot, M. H. (1986)
+%       A conversation with David Blackwell.
+%\newblock \emph{Statistical Science}, \textbf{1}, 40--53.
+
+%         \bibitem[Mosteller(1987)]{Mosteller} Mosteller, F, (1987)
+%  \textit{Fifty challenging problems in probability with
+%    solutions}. Courier Corporation, 1987.
+
+%    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+%  \textit{Information theory, inference, and learning
+%  algorithms}. Cambridge University Press, 2003.
+
+%\bibitem[{Lindley(2013)}]{Lindley}Lindley, D. V. (2013)
+%   \textit{Understanding Uncertainty}. John Wiley and sons, 2013.
+
+
+\end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
