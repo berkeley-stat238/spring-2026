@@ -280,14 +280,22 @@ Alternating minimization leads to the following result.
   \begin{equation}
     \label{cavi_j}
     q_j^*(\theta_j) \propto \exp \left[\int q_{-j}(\theta_{-j}) \log
-      f_{\theta_j \mid y, \theta_{-j}, \alpha}(\theta_j) d\theta_{-j}
+      f_{\theta_j \mid y, \theta_{-j}}(\theta_j) d\theta_{-j}
     \right]. 
   \end{equation}
   where $q_{-j}(\theta_j)$ denotes the product of $q_{l}(\theta_l)$
   over all $l \neq j$ and $d\theta_j$ is the product of $d\theta_l$
   over all $l \neq j$. 
 \end{proposition}
-The above result is a consequence of the following simple fact.
+The CAVI update equation \eqref{cavi_j} is equivalent to the following:
+\begin{align}\label{cavi_log}
+  \log q_j^*(\theta_j) = \text{constant} + \E_{\theta_{-j}} \log f_{y,
+  \theta_1, \dots, \theta_k}(y, \theta_1, \dots, \theta_k)
+\end{align}
+where the expectation is taken with respect to $\theta_{-j} \sim
+q_{-j}$. 
+
+Proposition \ref{cavi} is a consequence of the following simple fact.
 
 \begin{lemma}\label{klfacts}
   \begin{enumerate}
@@ -355,10 +363,134 @@ which of course means that $f^* = g/(\int g)$.
     $\Gamma(f_1)$ satisfies \eqref{klfact2}. 
 \end{proof}
 
+\section{Simple CAVI Example}
 
+As a simple illustration of how CAVI works, let us consider the
+problem of estimating $\mu, \sigma$ from observations $y_1,
+\dots, y_n$ that are i.i.d $N(\mu, \sigma^2)$. As usual, we use the
+prior
+\begin{align*}
+  \mu, \log \sigma \overset{\text{i.i.d}}{\sim}
+  \text{uniform}(-\infty, \infty). 
+\end{align*}
+In other words, the prior is $f_{\mu, \sigma^2}(\mu,
+\sigma^2)=\frac{1}{\sigma^2}$ (note that we are treating $\sigma^2$
+and not $\sigma$ as the parameter).
 
+The joint density of the data $y = (y_1, \dots, y_n)$ and the parameter
+$\theta = (\mu, \sigma^2)$ is given by:
+\begin{align*}
+  f_{y, \theta}(y, \theta) = \left(\prod_{i=1}^n \frac{1}{\sqrt{2 \pi}
+  \sigma} \exp \left(-\frac{(y_i - \mu)^2}{2 \sigma^2} \right) \right)
+  \frac{1}{\sigma^2} 
+\end{align*}
+so that
+\begin{align*}
+  \log f_{y, \theta}(y, \theta) &= -\sum_{i=1}^n \frac{(y_i - \mu)^2}{2
+  \sigma^2} - \left(\frac{n}{2} + 1 \right) \log \sigma^2 +
+                                  \text{constant} \\
+  &= -\frac{n}{2 \sigma^2} (\bar{y} - \mu)^2 - \frac{1}{2 \sigma^2}
+    \sum_{i=1}^n (y_i - \bar{y})^2 - \left(\frac{n}{2} + 1 \right)
+    \log \sigma^2 +  \text{constant}. 
+\end{align*}
+CAVI approximates the posterior of $\theta = (\mu, \sigma^2)$ by a
+product distribution $q_{\mu}(\mu) q_{\sigma^2}(\sigma^2)$. Below we
+figure out how to update $q_{\mu}$ given $q_{\sigma^2}$ and also
+$q_{\sigma^2}$ given $q_{\mu}$.
 
-
+By \eqref{cavi_log}, given $q_{\sigma^2}$, we get
+\begin{align*}
+  \log q^*_{\mu}(\mu) = -\frac{n}{2} (\bar{y} - \mu)^2 \E_{q_{\sigma^2}}
+  \left(\frac{1}{\sigma^2} \right) + \text{constant}, 
+\end{align*}
+which means that $q^*_{\mu}$ is the density of the normal
+distribution: 
+with mean $\mu$ and variance
+\begin{align}\label{qstar_mu}
+q^*_{\mu} = \text{ density of } N\left(\bar{y},  \frac{1}{n
+  \E_{q_{\sigma^2}}(1/\sigma^2)} \right). 
+\end{align}
+To get $q^*_{\sigma^2}(\sigma^2)$ for fixed $q_{\mu}$, we again use
+\eqref{cavi_log} to get
+\begin{align*}
+  \log q^*_{\sigma^2}(\sigma^2) = -\frac{1}{2 \sigma^2} \left(n \E_{q_{\mu}}
+  (\bar{y} - \mu)^2 + \sum_{i=1}^n (y_i - \bar{y})^2 \right) -
+  \left(\frac{n}{2} + 1 \right) \log \sigma^2 + \text{constant}. 
+\end{align*}
+This has the form of the Inverse Gamma density $IG(a,
+b)$ given by:
+\begin{align*}
+  -\frac{b}{\sigma^2} - (a + 1) \log \sigma^2. 
+\end{align*}
+Comparing terms, we get
+\begin{align}\label{qstar_sigsq}
+  q^*_{\sigma^2} = \text{ density of } IG \left(\frac{n}{2}, \frac{n}{2}
+  \E_{q_{\mu}} (\bar{y} - \mu)^2 + \frac{1}{2} \sum_{i=1}^n (y_i - \bar{y})^2
+  \right). 
+\end{align}
+\eqref{qstar_mu} and \eqref{qstar_sigsq} give the following CAVI
+algorithm:
+\begin{enumerate}
+\item Initialize with some density $q^{(0)}_{\sigma^2}$ of
+  $\sigma^2$. Suppose $s_0 := \left(n
+    \E_{q^{(0)}_{\sigma^2}}(1/\sigma^2) \right)^{-1}$.
+\item Repeat the following for $k = 0, 1, 2, \dots$:
+  \begin{enumerate}
+  \item Take $q_{\mu}^{(k+1)}$ to be the density of $N(\bar{y},
+    s_k^2)$.
+  \item Take $q_{\sigma^2}^{(k+1)}$ to be the density of
+    \begin{align*}
+      IG \left(\frac{n}{2}, \frac{n}{2}\E_{q^{(k+1)}_{\mu}} (\bar{y} -
+      \mu)^2 + \frac{1}{2} \sum_{i=1}^n (y_i - \bar{y})^2 \right) =
+      IG \left(\frac{n}{2}, \frac{n}{2}s_k^2 + \frac{1}{2}
+      \sum_{i=1}^n (y_i - \bar{y})^2 \right)  
+    \end{align*}
+  \item Take $s_{k+1}^2 = \left(n \E_{q_{\sigma^2}^{(k+1)}}
+      (1/\sigma^2) \right)^{-1}$ which leads to (using the fact
+    $\E \sigma^{-2} = a/b$ when $\sigma^2 \sim IG(a, b)$) 
+    \begin{align}\label{key_iter}
+      s_{k+1}^2 = \frac{s_k^2}{n} + \frac{1}{n^2} \sum_{i=1}^n (y_i -
+      \bar{y})^2. 
+    \end{align}
+  \end{enumerate}
+\end{enumerate}
+The limit of the iteration for $\{s_k^2\}$ in
+\eqref{key_iter} can be computed in closed form. Indeed if $s^2 =
+\lim_{k \rightarrow \infty} s_k^2$, then \eqref{key_iter} gives
+\begin{align*}
+  s^2 = \frac{s^2}{n} + \frac{1}{n^2} \sum_{i=1}^n (y_i -
+      \bar{y})^2 \implies s^2 = \frac{1}{n(n-1)} \sum_{i=1}^n (y_i -
+      \bar{y})^2. 
+\end{align*}
+Thus the VI solution $q^*_{\mu}(\mu) q^*_{\sigma^2}(\sigma^2)$ is
+given by: 
+\begin{align}\label{vi_mu}
+  q_{\mu}^* = \text{ density of } N \left(\bar{y}, \frac{1}{n(n-1)}
+  \sum_{i=1}^n (y_i - \bar{y})^2 \right)
+\end{align}
+and
+\begin{align}
+  q_{\sigma^2}^* &= \text{ density of } IG\left(\frac{n}{2},
+  \frac{1}{2(n-1)} \sum_{i=1}^n (y_i - \bar{y})^2 + \frac{1}{2}
+  \sum_{i=1}^n (y_i - \bar{y})^2 \right) \nonumber \\
+  &= \text{ density of } IG\left(\frac{n}{2},
+  \frac{n}{2(n-1)} \sum_{i=1}^n (y_i - \bar{y})^2 \right) \label{vi_sig}
+\end{align}
+We can compare these VI marginals to those of the exact posterior
+which we know is given by:
+\begin{align*}
+  \mu \mid \text{data} \sim t_{n-1} \left(\bar{y}, \frac{1}{n(n-1)}
+  \sum_{i=1}^n (y_i - \bar{y})^2 \right) ~~ \text{ and } ~~ \sigma^2
+  \mid \text{data} \sim IG \left(\frac{n-1}{2}, \frac{1}{2}
+  \sum_{i=1}^n (y_i - \bar{y})^2 \right). 
+\end{align*}
+Comparing the above to \eqref{vi_mu}, we see that the VI marginal
+posterior has a narrower normal density instead of
+$t_{n-1}$. Comparing the above to \eqref{vi_sig}, we see that the
+parameters of the IG distribution are changed slightly (the changes
+are negligible for large $n$). Note also that $\mu$ and $\sigma^2$ are
+independent in the actual posterior but this VI analysis assumes
+they are independent. 
 
 
 \begin{thebibliography}{99}

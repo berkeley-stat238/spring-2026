@@ -1,0 +1,485 @@
+%\documentclass[12pt,oneside]{amsart}
+\documentclass{scrartcl}
+
+%\documentclass{article}
+
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[numbers]{natbib}
+
+%\usepackage[colorlinks]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,%
+    citecolor=black,%
+    filecolor=black,%
+    linkcolor=black,%
+    urlcolor=black
+}
+\usepackage{hypernat}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm,
+right=2.8cm]{geometry}
+\usepackage{graphicx}
+
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\headsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\topsep}{0pt}
+%\setlength{\partopsep}{0pt}
+
+\linespread{1}
+
+%\usepackage{marvosym}
+
+%\textwidth = 6.5 in \textheight = 9.2 in \oddsidemargin = 0.0 in
+%\evensidemargin = 0.0 in \topmargin = -0.0 in \headheight = 0.0 in
+%\headsep = 0.0in \parskip = 0.0in \parindent = 0.0in
+%\def\baselinestretch{0.871}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\E}{{\mathbb E}}
+\newcommand{\se}{{\mathcal{E}}}
+\newcommand{\R}{{\mathbb R}}
+\renewcommand{\P}{{\mathbb P}}
+\newcommand{\ac}{{\mathcal{A}}}
+\newcommand{\A}{{\mathcal{A}}}
+\newcommand{\B}{{\mathcal{B}}}
+\newcommand{\C}{{\mathcal{C}}}
+\newcommand{\M}{{\mathcal{M}}}
+\newcommand{\Mf}{{\mathfrak{M}}}
+\newcommand{\Qcal}{{\mathcal{Q}}}
+\newcommand{\T}{{\mathcal{T}}}
+\newcommand{\Z}{{\mathcal{Z}}}
+\newcommand{\K}{{\mathcal{K}}}
+\newcommand{\lc}{{\mathcal{L}}}
+\newcommand{\Ps}{{\mathcal{P}}}
+\newcommand{\G}{{\mathcal{G}}}
+\newcommand{\pa}{{\mathring{p}}}
+\newcommand{\F}{{\cal F}}
+\newcommand{\samp}{{\mathcal{X}}}
+\newcommand{\X}{{\mathcal{X}}}
+\newcommand{\hi}{{\hat{\Phi}}}
+\newcommand{\data}{{\text{data}}}
+\newcommand{\relu}{{\text{ReLU}}}
+
+\newcommand{\ridge}{{\hat{\beta}_{\text{ridge}}(\lambda)}}
+\newcommand{\lasso}{{\hat{\beta}_{\text{lasso}}(\lambda)}}
+\newcommand{\ridgemu}{{\hat{\mu}_t^{\text{ridge}}(\lambda)}}
+\newcommand{\lassomu}{{\hat{\mu}_t^{\text{lasso}}(\lambda)}}
+
+
+\newcounter{rcnt}[section]
+\renewcommand{\thercnt}{(\roman{rcnt})}
+
+\def\qt#1{\qquad\text{#1}}
+
+\def\argmin{\mathop{\rm argmin}}
+\def\argmax{\mathop{\rm argmax}}
+
+
+\setlength{\parskip}{1.4 \medskipamount}
+%\sloppy
+%\linespread{1.3}
+
+\begin{document}
+
+\title{STAT 238 - Bayesian Statistics  \\
+  Lecture Thirty Eight} 
+\subtitle{Spring 2026, UC Berkeley}
+
+\author{Aditya Guntuboyina}
+
+
+\date{01 May 2026}
+
+\maketitle
+
+As an example of variational inference, we shall look at an example of
+Variational Auto-Encoders (VAE) which are used for generative modeling.
+
+\section{Variational AutoEncoders}
+
+Consider data points $y_1, \dots, y_n$, where each $y_i$ is a binary
+vector in $\{0, 1\}^{d_y}$. One can think of each $y_i$ as an image,
+flattened from its 2D pixel grid into a single vector of length $d_y$,
+where each entry corresponds to one pixel. In general, pixel values
+can take many forms---for instance, grayscale images use intensities
+in $\{0, 1, \dots, 255\}$, and color images use three such values per
+pixel (one per RGB channel). Here we focus on the simplest case:
+\emph{binary} images (also called black-and-white or bilevel images),
+in which each pixel is either off ($0$) or on ($1$). For example, a
+$28 \times 28$ binary image yields $d_y = 28^2 = 784$.
+
+We build up a model for the data in stages. Since each coordinate of
+$y_i$ is binary, the most basic assumption is
+\begin{align*}
+  y_i \mid p_i \overset{\text{independent}}{\sim} \mathrm{Bernoulli}(p_i),
+\end{align*}
+where $p_i \in [0, 1]^{d_y}$ specifies the probability that each pixel
+is on (Bernoulli is interpreted componentwise, so pixels are
+conditionally independent given $p_i$). In other words, we are
+assuming that each $y_i \in \{0, 1\}^{d_y}$ is Bernoulli with its own
+parameter $p_i \in [0, 1]^{d_y}$. We need to further model $p_1,
+\dots, p_n$ (otherwise, there will be too many parameters to yield
+anything useful). Here it is more convenient to work
+on the logit scale: let 
+\begin{align*}
+  \eta_i = \log\!\frac{p_i}{1 - p_i} \in \mathbb{R}^{d_y},
+\end{align*}
+applied componentwise.
+
+We shall assume $\eta_1, \dots, \eta_n$ are i.i.d with some common
+distribution on $\R^{d_y}$. Further, we assume that this common
+distribution, despite living in $\mathbb{R}^{d_y}$, is in fact
+concentrated on (or near) a much lower-dimensional set. A
+natural way to encode this is to write 
+\begin{align*}
+  \eta_i = f_\theta(z_i) ~~ \text{ where } z_i
+  \overset{\text{i.i.d.}}{\sim} N(0, I_d), 
+\end{align*}
+where $f_\theta : \mathbb{R}^d \to \mathbb{R}^{d_y}$ is a neural
+network with parameters $\theta$ and $d \ll d_y$. The pushforward of
+$N(0, I_d)$ under $f_\theta$ defines a $d$-dimensional family of
+distributions on $\mathbb{R}^{d_y}$, and the flexibility of $f_\theta$
+ensures this family is rich enough to model the structure we care
+about. The Gaussian prior on $z_i$ is essentially a convention: any
+continuous distribution on $\mathbb{R}^d$ can be written as a
+deterministic transformation of a standard Gaussian, so fixing $z_i
+\sim N(0, I_d)$ and letting $f_\theta$ be flexible loses no generality
+(it is also analytically convenient, as we will see when designing an
+inference procedure). Putting the pieces together, and writing
+$\sigma$ for the componentwise sigmoid, the overall model can be
+written in the following alternative way:  
+\begin{align*}
+  z_i \overset{\text{i.i.d}}{\sim} N(0, I_d) ~~ \text{ and } ~~ 
+  y_i \mid z_i \sim
+  \mathrm{Bernoulli}\bigl(\sigma(f_\theta(z_i))\bigr)
+\end{align*}
+with, for example,
+\begin{align}\label{fth_nn}
+f_\theta(z_i) = B~\text{ReLU}(A z_i + a) + b ~~ \text{ with }
+\theta = (A, a, B, b)
+\end{align}
+The unknown parameters in this model are the neural network
+parameters $\theta$. The latent variables $z_1, \dots, z_n$ are also
+unobserved. The $z_i$'s can be integrated out and the model becomes
+\begin{align*}
+  y_i \overset{\text{i.i.d}}{\sim} p_{\theta}
+\end{align*}
+where
+\begin{align*}
+  p_{\theta}(y) = \int p_{\theta}(y \mid z) \varphi(z) dz
+\end{align*}
+with $\varphi(z)$ being the density of $N(0, I_d)$, and
+\begin{align*}
+  p_{\theta}(y \mid z) = \prod_{j=1}^{d_y} \left(\sigma(f_{\theta,
+  j}(z)) \right)^{y_j} 
+  \left(1 - \sigma(f_{\theta,
+  j}(z))\right)^{1 - y_j}  ~~ \text{ for } ~~ y = (y_1, \dots,
+  y_{d_y}) \in \{0, 
+  1\}^{d_y}. 
+\end{align*}
+The likelihood then is given by: 
+\begin{align*}
+ f_{\text{data} \mid \theta}(y_1, \dots, y_n) = \prod_{i=1}^n \left[
+  \int p_{\theta}(y_i \mid z_i) \varphi(z_i) dz_i \right] 
+\end{align*}
+and the corresponding log-likelihood is
+\begin{align}\label{loglik_actual}
+ \log f_{\text{data} \mid \theta}(y_1, \dots, y_n) = \sum_{i=1}^n \log \left[ \int p_{\theta}(y_i \mid z_i) \varphi(z_i)
+  dz_i \right].  
+\end{align}
+This log-likelihood cannot be directly used as the objective function
+in optimization software such as PyTorch because of the presence of
+the integral. A natural idea is to discretize the integral by sampling
+$z^{(l)}_i, l = 1, \dots, M$  from $N(0, I_d)$ and forming the
+approximate log-likelihood:
+\begin{align}\label{loglik_approx1}
+ \log f_{\text{data} \mid \theta}(y_1, \dots, y_n) \approx
+  \sum_{i=1}^n \log \left[ \frac{1}{M} \sum_{l = 1}^M  
+  p_{\theta}(y_i \mid z_i^{(l)}) \right]. 
+\end{align}
+The above term \eqref{loglik_approx1} is unlikely to be a good
+approximation to the actual log-likelihood \eqref{loglik_actual}. This
+ is because the integral $\int p_{\theta}(y_i \mid z_i) \varphi(z_i) dz_i$
+in \eqref{loglik_actual} is dominated by the region where
+$p_{\theta}(y_i \mid z_i)$ is large i.e., by the posterior
+$p_{\theta}(z_i \mid y_i)$. This posterior typically is very
+concentrated in the sense that only a tiny region of $z_i \in \R^d$
+yields non-negligibe values of $p_{\theta}(y_i \mid
+z_i)$. The prior $z_i \sim N(0, I_d)$, by contrast, spreads mass
+diffusely over $\R^d$. The consequence will be that almost every
+sample $z_i^{(l)}$ lands in a region where $p_{\theta}(y_i \mid
+z_i^{(l)})$ is small, so that the average in \eqref{loglik_approx1} is
+dominated by one or two (or even zero) lucky samples. This makes the
+average in \eqref{loglik_approx1} a highly variance estimate of the
+integral in \eqref{loglik_actual}, and hence unreliable as an
+optimization objective.
+
+A better approach is to use ideas from variational inference and to
+maximize the ELBO instead.
+
+\section{Use of the ELBO for maximization of $\log f_{\text{data} \mid
+    \theta}(y_1, \dots, y_n)$ } 
+
+We shall use the following formula whose proof we saw in Lecture 36
+(see also Lecture 37): 
+\begin{align}\label{evid_elbo}
+  \log f_{\text{data} \mid \theta}(y_1, \dots, y_n) = \max_{q}
+  \text{ELBO}(q, \theta)
+\end{align}
+where
+\begin{align*}
+  & \text{ELBO}(q, \theta) \\ &= \int \dots \int q(z_1, \dots, z_n) \log
+  \frac{\prod_{i=1}^np_{\theta}(y_i,  z_i)}{q(z_1, \dots, z_n)}
+                           dz_1 \dots dz_n \\
+  &= \int \dots \int q(z_1, \dots, z_n) \log \prod_{i=1}^n
+    p_{\theta}(y_i \mid z_i) dz_1 \dots dz_n - \int \dots \int q(z_1,
+    \dots, z_n) \log \frac{q(z_1, \dots, z_n)}{\varphi(z_1), \dots,
+    \varphi(z_n)} dz_1 \dots dz_n \\
+  &= \sum_{i=1}^n \int \log p_{\theta}(y_i \mid z_i) q_i(z_i) dz_i -
+    KL(q \| \varphi \times \dots \times \varphi).
+\end{align*}
+where $q_i$ is the $i$-th marginal corresponding to $q$, and $\varphi
+\times \dots \times \varphi$ denotes the distribution of $(z_1, \dots,
+z_n)$ corresponding to $z_i \overset{\text{i.i.d}}{\sim} N(0, I_d)$.
+
+The maximization in \eqref{evid_elbo} is over all probability
+densities $q$ of $z_1, \dots, z_n$. We have also seen (again in Lecture 36)
+that the maximum in \eqref{evid_elbo} is achieved when $q$ is the
+conditional density of $z_1, \dots, z_n$  given $y_1, \dots, y_n$ and
+$\theta$:
+\begin{align*}
+  q^*(z_1, \dots, z_n) \propto \prod_{i=1}^n\left[ p_{\theta}(y_i \mid z_i)
+  \varphi(z_i) \right]. 
+\end{align*}
+It is clear that this $q^*$ is a product measure $\prod_{i=1}^n
+q_i^*(z_i \mid y_i)$ where
+\begin{align*}
+ q_i^*(z_i \mid y_i)  \propto p_{\theta}(y_i \mid z_i)
+  \varphi(z_i) \implies  q_i^*(z_i \mid y_i)  = \frac{p_{\theta}(y_i \mid z_i)
+  \varphi(z_i)}{\int p_{\theta}(y_i \mid z_i)
+  \varphi(z_i) dz_i}. 
+\end{align*}
+However because of the somewhat complicated form of $p_{\theta}(y_i
+\mid z_i)$, the density $q_i^*$ above is not of a simple form (for
+example, it is not a Gaussian). We therefore take a simpler class of
+densities $\Qcal$ and then maximize the ELBO over
+$\Qcal$. Specifically, we shall take $\Qcal$ to be the class of all
+product densities $\prod q_{i, \phi}(z_i \mid y_i)$ for which each
+marginal $q_{\phi}(z_i \mid y_i)$ is Gaussian: 
+\begin{align*}
+  q_{\phi}(z_i \mid y_i) = ~\text{density of}~ N(\mu_{\phi}(y_i),
+  \Sigma_{\phi}(y_i)) 
+\end{align*}
+with
+\begin{align*}
+  \mu_{\phi}(y_i) = (\mu_{\phi, j}(y_i), j = 1, \dots, d) ~~ \text{
+  and } ~~ \Sigma_{\phi}(y_i) = \text{diag} \left(\sigma^2_{\phi, j}(y_i),
+  j = 1, \dots, d \right). 
+\end{align*}
+With this choice $\Qcal$, the ELBO becomes
+\begin{align*}
+  \text{ELBO}(q, \theta) = \sum_{i=1}^n \int \log p_{\theta}(y_i \mid
+  z_i) q_{\phi}(z_i \mid y_i) dz_i - \sum_{i=1}^n KL(q(\cdot \mid y_i)
+  \| \phi),
+\end{align*}
+where we use the fact that the KL between two product distributions
+becomes the sum of the KL between the marginals. We can further write
+this as: 
+\begin{align*}
+  \text{ELBO}(q, \theta) = \sum_{i=1}^n \E_{z_i \sim q_{\phi}(\cdot
+  \mid y_i)} \log p_{\theta}(y_i \mid z_i) - \sum_{i=1}^n
+  KL(N(\mu_{\phi}(y_i), \Sigma_{\phi}(y_i))
+  \| N(0, I_d)). 
+\end{align*}
+The second term above can be written in closed form as (see e.g.,
+\url{https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence#Examples})
+\begin{align*}
+  KL(N(\mu_{\phi}(y_i), \Sigma_{\phi}(y_i))
+  \| N(0, I_d)) = \frac{1}{2} \sum_{j=1}^d \left\{\sigma^2_{\phi,
+  j}(y_i) + \mu^2_{\phi, j}(y_i) - \log \sigma^2_{\phi, j}(y_i) - 1 \right\}.
+\end{align*}
+For the first term in the ELBO expression above, we need to compute
+\begin{align*}
+  \E_{z_i \sim q_{\phi}(\cdot
+  \mid y_i)} \log p_{\theta}(y_i \mid z_i)
+\end{align*}
+For this, we can use Monte Carlo averaging. First write $z_i \sim
+N(\mu_{\phi}(y_i), \Sigma_{\phi}(y_i))$ as
+\begin{align*}
+  z_i = \mu_{\phi}(y_i) + \sigma_{\phi}(y_i) \odot u_i ~~
+  \text{where}~ u_i \overset{\text{i.i.d}}{\sim} N(0, I_d). 
+\end{align*}
+Here $\odot$ stands for the Hadamard product (elementwise
+multiplication). Note that the components of $\Sigma_{\phi}(y_i)^{1/2}
+u_i$ are simply $\sigma_{\phi, j}(y_i) u_{i, j}$. Thus
+\begin{align*}
+   \E_{z_i \sim q_{\phi}(\cdot
+  \mid y_i)} \log p_{\theta}(y_i \mid z_i) &=     \E_{u_i \sim N(0,
+  I_d)} \log p_{\theta}(y_i \mid \mu_{\phi}(y_i) + \sigma_{\phi}(y_i)
+                                             \odot u_i)  \\
+  &\approx \frac{1}{L} \sum_{l=1}^L \log p_{\theta}(y_i \mid \mu_{\phi}(y_i) + \sigma_{\phi}(y_i)
+                                             \odot u_i^{(l)}) 
+\end{align*}
+where $u_i^{(l)}, 1 \leq l \leq L, 1 \leq i \leq n$ are i.i.d samples
+generated from $N(0, I_d)$.  Thus the ELBO becomes:
+\begin{align*}
+  & \text{ELBO}(\phi, \theta) \\
+  &= \frac{1}{L} \sum_{i=1}^n \sum_{l = 1}^L \sum_{j=1}^{d_y}
+    \left\{y_{i, j} \log \sigma\left( f_{\theta, j}(\mu_{\phi}(y_i) +
+    \sigma_{\phi}(y_i) \odot u_i^{(l)})\right) \right. \\ & \left.+ (1 - y_{i, j}) \log \left[1 -
+    \sigma\left( f_{\theta, j}(\mu_{\phi}(y_i) + 
+    \sigma_{\phi}(y_i) \odot u_i^{(l)}) \right) 
+    \right] \right\} \\
+  &- \frac{1}{2} \sum_{i=1}^n \sum_{j=1}^d \left\{\sigma^2_{\phi,
+    j}(y_i) + \mu^2_{\phi, j}(y_i) - \log \sigma^2_{\phi, j}(y_i) - 1
+    \right\}. 
+\end{align*}
+Here $\sigma$ denotes the sigmoid function while $\sigma_{\phi}$
+denotes the variance parameter of the variational distribution
+$q_{\phi}$.
+
+We simply maximize $\text{ELBO}(\phi, \theta)$ jointly over $\phi$ and
+$\theta$ to estimate them. We will parametrize $\mu_{\phi}$ and
+$\sigma_{\phi}$ using neural networks. For example,
+\begin{align*}
+  &  \mu_{\phi}(y) = W_{\mu} \text{ReLU}(Wy + w) + b_{\mu}  \\
+  & \log \sigma^2_{\phi}(y) = W_{\sigma} \text{ReLU}(Wy + w) + b_{\sigma},
+\end{align*}
+with $\phi = (W_{\mu}, W, w, b_{\mu}, W_{\sigma}, b_{\sigma})$. Recall
+also that $f_{\theta}$ will also be parametrized by a neural network
+as in \eqref{fth_nn}.
+
+With these parametrizations, $\text{ELBO}(\phi, \theta)$ can be
+maximized using optimization software such as PyTorch. 
+
+
+
+%\begin{thebibliography}{99}
+
+%\bibitem[Neal and Hinton(1998)]{neal1998view}
+%Neal, R.~M. and Hinton, G.~E. (1998).
+%\newblock A view of the EM algorithm that justifies incremental, sparse, and other variants.
+%\newblock In M.~I. Jordan (ed.), \emph{Learning in Graphical Models},
+%pages 355--368. Springer Netherlands.  
+
+%  \bibitem[Neal(2011)]{neal2011mcmc}
+%Radford M. Neal.
+%\newblock MCMC using Hamiltonian dynamics.
+%\newblock In \emph{Handbook of Markov Chain Monte Carlo}, pages 47--95.
+%\newblock Chapman and Hall/CRC, 2011.
+
+%\bibitem[Girolami and Calderhead(2011)]{girolami2011riemann}
+%Mark Girolami and Ben Calderhead.
+%\newblock Riemann manifold Langevin and Hamiltonian Monte Carlo methods.
+%\newblock \emph{Journal of the Royal Statistical Society: Series B (Statistical Methodology)}, 73(2):123--214, 2011.
+
+%  \bibitem[Lai et~al.(2025)Lai, Song, Kim, Mitsufuji, and Ermon]{lai2025principles}
+%Lai, C.-H., Song, Y., Kim, D., Mitsufuji, Y., and Ermon, S. (2025).
+%\newblock The principles of diffusion models.
+%\newblock \emph{arXiv preprint arXiv:2510.21890}.
+
+%\bibitem[Glatt-Holtz et~al.(2024)]{glatt2024sacred}
+%Nathan E. Glatt-Holtz, Andrew J. Holbrook, Justin A. Krometis, Cecilia F. Mondaini, and Ami Sheth.
+%\newblock Sacred and Profane: from the Involutive Theory of MCMC to Helpful Hamiltonian Hacks.
+%\newblock \emph{arXiv preprint arXiv:2410.17398}, 2024.
+
+%\bibitem[Roberts and Rosenthal(2004)]{RobertsRosenthal2004}
+%Roberts, G. O. and Rosenthal, J. S. (2004).
+%General state space Markov chains and MCMC algorithms.
+%\textit{Probability Surveys}, \textbf{1}, 20--71.
+
+%\bibitem[Meyn and Tweedie(2009)]{MeynTweedie2009}
+%Meyn, S. P. and Tweedie, R. L. (2009).
+%\textit{Markov Chains and Stochastic Stability}, 2nd ed.
+%Cambridge University Press.
+
+
+  
+%\bibitem[Chib and Greenberg(1995)]{chib1995}
+%Chib, S. and Greenberg, E. (1995).
+%Understanding the Metropolis--Hastings algorithm.
+%\textit{The American Statistician}, \textbf{49}, 327--335.
+
+
+%\bibitem[MacKay and Peto(1995)]{MacKay1995HierarchicalDirichlet}
+%D.~J.~C. MacKay and L.~C. Peto,
+%\newblock ``A hierarchical Dirichlet language model,''
+%\newblock \emph{Natural Language Engineering}, vol.~1,
+%no.~3, pp.~289--308, 1995.
+
+%\bibitem[Rubin(1981)]{Rubin1981BayesianBootstrap}
+%D.~B. Rubin,
+%\newblock ``The Bayesian bootstrap,''
+%\newblock \emph{The Annals of Statistics}, vol.~9,
+%no.~1, pp.~130--134, 1981.
+  
+%\bibitem[Fisher(1934)]{Fisher1934}
+%R.~A. Fisher,
+%\newblock ``Probability, likelihood and quantity of information in the logic of
+%uncertain inference,''
+%\newblock \emph{Proceedings of the Royal Society of London. Series~A,
+%Containing Papers of a Mathematical and Physical Character}, vol.~146,
+%no.~856, pp.~1--8, 1934.
+
+%\bibitem[Efron(2010)]{Efron}
+%Efron, B. (2010)
+%\textit{Large-scale inference: empirical Bayes methods for estimation,
+%testing, and prediction}. Cambridge University Press, 2010.
+
+%\bibitem[Shumway and Stoffer(2017)]{ShumwayStoffer}
+%Shumway, R. H. and Stoffer, D. S. (2017)
+%\textit{Time Series Analysis and Its Applications: With R
+%  Examples}. Springer, 4th edition. 
+  
+%     \bibitem[Jaynes(2003)]{Jaynes} Jaynes, E. T, (2003)
+%  \textit{Probability theory: the logic of science}. Cambridge
+%  University Press, 2003.
+ 
+%  \bibitem[Sinai(1992)]{Sinai} Sinai, Y. G, (1992)
+%  \textit{Probability theory: an introductory course}. Springer
+%  Verlag, 1992.  
+
+%\bibitem[{deGroot(1986)}]{DeGrootBlackwell}DeGroot, M. H. (1986)
+%       A conversation with David Blackwell.
+%\newblock \emph{Statistical Science}, \textbf{1}, 40--53.
+
+%         \bibitem[Mosteller(1987)]{Mosteller} Mosteller, F, (1987)
+%  \textit{Fifty challenging problems in probability with
+%    solutions}. Courier Corporation, 1987.
+
+%    \bibitem[MacKay(2003)]{MacKay} MacKay, D. J. C., (2003)
+%  \textit{Information theory, inference, and learning
+%  algorithms}. Cambridge University Press, 2003.
+
+%\bibitem[{Lindley(2013)}]{Lindley}Lindley, D. V. (2013)
+%   \textit{Understanding Uncertainty}. John Wiley and sons, 2013.
+
+
+%\end{thebibliography}
+
+
+
+
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

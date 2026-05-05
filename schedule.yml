@@ -590,4 +590,17 @@
           id: "37"
           name: "LectureThirtySeven238Spring2026.pdf"
           href: "./LectureThirtySeven238Spring2026.pdf"
-	  
+    - date: "May 1"
+      items:
+        - type: "Lecture"
+          id: "38"
+          name: "Variational AutoEncoders"  
+          href: "./LectureThirtyEight238Spring2026.tex"
+        - type: "Lecture"
+          id: "38 Code"
+          name: "Variational AutoEncoders"
+          href: "./CodeLectureThirtyEight238Spring2026.ipynb"
+        - type: "PDF"
+          id: "38"
+          name: "LectureThirtyEight238Spring2026.pdf"
+          href: "./LectureThirtyEight238Spring2026.pdf"
